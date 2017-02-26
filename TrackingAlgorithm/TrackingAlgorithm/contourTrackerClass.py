@@ -4,7 +4,7 @@ import numpy as np
 #~ import cv2 # OpenCV 2.3.1
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import PIL.Image
+import PIL.Image as Image
 import json
 from scipy import signal
 #~ import ConfigParser
