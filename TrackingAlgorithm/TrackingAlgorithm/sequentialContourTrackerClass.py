@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.image as mpimg
-import Image
+import PIL.Image
 import json
 from scipy import signal
 #~ import ConfigParser
