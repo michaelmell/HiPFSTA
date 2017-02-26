@@ -1,0 +1,37 @@
+File being worked on:
+/media/data_volume/mirrored_files/work/phd_thesis/matlab_functions/own/flicker_spectroscopy/image_interpolation/opencl_interpolation_testing/tracking_algorithm/dev_007/dev/code_testing/profiling/profiling_1
+
+tmp = self.ctx.devices[0]
+
+tmp.max_work_group_size
+tmp.max_work_item_sizes
+tmp.max_work_item_dimensions
+tmp.max_compute_units
+
+AMD Pitcairn:
+tmp.max_work_group_size = 256
+tmp.max_work_item_sizes = [256, 256, 256]
+tmp.max_work_item_dimensions = 3
+tmp.max_compute_units = 20
+
+Core i5:
+tmp.max_work_group_size = 1024
+tmp.max_work_item_sizes = [1024, 1024, 1024]
+tmp.max_work_item_dimensions = 3
+tmp.max_compute_units = 4
+
+self.trackingWorkGroupSize = (16, 64)
+#work_items = 16*64 = 1024
+self.trackingGlobalSize = (2048, 64)
+#work_items = 2048*64 = 131072
+
+# contourTrackerClass.py, line 311
+self.contourPointsPerWorkGroup = self.queue.device.max_work_group_size/self.nrOfLocalAngleSteps
+
+# set work dimension of work group used in tracking kernel
+self.contourPointsPerWorkGroup = self.queue.device.max_work_group_size/self.nrOfLocalAngleSteps
+self.contourPointsPerWorkGroup = 256/self.nrOfLocalAngleSteps
+
+# find out device used
+self.queue.device.name
+

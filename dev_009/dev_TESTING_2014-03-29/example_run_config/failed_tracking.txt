@@ -1,0 +1,28 @@
+Tracking image: 1849 of 6611
+Image File: movie_1_C001H001S0001001849.tif
+Nr of iterations: 23
+Execution time: 0.921319961548 sec
+Total running time: 0:35:35.305222 h
+Remaining running time (ETA): 1:31:35.236844 h
+
+
+Tracking image: 1850 of 6611
+Image File: movie_1_C001H001S0001001850.tif
+Nr of iterations: 15
+Execution time: 1.34058904648 sec
+Total running time: 0:35:36.646003 h
+Remaining running time (ETA): 1:31:34.562385 h
+
+
+Tracking image: 1851 of 6611
+Image File: movie_1_C001H001S0001001851.tif
+Nr of iterations: 35
+Execution time: 1.61522507668 sec
+Total running time: 0:35:38.261449 h
+Remaining running time (ETA): 1:31:34.593000 h
+
+
+Tracking image: 1852 of 6611
+Image File: movie_1_C001H001S0001001852.tif
+^C
+

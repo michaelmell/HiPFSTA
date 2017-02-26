@@ -1,0 +1,11 @@
+Nr of iterations: 6
+> /media/data_volume/mirrored_files/work/phd_thesis/matlab_functions/own/flicker_spectroscopy/image_interpolation/opencl_interpolation_testing/tracking_algorithm/dev_002/dev/contourTrackerClass.py(345)trackContour()
+    344                 #~ self.host_trackingFinished = np.int32(0) # True
+
+--> 345                 self.trackingFinished = np.array(1,dtype=np.int32) # True
+    346                 self.dev_trackingFinished = cl_array.to_device(self.ctx, self.queue, self.trackingFinished)
+
+ipdb> plt.plot(self.host_ds),plt.show()
+([<matplotlib.lines.Line2D object at 0x4c80e90>], None)
+ipdb> 
+
