@@ -379,9 +379,9 @@ class contourTrackerMain( object ):
 		pass
 
 	def setupTrackingQueues(self):
-		#~ for index in xrange(nrOfTrackingQueues):
+		#~ for index in range(nrOfTrackingQueues):
 			#~ trackingQueues(index) = contourTracker( self.config )
-		self.trackingQueues = [contourTracker(self.ctx, self.config) for count in xrange(self.nrOfTrackingQueues)]
+		self.trackingQueues = [contourTracker(self.ctx, self.config) for count in range(self.nrOfTrackingQueues)]
 		
 		for tracker in self.trackingQueues:
 			tracker.loadDarkfield(self.darkfieldList) # load darkfield images

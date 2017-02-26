@@ -321,7 +321,7 @@ class contourTracker( object ):
 		localAngles = np.linspace(startAngle,endAngle,self.nrOfLocalAngleSteps)
 
 		localRotationMatrices = np.empty((localAngles.shape[0],2,2),np.dtype(np.float64))
-		for index in xrange(localAngles.shape[0]):
+		for index in range(localAngles.shape[0]):
 			localAngle = localAngles[index]
 			localRotationMatrices[index,:,:] = np.array([[np.cos(localAngle),-np.sin(localAngle)],[np.sin(localAngle),np.cos(localAngle)]])
 
@@ -406,10 +406,10 @@ class contourTracker( object ):
 		self.host_membraneNormalVectorsY[0] = self.radiusUnitVector[1]
 		self.dev_membraneNormalVectorsY = cl_array.to_device(self.queue, self.host_membraneNormalVectorsY)
 		
-		self.host_closestLowerNoneNanIndex = np.int32(range(0,np.float32(self.nrOfDetectionAngleSteps)))
+		self.host_closestLowerNoneNanIndex = np.int32(range(0,np.int32(self.nrOfDetectionAngleSteps)))
 		self.dev_closestLowerNoneNanIndex = cl_array.to_device(self.queue, self.host_closestLowerNoneNanIndex)
 		
-		self.host_closestUpperNoneNanIndex = np.int32(range(0,np.float32(self.nrOfDetectionAngleSteps)))
+		self.host_closestUpperNoneNanIndex = np.int32(range(0,np.int32(self.nrOfDetectionAngleSteps)))
 		self.dev_closestUpperNoneNanIndex = cl_array.to_device(self.queue, self.host_closestUpperNoneNanIndex)
 		
 		self.host_membranePolarRadius = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
@@ -619,8 +619,8 @@ class contourTracker( object ):
 		
 		#~ ipdb.set_trace()
 		
-		#~ for void in xrange(0,nrOfIterationsPerContour):
-		#for coordinateIndex in xrange(self.nrOfDetectionAngleSteps):
+		#~ for void in range(0,nrOfIterationsPerContour):
+		#for coordinateIndex in range(self.nrOfDetectionAngleSteps):
 			
 			#coordinateIndex = np.int32(coordinateIndex)
 			
@@ -757,7 +757,7 @@ class contourTracker( object ):
 			#~ 
 			#~ ipdb.set_trace()
 		#~ ipdb.set_trace()
-		for strideNr in xrange(self.nrOfStrides):
+		for strideNr in range(self.nrOfStrides):
 			
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
@@ -1553,7 +1553,7 @@ class contourTracker( object ):
 		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
 		
 		#~ ind=71
-		#~ for ind in xrange(2048):
+		#~ for ind in range(2048):
 			#~ print "ind: "+str(ind)
 			#~ print str(self.host_interpolationAngles[ind]>=self.host_dbgOut[ind] and self.host_interpolationAngles[ind]<self.host_dbgOut2[ind])
 		#~ print str(np.all(self.host_interpolationAngles[:]>=self.host_dbgOut[:]) and np.all(self.host_interpolationAngles[:]<self.host_dbgOut2[:]))
