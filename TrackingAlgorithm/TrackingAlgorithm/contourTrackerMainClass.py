@@ -1,7 +1,7 @@
 from contourTrackerClass import contourTracker
 from sequentialContourTrackerClass import sequentialContourTracker
 
-import ConfigParser
+import configparser
 import json
 import pyopencl as cl
 import pyopencl.array as cl_array
@@ -188,45 +188,45 @@ class contourTrackerMain( object ):
 		plt.plot((snrRoiStartIndexes[0], snrRoiStopIndexes[0]),(snrRoiStartIndexes[1], snrRoiStartIndexes[1]),'k')
 	
 	def printTrackingParameters(self):
-		print ""
-		print "\tSome tracking parameters and image properties:"
-		print ""
+		print("")
+		print("\tSome tracking parameters and image properties:")
+		print("")
 		self.printImageIntensityMsg()
 		self.printImageStdMsg()
 		self.printImageSnrMsg()
-		print "\tUse image filtering:"
-		print "\t"+str(self.sequentialTracker.performImageFiltering)
-		print ""
-		print "\tUse image scaling:"
-		print "\t"+str(self.sequentialTracker.performImageScaling)
-		print ""
-		print ""
+		print("\tUse image filtering:")
+		print("\t"+str(self.sequentialTracker.performImageFiltering))
+		print("")
+		print("\tUse image scaling:")
+		print("\t"+str(self.sequentialTracker.performImageScaling))
+		print("")
+		print("")
 		
 	def printImageIntensityMsg(self):
-		print "\tImage intensity (obtained from 'snrRoi'):"
+		print("\tImage intensity (obtained from 'snrRoi'):")
 		if self.snrRoi is not None:
-			print "\t"+str(self.sequentialTracker.getImageIntensity())
+			print("\t"+str(self.sequentialTracker.getImageIntensity()))
 		else:
-			print "\tNo snrRoi provided."
-		print ""
+			print("\tNo snrRoi provided.")
+		print("")
 		pass
 	
 	def printImageSnrMsg(self):
-		print "\tImage SNR=intensity/std (obtained from 'snrRoi'):"
+		print("\tImage SNR=intensity/std (obtained from 'snrRoi'):")
 		if self.snrRoi is not None:
-			print "\t"+str(self.sequentialTracker.getImageSnr())
+			print("\t"+str(self.sequentialTracker.getImageSnr()))
 		else:
-			print "\tNo snrRoi provided."
-		print ""
+			print("\tNo snrRoi provided.")
+		print("")
 		pass
 	
 	def printImageStdMsg(self):
-		print "\tImage STD (obtained from 'snrRoi'):"
+		print("\tImage STD (obtained from 'snrRoi'):")
 		if self.snrRoi is not None:
-			print "\t"+str(self.sequentialTracker.getImageStd())
+			print("\t"+str(self.sequentialTracker.getImageStd()))
 		else:
-			print "\tNo snrRoi provided."
-		print ""
+			print("\tNo snrRoi provided.")
+		print("")
 		pass
 	
 	def track(self):
@@ -278,9 +278,9 @@ class contourTrackerMain( object ):
 						
 						frameId = tracker.getContourId()
 						self.nrOfIterationsPerContour[frameId] = np.int32(tracker.getNrOfTrackingIterations())
-						print "Nr of iterations: "+str(tracker.getNrOfTrackingIterations())
+						print("Nr of iterations: "+str(tracker.getNrOfTrackingIterations()))
 						self.executionTimePerContour[frameId] = np.float64(tracker.getExectionTime())
-						print "Execution time: "+str(self.executionTimePerContour[frameId])+" sec"
+						print("Execution time: "+str(self.executionTimePerContour[frameId])+" sec")
 						
 						#~ if self.executionTimePerContour[frameId] > 2:
 							#~ ipdb.set_trace()
@@ -289,15 +289,15 @@ class contourTrackerMain( object ):
 						
 						self.currentTime = time.time()
 						runningTime = self.currentTime - self.startTime
-						print "Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h"
+						print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
 						remainingTime = (self.totalNrOfImages-(self.currentImageIndex+1))*(runningTime/(self.currentImageIndex+1))
-						print "Remaining running time (ETA): "+str(datetime.timedelta(seconds=remainingTime))+" h"
-						print "\n"
+						print("Remaining running time (ETA): "+str(datetime.timedelta(seconds=remainingTime))+" h")
+						print("\n")
 						
 						# do intermediate save points
 						if self.mostRecentImageIndex % self.stepsBetweenSavingResults is 0:
-							print "Saving intermediate results."
-							print "\n"
+							print("Saving intermediate results.")
+							print("\n")
 							self.saveTrackingResult()
 						
 						# start tracking of new image
@@ -305,8 +305,8 @@ class contourTrackerMain( object ):
 							tracker.resetNrOfTrackingIterations()
 							tracker.startTimer()
 							
-							print "Tracking image: "+str(self.currentImageIndex+1)+" of "+str(self.totalNrOfImages) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
-							print "Image File: "+os.path.basename(self.imageList[self.currentImageIndex]) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
+							print("Tracking image: "+str(self.currentImageIndex+1)+" of "+str(self.totalNrOfImages)) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
+							print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
 							
 							tracker.loadImage(self.imageList[self.currentImageIndex])
 							tracker.setContourId(self.currentImageIndex)
@@ -327,11 +327,11 @@ class contourTrackerMain( object ):
 						tracker.setStartingCoordinatesNew(tracker.dev_interpolatedMembraneCoordinatesX, \
 														  tracker.dev_interpolatedMembraneCoordinatesY \
 													     )
-						#print "Nr of iterations: "+str(tracker.getNrOfTrackingIterations())
+						#print("Nr of iterations: "+str(tracker.getNrOfTrackingIterations())
 						
 						#contourCenter = tracker.getContourCenterCoordinates() # TODO: remove this, once done DEBUGGING
-						#print "centerX: "+str(contourCenter['x'][0])
-						#print "centerY: "+str(contourCenter['y'][0])
+						#print("centerX: "+str(contourCenter['x'][0])
+						#print("centerY: "+str(contourCenter['y'][0])
 						##~ xCenter = float(contourCenter['x'][0])
 						##~ yCenter = float(contourCenter['y'][0])
 						##~ ipdb.set_trace()
@@ -343,12 +343,12 @@ class contourTrackerMain( object ):
 		
 		# save fit results
 		#~ ipdb.set_trace()
-		print "Tracking finished. Saving results."
+		print("Tracking finished. Saving results.")
 		self.saveTrackingResult()
 
 		self.currentTime = time.time()
 		runningTime = self.currentTime - self.startTime
-		print "Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h"
+		print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
 		
 		pass
 		
@@ -379,9 +379,9 @@ class contourTrackerMain( object ):
 		pass
 
 	def setupTrackingQueues(self):
-		#~ for index in xrange(nrOfTrackingQueues):
+		#~ for index in range(nrOfTrackingQueues):
 			#~ trackingQueues(index) = contourTracker( self.config )
-		self.trackingQueues = [contourTracker(self.ctx, self.config) for count in xrange(self.nrOfTrackingQueues)]
+		self.trackingQueues = [contourTracker(self.ctx, self.config) for count in range(self.nrOfTrackingQueues)]
 		
 		for tracker in self.trackingQueues:
 			tracker.loadDarkfield(self.darkfieldList) # load darkfield images
@@ -399,11 +399,12 @@ class contourTrackerMain( object ):
 		# check if configuration file exists
 		#~ ipdb.set_trace()
 		if os.path.isfile(configurationFile) is False:
-			print "Error: Configuration file not found at: "+configurationFile
-			sys.exit("0")
+			print("")
+			print("\tError: Configuration file not found at: "+configurationFile)
+			sys.exit(1)
 				
-		self.config = ConfigParser.ConfigParser()
-		self.config.read(configurationFile)
+		self.config = configparser.ConfigParser()
+		self.config.read(configurationFile,encoding="utf8")
 		
 		#~ self.imagePath = json.loads(self.config.get("FileParameters","imagePath"))
 		#~ self.backgroundDirectoryPath = json.loads(self.config.get("FileParameters","backgroundDirectoryPath"))
@@ -538,73 +539,73 @@ class contourTrackerMain( object ):
 	def runConfigChecks(self):
 		if self.darkfieldDirectoryPath is not None:
 			if not os.path.isdir(self.darkfieldDirectoryPath):
-				print ""
-				print "\tERROR: Directory at 'darkfieldDirectoryPath' does not exist."
-				exit()
+				print("")
+				print("\tERROR: Directory at 'darkfieldDirectoryPath' does not exist.")
+				sys.exit(1)
 		if self.backgroundDirectoryPath is not None:
 			if not os.path.isdir(self.backgroundDirectoryPath):
-				print ""
-				print "\tERROR: Directory at 'backgroundDirectoryPath' does not exist."
-				exit()
+				print("")
+				print("\tERROR: Directory at 'backgroundDirectoryPath' does not exist.")
+				sys.exit(1)
 		if not os.path.isdir(self.imageDirectoryPath):
-			print ""
-			print "\tERROR: Directory at 'imageDirectoryPath' does not exist."
-			exit()
+			print("")
+			print("\tERROR: Directory at 'imageDirectoryPath' does not exist.")
+			sys.exit(1)
 		if not os.path.isdir(self.dataAnalysisDirectoryPath):
 			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
-				print ""
-				print "\tWARNING: Directory at 'dataAnalysisDirectoryPath' does not exist. Create it?"
-				print ""
-				print "\t'dataAnalysisDirectoryPath':"
-				print "\t"+self.dataAnalysisDirectoryPath
-				print ""
-				answer = raw_input("\tContinue? (y: yes, n: no) ")
+				print("")
+				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' does not exist. Create it?")
+				print("")
+				print("\t'dataAnalysisDirectoryPath':")
+				print("\t"+self.dataAnalysisDirectoryPath)
+				print("")
+				answer = input("\tContinue? (y: yes, n: no) ")
 				if answer.lower().startswith("y"):
 					os.makedirs(self.dataAnalysisDirectoryPath)
 				else:
 					exit()
 			else:
-				print ""
-				print "\tWARNING: Directory at 'dataAnalysisDirectoryPath' did not exist. Created it."
-				print ""
+				print("")
+				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' did not exist. Created it.")
+				print("")
 				os.makedirs(self.dataAnalysisDirectoryPath)
 
 		if os.listdir(self.dataAnalysisDirectoryPath) != [] and self.imageIndexToContinueFrom == 0:
 			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
-				print ""
-				print "\tWARNING: Directory at 'dataAnalysisDirectoryPath' is not empty and 'imageIndexToContinueFrom' is 0. Continuing may result in data-loss."
-				print ""
-				print "\t'dataAnalysisDirectoryPath':"
-				print "\t"+self.dataAnalysisDirectoryPath
-				print ""
+				print("")
+				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' is not empty and 'imageIndexToContinueFrom' is 0. Continuing may result in data-loss.")
+				print("")
+				print("\t'dataAnalysisDirectoryPath':")
+				print("\t"+self.dataAnalysisDirectoryPath)
+				print("")
 				answer = raw_input("\tContinue? (y: yes, n: no) ")
 				if answer.lower().startswith("n"):
 					exit()
 	
 	def printTrackingSetupInformation(self):
-		print ""
-		print "\tRunning Tracking with:"
-		print "\tOpenCL Platform: "+self.clPlatformList[self.platformIndex].name
-		print "\tOpenCL Device: "+self.device.name
-		print ""
-		print "\tDarkfield image directory:"
+		print("")
+		print("\tRunning Tracking with:")
+		print("\tOpenCL Platform: "+self.clPlatformList[self.platformIndex].name)
+		print("\tOpenCL Device: "+self.device.name)
+		print("")
+		print("\tDarkfield image directory:")
 		if self.darkfieldDirectoryPath is not None:
-			print "\t"+self.darkfieldDirectoryPath
+			print("\t"+self.darkfieldDirectoryPath)
 		else:
-			print "\tNo directory provided."
-		print ""
-		print "\tImage directory: "
-		print "\t"+self.imageDirectoryPath
-		print ""
-		print "\tBackground image directory:"
+			print("\tNo directory provided.")
+		print("")
+		print("\tImage directory: ")
+		print("\t"+self.imageDirectoryPath)
+		print("")
+		print("\tBackground image directory:")
 		if self.backgroundDirectoryPath is not None:
-			print "\t"+self.backgroundDirectoryPath
+			print("\t"+self.backgroundDirectoryPath)
 		else:
-			print "\tNo directory provided."
-		print ""
-		print "\tSaving results to:"
-		print "\t"+self.dataAnalysisDirectoryPath
-		print ""
+			print("\tNo directory provided.")
+		print("")
+		print("\tSaving results to:")
+		print("\t"+self.dataAnalysisDirectoryPath)
+		print("")
 	
 	def saveTrackingResult(self):
 		#~ ipdb.set_trace()
@@ -664,11 +665,11 @@ class contourTrackerMain( object ):
 			self.imageIntensity[0,contourNr] = imageIntensity
 			
 		if np.any(np.isnan(membraneCoordinatesX)) or np.any(np.isnan(membraneCoordinatesY)):
-			print "One or more contour coordinates are Nan. Saving results and aborting tracking."
+			print("One or more contour coordinates are Nan. Saving results and aborting tracking.")
 			self.saveTrackingResult()
 			self.currentTime = time.time()
 			runningTime = self.currentTime - self.startTime
-			print "Total running time: "+str(datetime.timedelta(seconds=runningTime))+"h"
+			print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+"h")
 			
 			ipdb.set_trace()
 		

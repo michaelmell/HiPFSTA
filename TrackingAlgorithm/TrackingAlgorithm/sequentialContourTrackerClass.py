@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.image as mpimg
-import Image
+import PIL.Image as Image
 import json
 from scipy import signal
 #~ import ConfigParser
@@ -300,7 +300,7 @@ class sequentialContourTracker( object ):
 		localAngles = np.linspace(startAngle,endAngle,self.nrOfLocalAngleSteps)
 		
 		localRotationMatrices = np.empty((localAngles.shape[0],2,2),np.dtype(np.float64))
-		for index in xrange(localAngles.shape[0]):
+		for index in range(localAngles.shape[0]):
 			localAngle = localAngles[index]
 			localRotationMatrices[index,:,:] = np.array([[np.cos(localAngle),-np.sin(localAngle)],[np.sin(localAngle),np.cos(localAngle)]])
 
@@ -443,7 +443,7 @@ class sequentialContourTracker( object ):
 	
 	def trackContour(self):
 		#~ ipdb.set_trace()
-		for coordinateIndex in xrange(int(self.nrOfDetectionAngleSteps)):
+		for coordinateIndex in range(int(self.nrOfDetectionAngleSteps)):
 			#~ print coordinateIndex
 			
 			coordinateIndex = np.int32(coordinateIndex)
