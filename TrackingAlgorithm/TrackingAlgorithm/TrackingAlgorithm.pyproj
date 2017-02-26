@@ -29,6 +29,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="clKernelCode.cl" />
+    <Content Include="MainTracking.conf" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
