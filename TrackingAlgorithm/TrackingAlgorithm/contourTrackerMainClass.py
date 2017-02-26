@@ -399,8 +399,9 @@ class contourTrackerMain( object ):
 		# check if configuration file exists
 		#~ ipdb.set_trace()
 		if os.path.isfile(configurationFile) is False:
-			print("Error: Configuration file not found at: "+configurationFile)
-			sys.exit("0")
+			print("")
+			print("\tError: Configuration file not found at: "+configurationFile)
+			sys.exit(1)
 				
 		self.config = configparser.ConfigParser()
 		self.config.read(configurationFile,encoding="utf8")
@@ -540,16 +541,16 @@ class contourTrackerMain( object ):
 			if not os.path.isdir(self.darkfieldDirectoryPath):
 				print("")
 				print("\tERROR: Directory at 'darkfieldDirectoryPath' does not exist.")
-				exit()
+				sys.exit(1)
 		if self.backgroundDirectoryPath is not None:
 			if not os.path.isdir(self.backgroundDirectoryPath):
 				print("")
 				print("\tERROR: Directory at 'backgroundDirectoryPath' does not exist.")
-				exit()
+				sys.exit(1)
 		if not os.path.isdir(self.imageDirectoryPath):
 			print("")
 			print("\tERROR: Directory at 'imageDirectoryPath' does not exist.")
-			exit()
+			sys.exit(1)
 		if not os.path.isdir(self.dataAnalysisDirectoryPath):
 			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
 				print("")
