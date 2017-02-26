@@ -1,7 +1,7 @@
 from contourTrackerClass import contourTracker
 from sequentialContourTrackerClass import sequentialContourTracker
 
-import ConfigParser
+import configparser
 import json
 import pyopencl as cl
 import pyopencl.array as cl_array
@@ -402,7 +402,7 @@ class contourTrackerMain( object ):
 			print("Error: Configuration file not found at: "+configurationFile)
 			sys.exit("0")
 				
-		self.config = ConfigParser.ConfigParser()
+		self.config = configparser.ConfigParser()
 		self.config.read(configurationFile)
 		
 		#~ self.imagePath = json.loads(self.config.get("FileParameters","imagePath"))
