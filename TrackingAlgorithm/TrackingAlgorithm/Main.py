@@ -5,6 +5,6 @@ sys.path.append("/media/data_volume/mirrored_files/work/phd_thesis/matlab_functi
 from contourTrackerMainClass import contourTrackerMain
 
 # run tracking
-prg = contourTrackerMain("tracking_001.conf",runInteractive=True)
+prg = contourTrackerMain("MainTracking.conf",runInteractive=True)
 prg.initializeTracking()
 prg.track()
