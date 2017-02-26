@@ -403,7 +403,7 @@ class contourTrackerMain( object ):
 			sys.exit("0")
 				
 		self.config = configparser.ConfigParser()
-		self.config.read(configurationFile)
+		self.config.read(configurationFile,encoding="utf8")
 		
 		#~ self.imagePath = json.loads(self.config.get("FileParameters","imagePath"))
 		#~ self.backgroundDirectoryPath = json.loads(self.config.get("FileParameters","backgroundDirectoryPath"))
