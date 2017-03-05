@@ -585,6 +585,21 @@ class contourTracker( object ):
 		currentTime = time.time()
 		return currentTime - self.startingTime
 		
+	def plotCurrentMembraneCoordinates(self):
+		cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
+		cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
+		plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY)
+		#cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
+		#cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
+		#plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY)
+		#plt.show()
+
+	def plotCurrentInterpolatedMembraneCoordinates(self):
+		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
+		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
+		plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY)
+
+
 	def trackContour(self):
 		# tracking status variables
 		self.nrOfTrackingIterations = self.nrOfTrackingIterations + 1
@@ -821,6 +836,11 @@ class contourTracker( object ):
 		#~ plt.plot(self.host_fitInclines)
 		#~ plt.show()
 		
+		if self.getContourId() >= 0 and self.getNrOfTrackingIterations() >= 0:
+			self.plotCurrentMembraneCoordinates()
+			self.plotCurrentInterpolatedMembraneCoordinates()
+			plt.show()
+
 		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 8:
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
