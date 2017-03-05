@@ -578,7 +578,7 @@ class contourTrackerMain( object ):
 				print("\t'dataAnalysisDirectoryPath':")
 				print("\t"+self.dataAnalysisDirectoryPath)
 				print("")
-				answer = raw_input("\tContinue? (y: yes, n: no) ")
+				answer = input("\tContinue? (y: yes, n: no) ")
 				if answer.lower().startswith("n"):
 					exit()
 	
