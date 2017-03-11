@@ -551,6 +551,7 @@ class contourTracker( object ):
 		#~ ipdb.set_trace()
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembranNormalVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembranNormalVectorsY.data,self.dev_membraneNormalVectorsY.data).wait()
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		self.queue.finish()
 		
 	def setStartingCoordinatesNew(self,dev_initialMembraneCoordinatesX,dev_initialMembraneCoordinatesY):
@@ -558,6 +559,7 @@ class contourTracker( object ):
 		#~ self.dev_membraneCoordinatesY = dev_initialMembraneCoordinatesY
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_membraneCoordinatesX.data).wait() #<-
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_membraneCoordinatesY.data).wait()
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		#~ self.dev_membraneNormalVectorsX = dev_initialMembranNormalVectorsX
 		#~ self.dev_membraneNormalVectorsY = dev_initialMembranNormalVectorsY
 		#~ ipdb.set_trace()
@@ -571,6 +573,7 @@ class contourTracker( object ):
 			cl.enqueue_copy_buffer(self.queue,dev_initialMembranNormalVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
 			cl.enqueue_copy_buffer(self.queue,dev_initialMembranNormalVectorsY.data,self.dev_membraneNormalVectorsY.data).wait()
 		#~ self.queue.finish()
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 	def getNrOfTrackingIterations(self):
 		return self.nrOfTrackingIterations
@@ -621,14 +624,23 @@ class contourTracker( object ):
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_ds.data, self.host_ds).wait()
 			#~ ipdb.set_trace()
 			
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
+
 		#~ self.host_trackingFinished = np.int32(0) # True
 		self.trackingFinished = np.array(1,dtype=np.int32) # True
 		self.dev_trackingFinished = cl_array.to_device(self.queue, self.trackingFinished)
 		
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
+
 		#~ self.iterationFinished = np.int32(0) # True
 		self.iterationFinished = np.array(0,dtype=np.int32) # True
 		self.dev_iterationFinished = cl_array.to_device(self.queue, self.iterationFinished)
 		
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
+
 		#~ print "self.iterationFinished:"
 		#~ print self.iterationFinished
 		
@@ -772,6 +784,10 @@ class contourTracker( object ):
 			#~ 
 			#~ ipdb.set_trace()
 		#~ ipdb.set_trace()
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
+		#ipdb.set_trace()
+
 		for strideNr in range(self.nrOfStrides):
 			
 			# set the starting index of the coordinate array for each kernel instance
@@ -792,7 +808,7 @@ class contourTracker( object ):
 											 #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 											 #self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
 											 #kernelCoordinateStartingIndex)
-			
+
 			self.prg.findMembranePositionNew2(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
 											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
 											 self.buf_localRotationMatrices, \
@@ -810,6 +826,7 @@ class contourTracker( object ):
 											 self.dev_fitInclines.data, \
 											 kernelCoordinateStartingIndex, \
 											 self.inclineTolerance)
+			barrierEvent = cl.enqueue_barrier(self.queue)
 											 
 			#self.prg.findMembranePositionNew3(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
 											 #self.dev_Img, self.imgSizeX, self.imgSizeY, \
@@ -836,10 +853,10 @@ class contourTracker( object ):
 		#~ plt.plot(self.host_fitInclines)
 		#~ plt.show()
 		
-		if self.getContourId() >= 0 and self.getNrOfTrackingIterations() >= 0:
-			self.plotCurrentMembraneCoordinates()
-			self.plotCurrentInterpolatedMembraneCoordinates()
-			plt.show()
+		#if self.getContourId() >= 0 and self.getNrOfTrackingIterations() >= 0:
+		#	self.plotCurrentMembraneCoordinates()
+		#	self.plotCurrentInterpolatedMembraneCoordinates()
+		#	plt.show()
 
 		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 8:
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
@@ -943,6 +960,7 @@ class contourTracker( object ):
 								 #~ self.dev_dbgOut.data, \
 								 #~ self.dev_dbgOut2.data \
 								 )
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		#~ if self.nrOfTrackingIterations>=stopInd and self.getContourId() is 248:
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
@@ -1006,6 +1024,7 @@ class contourTracker( object ):
 											self.maxCoordinateShift, \
 											self.dev_listOfGoodCoordinates.data \
 											)
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		#if self.getContourId() == 2447 and self.getNrOfTrackingIterations() >= 1:
 			##~ self.host_interpolationAnglesOld = np.float64(np.zeros(2048))
@@ -1024,7 +1043,6 @@ class contourTracker( object ):
 												self.dev_interCoordinateAngles.data, \
 												self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data \
 											   )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		#if self.getContourId() == 2447 and self.getNrOfTrackingIterations() == 20:
@@ -1075,7 +1093,6 @@ class contourTracker( object ):
 										    #~ self.dev_dbgOut.data, \
 										    #~ self.dev_dbgOut2.data \
 										    )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		
@@ -1208,6 +1225,7 @@ class contourTracker( object ):
 					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data \
 					 )
+		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		#~ if self.nrOfTrackingIterations>=stopInd:
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
@@ -1226,14 +1244,21 @@ class contourTracker( object ):
 			#~ ipdb.set_trace()
 
 
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
 
 		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data, self.dev_sumds.data \
 					 )
-
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		#~ barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
+		#ipdb.set_trace()
 		
 		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
@@ -1241,7 +1266,8 @@ class contourTracker( object ):
 								   self.dev_contourCenter.data, \
 								   np.int32(self.nrOfDetectionAngleSteps) \
 								  )
-		
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
 		#~ if self.nrOfTrackingIterations>=stopInd:
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
@@ -1263,10 +1289,14 @@ class contourTracker( object ):
 		########################################################################
 		### Convert cartesian coordinates to polar coordinates
 		########################################################################
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
+
 		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
 						  self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 						  self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
 						  self.dev_contourCenter.data)
+		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		#~ outOfOrderProfilingQueue.finish()
 		#~ ipdb.set_trace()
@@ -1327,12 +1357,16 @@ class contourTracker( object ):
 #~ 
 			#~ ipdb.set_trace()
 		
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
+
 		self.prg.sortCoordinates(self.queue, (1,1), None, \
 								self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
 								self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 								self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
 								np.int32(self.nrOfDetectionAngleSteps) \
 								)
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		#~ ipdb.set_trace()
 		
@@ -1515,7 +1549,13 @@ class contourTracker( object ):
 											#~ self.dev_interpolatedMembranePolarRadius.data, \
 											#~ self.dev_b.data, self.dev_c.data, self.dev_d.data \
 											#~ )
+
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
 		
+		#self.plotCurrentInterpolatedMembraneCoordinates()
+		#plt.show()
+
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
 													self.dev_radialVectors.data, \
@@ -1537,7 +1577,14 @@ class contourTracker( object ):
 													self.dev_dbgOut.data, \
 													self.dev_dbgOut2.data, \
 													)
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		
+		#self.plotCurrentMembraneCoordinates()
+		#plt.show()
+
+		self.plotCurrentInterpolatedMembraneCoordinates()
+		plt.show()
+
 		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 7:
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
@@ -1747,14 +1794,17 @@ class contourTracker( object ):
 										 self.dev_previousInterpolatedMembraneCoordinatesY.data, \
 										 self.dev_trackingFinished.data, \
 										 self.coordinateTolerance)
+		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.prg.checkIfCenterConverged(self.queue, (1,1), None, \
 										self.dev_contourCenter.data, \
 										self.dev_previousContourCenter.data, \
 										self.dev_trackingFinished.data, \
 										self.centerTolerance)
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		cl.enqueue_read_buffer(self.queue, self.dev_trackingFinished.data, self.trackingFinished).wait()
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		#~ ipdb.set_trace()
 		
@@ -1865,6 +1915,8 @@ class contourTracker( object ):
 		#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY,'r')
 		#plt.show()
 		
+		self.plotCurrentMembraneCoordinates()
+		plt.show()
 		pass
 		
 		#~ self.dev_trackingFinished = cl_array.to_device(self.queue, self.host_trackingFinished)
