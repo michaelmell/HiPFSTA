@@ -602,6 +602,16 @@ class contourTracker( object ):
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
 		plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY)
 
+	def saveDeviceVariable(self,variableName,path):
+		dev_variable = getattr(self,variableName)
+		varOnHost = dev_variable.get()
+		np.save(path+"/"+variableName+".npy", varOnHost, allow_pickle=True, fix_imports=True)
+		pass
+
+	def saveHostVariable(self,variableName,path):
+		host_variable = getattr(self,variableName)
+		np.save(path+"/"+variableName+".npy", host_variable, allow_pickle=True, fix_imports=True)
+		pass
 
 	def trackContour(self):
 		# tracking status variables
