@@ -1,0 +1,13 @@
+2017-03-11: Investigating bug which causes the values in 'contourTrackerClass.dev_membraneCoordinatesX' and 'contourTrackerClass.dev_membraneCoordinatesY' to get mixed up.
+
+Bug could be in the calculation of the contour center. But not sure. Reasoning: The coordinates might get mixed up, because the angle values are not correctly calculated, because the center value is incorrect.
+
+There is a bug in copying the membracoordinates from the previous run/iteration for the next iteration. This erros seems to be outside contourTrackerClass. Perhaps it is happening in contourTrackerMainClass(?).
+
+cl.enqueue_read_buffer(self.queue,self.dev_membranePolarRadius.data,self.host_membranePolarRadius).wait()
+np.save("C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/UnitTestData/interpolatePolarCoordinatesLinear/dev_membranePolarRadius.npy", self.host_membranePolarRadius, allow_pickle=True, fix_imports=True)
+
+self.saveDeviceVariable(self.dev_membranePolarRadius,"C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/UnitTestData/interpolatePolarCoordinatesLinear/dev_membranePolarRadius.npy")
+
+np.save("C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/UnitTestData/interpolatePolarCoordinatesLinear/dev_membranePolarRadius.npy", self.dev_membranePolarRadius.map_to_host(), allow_pickle=True, fix_imports=True)
+
