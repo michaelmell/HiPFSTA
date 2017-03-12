@@ -26,6 +26,9 @@
     <Compile Include="contourTrackerMainClass.py" />
     <Compile Include="Main.py" />
     <Compile Include="sequentialContourTrackerClass.py" />
+    <Compile Include="testOpenClKernels.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Content Include="clKernelCode.cl" />

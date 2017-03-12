@@ -69,7 +69,7 @@ class contourTrackerMain( object ):
 		pass
 
 	def setupClVariables(self):
-		self.nrOfDetectionAngleSteps = self.detectionKernelStrideSize * self.nrOfStrides
+		self.nrOfDetectionAngleSteps = int(self.detectionKernelStrideSize * self.nrOfStrides)
 		self.host_mostRecentMembraneCoordinatesX = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_mostRecentMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_mostRecentMembraneCoordinatesX)
 		self.host_mostRecentMembraneCoordinatesY = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
@@ -578,7 +578,7 @@ class contourTrackerMain( object ):
 				print("\t'dataAnalysisDirectoryPath':")
 				print("\t"+self.dataAnalysisDirectoryPath)
 				print("")
-				answer = raw_input("\tContinue? (y: yes, n: no) ")
+				answer = input("\tContinue? (y: yes, n: no) ")
 				if answer.lower().startswith("n"):
 					exit()
 	
