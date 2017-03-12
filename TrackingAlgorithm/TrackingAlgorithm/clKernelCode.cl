@@ -3033,6 +3033,11 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 	dbgOut2[xInd] = 0;
 	
 	__private int index;
+	__private int lowerIndex;
+	__private int upperIndex;
+	__private double lowerAngle;
+	__private double upperAngle;
+	__private double interpolationAngle;
 	
 	// radialLineDirectionVector <-> b
 	// radialLineBasePoint <-> c
@@ -3045,8 +3050,8 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 		
 	for(index=xInd-nrOfAnglesToCompare/2+1;index<xInd+nrOfAnglesToCompare/2;index++)
 	{
-		int lowerIndex = index;
-		int upperIndex = index+1;
+		lowerIndex = index;
+		upperIndex = index+1;
 		
 		///* Check index sanity */
 		if(lowerIndex<0){
@@ -3063,9 +3068,9 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 			upperIndex = upperIndex - xSize;
 		}
 		
-		__private double lowerAngle = membranePolarTheta[lowerIndex];
-		__private double upperAngle = membranePolarTheta[upperIndex];
-		__private double interpolationAngle = interpolationAngles[xInd];
+		lowerAngle = membranePolarTheta[lowerIndex];
+		upperAngle = membranePolarTheta[upperIndex];
+		interpolationAngle = interpolationAngles[xInd];
 		
 		if(lowerAngle>upperAngle){
 			lowerAngle = lowerAngle - 2 * M_PI;
@@ -3092,6 +3097,7 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 				interpolatedMembranePoint.x = membraneCoordinatesX[upperIndex];
 				interpolatedMembranePoint.y = membraneCoordinatesY[upperIndex];
 			}
+			break;
 		}
 		
 		//~ if( membranePolarTheta[xInd] >= interpolationAngles[lowerIndex] && membranePolarTheta[xInd] < interpolationAngles[upperIndex] )
@@ -3136,26 +3142,13 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 				//~ interpolatedMembranePoint = {membraneCoordinatesX[lowerIndex],membraneCoordinatesY[lowerIndex]};
 				interpolatedMembranePoint = interpolatedMembranePointTMP;
 			}
-
-			//
-			
-			//~ if(xInd==1536){
-				//~ printf("radialLineBasePoint.x: %f\n",radialLineBasePoint.x);
-				//~ printf("radialLineBasePoint.y: %f\n",radialLineBasePoint.y);
-				//~ printf("radialLineDirectionVector.x: %f\n",radialLineDirectionVector.x);
-				//~ printf("radialLineDirectionVector.y: %f\n",radialLineDirectionVector.y);
-				//~ printf("\n");
-				//~ printf("lineSegmentBasePoint.x: %f\n",lineSegmentBasePoint.x);
-				//~ printf("lineSegmentBasePoint.y: %f\n",lineSegmentBasePoint.y);
-				//~ printf("lineSegmentDirectionVector.x: %f\n",lineSegmentDirectionVector.x);
-				//~ printf("lineSegmentDirectionVector.y: %f\n",lineSegmentDirectionVector.y);
-				//~ printf("\n");
-				//~ printf("membraneCoord[lowerIndex]: %f,%f\n",membraneCoordinatesX[lowerIndex],membraneCoordinatesY[lowerIndex]);
-				//~ printf("membraneCoord[upperIndex]: %f,%f\n",membraneCoordinatesX[upperIndex],membraneCoordinatesY[upperIndex]);
-				//~ printf("interceptPoint: %f,%f\n",interceptPoint.x,interceptPoint.y);
-			//~ }
+			break;
 		}
+
 	}
 	interpolatedMembraneCoordinatesX[xInd] = interpolatedMembranePoint.x;
 	interpolatedMembraneCoordinatesY[xInd] = interpolatedMembranePoint.y;
+	//barrier(CLK_LOCAL_MEM_FENCE);
+	//barrier(CLK_GLOBAL_MEM_FENCE);
+
 }

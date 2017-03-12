@@ -20,7 +20,8 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.loadHostVariable('gradientGlobalSize',path)
 		self.loadHostVariable('nrOfInterpolationPoints',path)
 		self.loadHostVariable('nrOfDetectionAngleSteps',path)
-		self.loadHostVariable('nrOfAnglesToCompare',path)
+		#self.loadHostVariable('nrOfAnglesToCompare',path)
+		self.nrOfAnglesToCompare = np.int32(100)
 		self.loadDeviceVariable('dev_membranePolarRadius',path)
 		self.loadDeviceVariable('dev_membranePolarTheta',path)
 		self.loadDeviceVariable('dev_radialVectors',path)
@@ -63,6 +64,7 @@ class Test_testOpenClKernels(unittest.TestCase):
 													self.dev_dbgOut.data, \
 													self.dev_dbgOut2.data, \
 													)
+
 		self.plotCurrentInterpolatedMembraneCoordinates()
 		plt.show()
 		pass
