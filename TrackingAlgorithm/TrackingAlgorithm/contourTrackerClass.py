@@ -1592,9 +1592,6 @@ class contourTracker( object ):
 		#self.plotCurrentMembraneCoordinates()
 		#plt.show()
 
-		self.plotCurrentInterpolatedMembraneCoordinates()
-		plt.show()
-
 		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 7:
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
 			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
@@ -1924,9 +1921,6 @@ class contourTracker( object ):
 		#ax.invert_yaxis() # needed so that usage of 'plt.quiver' (below), will play along
 		#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY,'r')
 		#plt.show()
-		
-		self.plotCurrentMembraneCoordinates()
-		plt.show()
 		pass
 		
 		#~ self.dev_trackingFinished = cl_array.to_device(self.queue, self.host_trackingFinished)
