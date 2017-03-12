@@ -320,7 +320,7 @@ class sequentialContourTracker( object ):
 		#~ nrOfDetectionAngleSteps = np.float64(8000);
 		#~ nrOfDetectionAngleSteps = np.float64(2000);
 		#~ nrOfDetectionAngleSteps = np.float64(1365); # this is roughly, where we currently run out of local memory; when we still used it in some kernels
-		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+		self.nrOfDetectionAngleSteps = int(self.nrOfStrides*self.detectionKernelStrideSize)
 
 		self.angleStepSize = np.float64((detectionEndAngle-detectionStartAngle)/self.nrOfDetectionAngleSteps)
 		
