@@ -523,207 +523,16 @@ class contourTracker( object ):
 		self.nrOfTrackingIterations = self.nrOfTrackingIterations + 1
 		
 		stopInd = 1
-		#~ if self.nrOfTrackingIterations>=stopInd and self.getContourId() is 248:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_ds.data, self.host_ds).wait()
-			#~ ipdb.set_trace()
-			
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
 
-		#~ self.host_trackingFinished = np.int32(0) # True
 		self.trackingFinished = np.array(1,dtype=np.int32) # True
 		self.dev_trackingFinished = cl_array.to_device(self.queue, self.trackingFinished)
 		
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
-
-		#~ self.iterationFinished = np.int32(0) # True
 		self.iterationFinished = np.array(0,dtype=np.int32) # True
 		self.dev_iterationFinished = cl_array.to_device(self.queue, self.iterationFinished)
 		
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
-
-		#~ print "self.iterationFinished:"
-		#~ print self.iterationFinished
-		
-		#~ ipdb.set_trace()
-		
-		#~ for void in range(0,nrOfIterationsPerContour):
-		#for coordinateIndex in range(self.nrOfDetectionAngleSteps):
-			
-			#coordinateIndex = np.int32(coordinateIndex)
-			
-			#self.prg.findMembranePosition(self.queue, self.global_size, self.local_size, self.sampler, \
-								 #self.dev_Img, self.imgSizeX, self.imgSizeY, \
-								 #self.buf_localRotationMatrices, \
-								 #self.buf_linFitSearchRangeXvalues, \
-								 #self.linFitParameter, \
-								 ##~ cl.LocalMemory(fitIntercept_memSize), cl.LocalMemory(fitIncline_memSize), \
-								 #self.dev_fitIntercept.data, self.dev_fitIncline.data, \
-								 #self.meanParameter, \
-								 #self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-								 ##~ cl.LocalMemory(localMembranePositions_memSize), cl.LocalMemory(localMembranePositions_memSize), \
-								 #self.dev_localMembranePositionsX.data, self.dev_localMembranePositionsY.data, \
-								 #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-								 #self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
-								 #coordinateIndex)
-		
-		#barrierEvent = cl.enqueue_barrier(self.queue)
-
-		#self.host_membraneCoordinatesXdebug = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
-		#self.host_membraneCoordinatesYdebug = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
-		#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesXdebug).wait()
-		#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesYdebug).wait()
-
-		##~ self.dev_membraneCoordinatesX = cl_array.to_device(self.queue, self.host_membraneCoordinatesX)
-		
-		#self.queue.finish()
-		
-		#~ print "xCoord[0]:"+str(self.host_membraneCoordinatesXdebug[0])
-		#~ print "yCoord[0]:"+str(self.host_membraneCoordinatesYdebug[0])
-		
-		#~ if self.getContourId() >= 5598 and self.getNrOfTrackingIterations() >= 1:
-			#~ print "Iteration: "+str(self.getNrOfTrackingIterations())
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_contourCenter.data,self.host_contourCenter).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesX.data,self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ ind = 805
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_interpolatedMembraneCoordinatesX[ind] - x
-			#~ dy = self.host_interpolatedMembraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY), plt.show()
-#~ 
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_membraneCoordinatesX[ind] - x
-			#~ dy = self.host_membraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-#~ 
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_membraneCoordinatesX[ind] - x
-			#~ dy = self.host_membraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,'r')
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-		#~ 
-			#~ ipdb.set_trace()
-
-
-		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 14:
-			#~ print "Iteration: "+str(self.getNrOfTrackingIterations())
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_contourCenter.data,self.host_contourCenter).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesX.data,self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ ind = 805
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_interpolatedMembraneCoordinatesX[ind] - x
-			#~ dy = self.host_interpolatedMembraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY), plt.show()
-#~ 
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_membraneCoordinatesX[ind] - x
-			#~ dy = self.host_membraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-#~ 
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_membraneCoordinatesX[ind] - x
-			#~ dy = self.host_membraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,'r')
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-		#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembranePolarRadius.data,self.host_interpolatedMembranePolarRadius).wait()
-			#~ plt.plot(self.host_interpolatedMembranePolarRadius), plt.show()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarRadius.data,self.host_membranePolarRadius).wait()
-			#~ plt.plot(self.host_membranePolarRadius), plt.show()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarTheta.data,self.host_membranePolarTheta).wait()
-			#~ plt.plot(self.host_membranePolarTheta), plt.show()
-			#~ 
-			#~ plt.plot(np.diff(self.host_membranePolarTheta)), plt.show()
-#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolationAngles.data,self.host_interpolationAngles).wait()
-			#~ plt.plot(self.host_interpolationAngles), plt.show()
-#~ 
-			#~ ipdb.set_trace()
-
-		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 8:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-#~ 
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY)
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY)
-			#~ plt.show()
-#~ 
-			#~ plt.plot(self.host_interpolationAngles)
-			#~ plt.plot(self.host_dbgOut)
-			#~ plt.plot(self.host_dbgOut2)
-			#~ plt.show()
-			#~ 
-			#~ ipdb.set_trace()
-		#~ ipdb.set_trace()
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
-		#ipdb.set_trace()
-
 		for strideNr in range(self.nrOfStrides):
-			
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
-			#~ print kernelCoordinateStartingIndex
-			
-			#self.prg.findMembranePositionNew(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
-											 #self.dev_Img, self.imgSizeX, self.imgSizeY, \
-											 #self.buf_localRotationMatrices, \
-											 #self.buf_linFitSearchRangeXvalues, \
-											 #self.linFitParameter, \
-											 #cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-											 ##~ self.dev_fitIntercept.data, self.dev_fitIncline.data, \
-											 #self.meanParameter, \
-											 #self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-											 #cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
-											 ##~ self.dev_localMembranePositionsX.data, self.dev_localMembranePositionsY.data, \
-											 #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-											 #self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
-											 #kernelCoordinateStartingIndex)
-
 			self.prg.findMembranePositionNew2(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
 											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
 											 self.buf_localRotationMatrices, \
@@ -742,132 +551,9 @@ class contourTracker( object ):
 											 kernelCoordinateStartingIndex, \
 											 self.inclineTolerance)
 			barrierEvent = cl.enqueue_barrier(self.queue)
-											 
-			#self.prg.findMembranePositionNew3(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
-											 #self.dev_Img, self.imgSizeX, self.imgSizeY, \
-											 #self.buf_localRotationMatrices, \
-											 #self.buf_linFitSearchRangeXvalues, \
-											 #self.linFitParameter, \
-											 #cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-											 #cl.LocalMemory(self.rotatedUnitVector_memSize), \
-											 ##~ self.dev_fitIntercept.data, self.dev_fitIncline.data, \
-											 #self.meanParameter, \
-											 #self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-											 #cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
-											 ##~ self.dev_localMembranePositionsX.data, self.dev_localMembranePositionsY.data, \
-											 #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-											 #self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
-											 #kernelCoordinateStartingIndex, \
-											 #self.inclineTolerance, \
-											 #self.meanIntensity \
-											 #)
-		
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_fitInclines.data, self.host_fitInclines).wait()
-		#~ ipdb.set_trace()
-		#~ 
-		#~ plt.plot(self.host_fitInclines)
-		#~ plt.show()
-		
-		#if self.getContourId() >= 0 and self.getNrOfTrackingIterations() >= 0:
-		#	self.plotCurrentMembraneCoordinates()
-		#	self.plotCurrentInterpolatedMembraneCoordinates()
-		#	plt.show()
-
-		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 8:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-#~ 
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY)
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY)
-			#~ plt.show()
-#~ 
-			#~ plt.plot(self.host_interpolationAngles)
-			#~ plt.plot(self.host_dbgOut)
-			#~ plt.plot(self.host_dbgOut2)
-			#~ plt.show()
-			#~ 
-			#~ ipdb.set_trace()
-				
-		#~ if self.getContourId() >= 512 and self.getNrOfTrackingIterations() >= 1:
-			#~ print "Iteration: "+str(self.getNrOfTrackingIterations())
-			#~ ipdb.set_trace()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_contourCenter.data,self.host_contourCenter).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesX.data,self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ ind = 805
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_interpolatedMembraneCoordinatesX[ind] - x
-			#~ dy = self.host_interpolatedMembraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY), plt.show()
-#~ 
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_membraneCoordinatesX[ind] - x
-			#~ dy = self.host_membraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-#~ 
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_membraneCoordinatesX[ind] - x
-			#~ dy = self.host_membraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,'r')
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-		#~ 
-			#~ ipdb.set_trace()
-
-
-			#~ if self.nrOfTrackingIterations>=stopInd and self.getContourId() is 248:
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-				#~ cl.enqueue_read_buffer(self.queue, self.dev_ds.data, self.host_ds).wait()
-				#~ ipdb.set_trace()
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		#~ if self.getContourId() == 70005 and self.getNrOfTrackingIterations() >= 1:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_contourCenter.data,self.host_contourCenter).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#~ ind = 805
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_membraneCoordinatesX[ind] - x
-			#~ dy = self.host_membraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-#~ 
-			#~ ipdb.set_trace()
-		
-		#self.prg.filterNanValues(self.queue, self.gradientGlobalSize, None, \
-								 ##~ cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
-								 #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-								 #self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
-								 #self.dev_closestLowerNoneNanIndex.data, self.dev_closestUpperNoneNanIndex.data \
-								 #)
 		self.prg.filterNanValues(self.queue, self.gradientGlobalSize, None, \
 								 self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 								 self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
@@ -876,54 +562,8 @@ class contourTracker( object ):
 								 #~ self.dev_dbgOut2.data \
 								 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		#~ if self.nrOfTrackingIterations>=stopInd and self.getContourId() is 248:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_ds.data, self.host_ds).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
-			#~ ipdb.set_trace()
 
-
-			#~ barrierEvent = cl.enqueue_barrier(self.queue)
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-		#~ 
-			#~ ipdb.set_trace()
-		
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		
-		#~ ipdb.set_trace()
-
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interCoordinateAngles).wait()
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-
-		#print self.getContourId()
-		#print self.getNrOfTrackingIterations()
-		
-		#if self.getContourId() == 14825 and self.getNrOfTrackingIterations() >= 0:
-			##~ self.host_interpolationAnglesOld = np.float64(np.zeros(2048))
-			##~ cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interpolationAnglesOld).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			##~ plt.plot(self.host_interpolationAnglesOld), plt.show()
-			#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#cl.enqueue_read_buffer(self.queue,self.dev_listOfGoodCoordinates.data,self.host_listOfGoodCoordinates).wait()
-			#plt.plot(self.host_listOfGoodCoordinates), plt.ylim([-0.1,1.1]), plt.show()
-			#ipdb.set_trace()
 		
 		self.prg.filterJumpedCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
@@ -940,17 +580,6 @@ class contourTracker( object ):
 											self.dev_listOfGoodCoordinates.data \
 											)
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		#if self.getContourId() == 2447 and self.getNrOfTrackingIterations() >= 1:
-			##~ self.host_interpolationAnglesOld = np.float64(np.zeros(2048))
-			##~ cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interpolationAnglesOld).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			##~ plt.plot(self.host_interpolationAnglesOld), plt.show()
-			#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#cl.enqueue_read_buffer(self.queue,self.dev_listOfGoodCoordinates.data,self.host_listOfGoodCoordinates).wait()
-			#plt.plot(self.host_listOfGoodCoordinates), plt.ylim([-0.1,1.1]), plt.show()
-			##~ ipdb.set_trace()
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -960,44 +589,6 @@ class contourTracker( object ):
 											   )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		#if self.getContourId() == 2447 and self.getNrOfTrackingIterations() == 20:
-			#self.host_interpolationAnglesOld = np.float64(np.zeros(2048))
-			#cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interpolationAnglesOld).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#plt.plot(self.host_interpolationAnglesOld), plt.show()
-			#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#cl.enqueue_read_buffer(self.queue,self.dev_listOfGoodCoordinates.data,self.host_listOfGoodCoordinates).wait()
-			#plt.plot(self.host_listOfGoodCoordinates), plt.ylim([-0.1,1.1]), plt.show()
-			#ipdb.set_trace()
-
-		##~ self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
-										 ##~ self.dev_interpolatedMembraneCoordinatesX.data, \
-										 ##~ self.dev_interpolatedMembraneCoordinatesY.data, \
-										 ##~ self.dev_previousInterpolatedMembraneCoordinatesX.data, \
-										 ##~ self.dev_previousInterpolatedMembraneCoordinatesY.data, \
-										 ##~ self.dev_trackingFinished.data, \
-										 ##~ self.coordinateTolerance)
-										 		
-		#if self.getContourId() == 2447 and self.getNrOfTrackingIterations() == 20:
-			#self.host_interpolationAnglesOld = np.float64(np.zeros(2048))
-			#cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interpolationAnglesOld).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#plt.plot(self.host_interpolationAnglesOld), plt.show()
-			#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#cl.enqueue_read_buffer(self.queue,self.dev_listOfGoodCoordinates.data,self.host_listOfGoodCoordinates).wait()
-			#plt.plot(self.host_listOfGoodCoordinates), plt.ylim([-0.1,1.1]), plt.show()
-			#ipdb.set_trace()
-
-		#if self.getContourId() == 2448:
-			#cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interpolationAnglesOld).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#plt.plot(self.host_interCoordinateAngles), plt.show()
-			#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#ipdb.set_trace()
-		
 		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
 										    self.dev_interCoordinateAngles.data, \
@@ -1010,106 +601,7 @@ class contourTracker( object ):
 										    )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-		#~ if np.any(np.isnan(self.host_membraneCoordinatesX)) or np.any(np.isnan(self.host_membraneCoordinatesY)) or \
-		   #~ np.any(np.isinf(self.host_membraneCoordinatesX)) or np.any(np.isinf(self.host_membraneCoordinatesY)) or \
-		   #~ np.any(self.host_membraneCoordinatesX==0) or np.any(self.host_membraneCoordinatesY==0):
-			#~ ipdb.set_trace()
-			
-		#~ if self.getContourId() == 70005 and self.getNrOfTrackingIterations() >= 3:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#~ ipdb.set_trace()
-#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_previousInterpolatedMembraneCoordinatesX.data,self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_previousInterpolatedMembraneCoordinatesY.data,self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ plt.plot(self.host_previousInterpolatedMembraneCoordinatesX,self.host_previousInterpolatedMembraneCoordinatesY), plt.show()
-			#~ ipdb.set_trace()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarRadius.data,self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarTheta.data,self.host_membranePolarTheta).wait()
-			#~ plt.plot(self.host_membranePolarRadius), plt.show()
-			#~ plt.plot(self.host_membranePolarTheta), plt.show()
-			#~ ipdb.set_trace()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembranePolarRadius.data,self.host_interpolatedMembranePolarRadius).wait()
-			#~ plt.plot(self.host_interpolatedMembranePolarRadius), plt.show()
-			#~ ipdb.set_trace()
-
-
-		#if self.getContourId() == 2447 and self.getNrOfTrackingIterations() >= 19:
-			##~ self.host_interpolationAnglesOld = np.float64(np.zeros(2048))
-			##~ cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interpolationAnglesOld).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			##~ plt.plot(self.host_interpolationAnglesOld), plt.show()
-			#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#cl.enqueue_read_buffer(self.queue,self.dev_listOfGoodCoordinates.data,self.host_listOfGoodCoordinates).wait()
-			#plt.plot(self.host_listOfGoodCoordinates), plt.ylim([-0.1,1.1]), plt.show()
-			##~ ipdb.set_trace()
-		
-		#if self.getContourId() == 2447 and self.getNrOfTrackingIterations() == 20:
-			#cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interCoordinateAngles).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#plt.plot(self.host_interCoordinateAngles), plt.show()
-			#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#ipdb.set_trace()
-
-		#if self.getContourId() == 2448:
-			#cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interCoordinateAngles).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#plt.plot(self.host_interCoordinateAngles), plt.show()
-			#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-			#ipdb.set_trace()
-		
-		#~ self.prg.calculateInterCoordinateAngles(self.queue, self.gradientGlobalSize, None, \
-												#~ self.dev_interCoordinateAngles.data, \
-												#~ self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data \
-											   #~ )
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_interCoordinateAngles.data,self.host_interCoordinateAngles).wait()
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-		#~ ipdb.set_trace()
-		
-		#~ plt.plot(self.host_interCoordinateAngles), plt.show()
-		#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-
-
-		#~ self.queue.finish()
-
-		#~ ipdb.set_trace()
-		
-		#~ plt.imshow(self.host_Img)
-		#~ ax = plt.gca()
-		#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY,'k')
-		#~ plt.show()
-		
 		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
-
-		## calculate new normal vectors
-		#self.prg.calculateMembraneNormalVectors(self.queue, self.gradientGlobalSize, None, \
-										   #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-										   #self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data \
-										   ##~ cl.LocalMemory(membraneNormalVectors_memSize) \
-										  #)
-										  
-		#barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-
-		#~ ipdb.set_trace()
-
-		#~ plt.imshow(self.host_Img)
-		#~ ax = plt.gca()
-		#~ ax.invert_yaxis() # needed so that usage of 'plt.quiver' (below), will play along
-		#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY,'k')
-		#~ plt.show()
 
 	########################################################################
 	### Calculate contour center
@@ -1134,46 +626,19 @@ class contourTracker( object ):
 											   #self.dev_contourCenter.data \
 											  #)
 		
-		#barrierEvent = cl.enqueue_barrier(self.queue)
-		
 		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data \
 					 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		#~ if self.nrOfTrackingIterations>=stopInd:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_ds.data, self.host_ds).wait()
-			#~ ipdb.set_trace()
-
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
-
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
 
 		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data, self.dev_sumds.data \
 					 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
-		#ipdb.set_trace()
 		
 		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
@@ -1183,98 +648,20 @@ class contourTracker( object ):
 								  )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		#~ if self.nrOfTrackingIterations>=stopInd:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-			#~ ipdb.set_trace()
-
-		
-		#~ self.queue.finish()
-		#~ ipdb.set_trace()
 		########################################################################
 		### Convert cartesian coordinates to polar coordinates
 		########################################################################
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
-
 		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
 						  self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 						  self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
 						  self.dev_contourCenter.data)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		#~ outOfOrderProfilingQueue.finish()
-		#~ ipdb.set_trace()
-		#~ dev_contourCenter
-		
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		#~ if self.nrOfTrackingIterations>=stopInd:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-			#~ ipdb.set_trace()
-
-	########################################################################
-	### Interpolate polar coordinates
-	########################################################################
-		#~ cl.enqueue_read_buffer(outOfOrderProfilingQueue, dev_membranePolarRadius.data, host_membranePolarRadius).wait()
-		#~ cl.enqueue_read_buffer(outOfOrderProfilingQueue, dev_membranePolarTheta.data, host_membranePolarTheta).wait()
-		#~ outOfOrderProfilingQueue.finish()
-		#~ ipdb.set_trace()
-		#~ plt.plot(host_membranePolarTheta,host_membranePolarRadius), plt.show()
-
-		#~ cl.LocalMemory(membranePolarThetaInterpolation_memSize)
-		#~ cl.LocalMemory(membranePolarRadiusInterpolation_memSize)
-		
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-		#~ ipdb.set_trace()
-		#~ plt.plot(self.host_membranePolarTheta,self.host_membranePolarRadius,'r')
-		#~ plt.show()
-
-		#~ self.prg.sortPolarCoordinates(self.queue, (1,1), None, \
-									  #~ self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
-									  #~ np.int32(self.nrOfDetectionAngleSteps) \
-									 #~ )
-		
-		#~ self.prg.sortPolarCoordinatesNew(self.queue, self.gradientGlobalSize, (256,1), \
-									  #~ self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
-									  #~ cl.LocalMemory(self.membranePolarTheta_memSize), cl.LocalMemory(self.membranePolarRadius_memSize), \
-									  #~ np.int32(self.nrOfDetectionAngleSteps) \
-									 #~ )
-
-		#~ if self.getContourId() == 70005 and self.getNrOfTrackingIterations() >= 1:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarRadius.data,self.host_membranePolarRadius).wait()
-			#~ plt.plot(self.host_membranePolarRadius), plt.show()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarTheta.data,self.host_membranePolarTheta).wait()
-			#~ plt.plot(self.host_membranePolarTheta), plt.show()
-#~ 
-			#~ ipdb.set_trace()
-		
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
-
+		########################################################################
+		### Interpolate polar coordinates
+		########################################################################
 		self.prg.sortCoordinates(self.queue, (1,1), None, \
 								self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
 								self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
@@ -1282,194 +669,8 @@ class contourTracker( object ):
 								np.int32(self.nrOfDetectionAngleSteps) \
 								)
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		#~ ipdb.set_trace()
-		
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-		#~ ipdb.set_trace()
-		#~ plt.plot(self.host_membranePolarTheta,self.host_membranePolarRadius,'r')
-		#~ plt.show()
-		#~ 
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		#~ ipdb.set_trace()
-		
-		#~ if self.getContourId() >= 512 and self.getNrOfTrackingIterations() >= 1:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarRadius.data,self.host_membranePolarRadius).wait()
-			#~ plt.plot(self.host_membranePolarRadius), plt.show()
-			#~ 
-			#~ membranePolarRadius_ref = np.copy(self.host_membranePolarRadius)
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarTheta.data,self.host_membranePolarTheta).wait()
-			#~ plt.plot(self.host_membranePolarTheta), plt.show()
-#~ 
-			#~ membranePolarTheta_ref = np.copy(self.host_membranePolarTheta)
-#~ 
-			#~ ipdb.set_trace()
-
-		#~ self.prg.filterPolarCoordinateSingularities_OLD(self.queue, self.gradientGlobalSize, None, \
-													#~ self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
-													#~ self.minAngleDifference
-													#~ )
-													
-		#~ self.prg.calculateAngleDifference( self.queue, self.gradientGlobalSize, None, \
-										   #~ self.dev_membranePolarTheta.data, \
-										   #~ self.dev_angleDifferencesUpper.data, \
-										   #~ self.dev_angleDifferencesLower.data \
-										 #~ )
-
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
-
-		#~ self.prg.filterPolarCoordinateSingularities(self.queue, self.gradientGlobalSize, None, \
-													#~ self.dev_membranePolarRadius.data, \
-													#~ self.dev_membranePolarTheta.data, \
-												    #~ self.dev_angleDifferencesUpper.data, \
-												    #~ self.dev_angleDifferencesLower.data, \
-													#~ self.dev_previousContourCenter.data, \
-													#~ self.dev_membraneCoordinatesX.data, \
-													#~ self.dev_membraneCoordinatesY.data, \
-													#~ self.dev_membraneNormalVectorsX.data, \
-													#~ self.dev_membraneNormalVectorsY.data, \
-													#~ cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), \
-													#~ cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
-													#~ self.minAngleDifference \
-										    		#~ )
-													
-													
-		#self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
-											#self.dev_previousContourCenter.data, \
-										    #self.dev_interCoordinateAngles.data, \
-										    #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-										    #self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
-										    #cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
-										    #self.maxInterCoordinateAngle \
-										    ##~ self.dev_dbgOut.data, \
-										    ##~ self.dev_dbgOut2.data \
-										    #)
-
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
-
-		#~ if self.getContourId() >= 512 and self.getNrOfTrackingIterations() >= 1:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarRadius.data,self.host_membranePolarRadius).wait()
-			#~ plt.plot(self.host_membranePolarRadius), plt.show()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarTheta.data,self.host_membranePolarTheta).wait()
-			#~ plt.plot(self.host_membranePolarTheta), plt.show()
-#~ 
-			#~ plt.plot(membranePolarTheta_ref,membranePolarRadius_ref,'r')
-			#~ plt.plot(self.host_membranePolarTheta,self.host_membranePolarRadius)
-			#~ plt.show()
-#~ 
-			#~ plt.plot(membranePolarRadius_ref)
-			#~ plt.plot(self.host_membranePolarRadius,'r')
-			#~ plt.show()
-			#~ 
-			#~ ipdb.set_trace()
-		
-		#~ self.prg.sortCoordinates(self.queue, (1,1), None, \
-								#~ self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
-								#~ self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-								#~ self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
-								#~ np.int32(self.nrOfDetectionAngleSteps) \
-								#~ )
-		
-		#~ if self.getContourId() >= 83 and self.getNrOfTrackingIterations() >= 2:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarRadius.data,self.host_membranePolarRadius).wait()
-			#~ plt.plot(self.host_membranePolarRadius), plt.show()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarTheta.data,self.host_membranePolarTheta).wait()
-			#~ plt.plot(self.host_membranePolarTheta), plt.show()
-#~ 
-			#~ plt.plot(self.host_membranePolarTheta,self.host_membranePolarRadius)
-			#~ plt.show()
-#~ 
-			#~ plt.plot(self.host_membranePolarRadius,'r')
-			#~ plt.show()
-			#~ 
-			#~ ipdb.set_trace()
-
-		#~ if self.getContourId() >= 83 and self.getNrOfTrackingIterations() >= 2:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-#~ 
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY)
-			#~ plt.show()
-#~ 
-			#~ ipdb.set_trace()
-
-		#~ if self.nrOfTrackingIterations>=stopInd:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-			#~ ipdb.set_trace()
-
-		
-		#~ if self.getContourId() == 70005 and self.getNrOfTrackingIterations() >= 1:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_contourCenter.data,self.host_contourCenter).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.host_membraneCoordinatesY).wait()
-			#~ ind = 805
-			#~ x = self.host_contourCenter['x'][0]
-			#~ y = self.host_contourCenter['y'][0]
-			#~ dx = self.host_membraneCoordinatesX[ind] - x
-			#~ dy = self.host_membraneCoordinatesY[ind] - y
-			#~ plt.arrow( x, y, dx, dy, fc="k" )
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY), plt.show()
-#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembranePolarRadius.data,self.host_interpolatedMembranePolarRadius).wait()
-			#~ plt.plot(self.host_interpolatedMembranePolarRadius), plt.show()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarRadius.data,self.host_membranePolarRadius).wait()
-			#~ plt.plot(self.host_membranePolarRadius), plt.show()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_membranePolarTheta.data,self.host_membranePolarTheta).wait()
-			#~ plt.plot(self.host_membranePolarTheta), plt.show()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolationAngles.data,self.host_interpolationAngles).wait()
-			#~ plt.plot(self.host_interpolationAngles), plt.show()
-			#~ 
-			#~ ipdb.set_trace()
-
-
-		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 14:
-			#~ ipdb.set_trace()
-
-		#~ self.prg.interpolatePolarCoordinates(self.queue, self.gradientGlobalSize, None, \
-											#~ self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
-											#~ self.dev_membranePolarRadiusTMP.data, \
-											#~ self.dev_membranePolarThetaTMP.data, \
-											#~ self.dev_membranePolarRadiusInterpolation.data, \
-											#~ self.dev_membranePolarThetaInterpolation.data, \
-											#~ self.dev_membranePolarRadiusInterpolationTesting.data, \
-											#~ self.dev_membranePolarThetaInterpolationTesting.data, \
-											#~ self.dev_interpolationAngles.data, \
-											#~ self.nrOfInterpolationPoints, \
-											#~ np.int32(self.nrOfDetectionAngleSteps), \
-											#~ self.dev_interpolatedMembranePolarRadius.data, \
-											#~ self.dev_b.data, self.dev_c.data, self.dev_d.data \
-											#~ )
-
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
-		
-		#self.plotCurrentInterpolatedMembraneCoordinates()
-		#plt.show()
 
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
@@ -1494,210 +695,14 @@ class contourTracker( object ):
 													)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		#self.plotCurrentMembraneCoordinates()
-		#plt.show()
-
-		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 7:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ 
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-#~ 
-			#~ ipdb.set_trace()
-#~ 
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY)
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY)
-			#~ plt.show()
-#~ 
-			#~ plt.plot(self.host_interpolationAngles)
-			#~ plt.plot(self.host_dbgOut)
-			#~ plt.plot(self.host_dbgOut2)
-			#~ plt.show()
-
-
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut2.data, self.host_dbgOut2).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-		#~ 
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-		#~ 
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-		
-		#~ ind=71
-		#~ for ind in range(2048):
-			#~ print "ind: "+str(ind)
-			#~ print str(self.host_interpolationAngles[ind]>=self.host_dbgOut[ind] and self.host_interpolationAngles[ind]<self.host_dbgOut2[ind])
-		#~ print str(np.all(self.host_interpolationAngles[:]>=self.host_dbgOut[:]) and np.all(self.host_interpolationAngles[:]<self.host_dbgOut2[:]))
-		#~ ipdb.set_trace()
-		
-		#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY)
-		#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY)
-		#~ plt.show()
-		
-		#~ plt.plot(self.host_interpolationAngles)
-		#~ plt.plot(self.host_dbgOut)
-		#~ plt.plot(self.host_dbgOut2)
-		#~ plt.show()
-		
-		#~ if self.getContourId() >= 11598 and self.getNrOfTrackingIterations() >= 14:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembranePolarRadius.data,self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolationAngles.data,self.host_interpolationAngles).wait()
-#~ 
-			#~ plt.plot(self.host_membranePolarTheta,self.host_membranePolarRadius,'g')
-			#~ plt.plot(self.host_interpolationAngles,self.host_interpolatedMembranePolarRadius,'b')
-			#~ plt.show()
-#~ 
-			#~ plt.plot(self.host_membranePolarRadius,'g')
-			#~ plt.plot(self.host_interpolatedMembranePolarRadius,'b')
-			#~ plt.show()
-			#~ ipdb.set_trace()
-
-
-		#~ if self.getContourId() == 70005 and self.getNrOfTrackingIterations() >= 1:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembranePolarRadius.data,self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolationAngles.data,self.host_interpolationAngles).wait()
-#~ 
-			#~ plt.plot(membranePolarTheta_ref,membranePolarRadius_ref,'r')
-			#~ plt.plot(self.host_membranePolarTheta,self.host_membranePolarRadius,'g')
-			#~ plt.plot(self.host_interpolationAngles,self.host_interpolatedMembranePolarRadius,'b')
-			#~ plt.show()
-#~ 
-			#~ plt.plot(membranePolarRadius_ref,'r')
-			#~ plt.plot(self.host_membranePolarRadius,'g')
-			#~ plt.plot(self.host_interpolatedMembranePolarRadius,'b')
-			#~ plt.show()
-			#~ ipdb.set_trace()
-
-		#~ ipdb.set_trace()
-		
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		#~ if self.nrOfTrackingIterations>=stopInd:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-			#~ ipdb.set_trace()
-		
+
 		########################################################################
 		### Convert polar coordinates to cartesian coordinates
 		########################################################################
-		#~ self.prg.pol2cart(self.queue, self.gradientGlobalSize, None, \
-					 #~ self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-					 #~ self.dev_membranePolarRadius.data,	self.dev_membranePolarTheta.data, \
-					 #~ self.dev_contourCenter.data  )
-		#~ self.prg.pol2cart(self.queue, self.gradientGlobalSize, None, \
-					 #~ self.dev_interpolatedMembraneCoordinatesX.data, self.dev_interpolatedMembraneCoordinatesY.data, \
-					 #~ self.dev_interpolatedMembranePolarRadius.data,	self.dev_membranePolarTheta.data, \
-					 #~ self.dev_contourCenter.data  )
-		
-		#~ self.prg.pol2cart(self.queue, self.gradientGlobalSize, None, \
-						  #~ self.dev_interpolatedMembraneCoordinatesX.data, self.dev_interpolatedMembraneCoordinatesY.data, \
-						  #~ self.dev_interpolatedMembranePolarRadius.data, self.dev_interpolationAngles.data, \
-						  #~ self.dev_contourCenter.data  )
-#~ 
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
-#~ 
-		#~ self.prg.calculateInterCoordinateAngles(self.queue, self.gradientGlobalSize, None, \
-												#~ self.dev_interCoordinateAngles.data, \
-												#~ self.dev_interpolatedMembraneCoordinatesX.data, self.dev_interpolatedMembraneCoordinatesY.data \
-											   #~ )
-		#~ 
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
-#~ 
-		#~ self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
-											#~ self.dev_previousContourCenter.data, \
-										    #~ self.dev_interCoordinateAngles.data, \
-										    #~ self.dev_interpolatedMembraneCoordinatesX.data, self.dev_interpolatedMembraneCoordinatesY.data, \
-										    #~ self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
-										    #~ cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
-										    #~ self.maxInterCoordinateAngle \
-										    #~ )
-#~ 
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		#~ if self.getContourId() == 70005 and self.getNrOfTrackingIterations() >= 1:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesX.data,self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY), plt.show()
-#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_previousInterpolatedMembraneCoordinatesX.data,self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_previousInterpolatedMembraneCoordinatesY.data,self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ plt.plot(self.host_previousInterpolatedMembraneCoordinatesX,self.host_previousInterpolatedMembraneCoordinatesY), plt.show()
-			#~ ipdb.set_trace()
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
-			
-		#~ self.prg.filterJumpedCoordinates(self.queue, self.gradientGlobalSize, None, \
-											#~ self.dev_previousContourCenter.data, \
-											#~ self.dev_interpolatedMembraneCoordinatesX.data, \
-											#~ self.dev_interpolatedMembraneCoordinatesY.data, \
-											#~ self.dev_membraneNormalVectorsX.data, \
-											#~ self.dev_membraneNormalVectorsY.data, \
-										    #~ self.dev_previousInterpolatedMembraneCoordinatesX.data, \
-											#~ self.dev_previousInterpolatedMembraneCoordinatesY.data, \
-										    #~ cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), \
-											#~ cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
-											#~ cl.LocalMemory(self.listOfGoodCoordinates_memSize), \
-											#~ self.maxCoordinateShift, \
-											#~ self.dev_listOfGoodCoordinates.data \
-											#~ )
-		
-		#~ if self.getContourId() == 70005 and self.getNrOfTrackingIterations() >= 1:
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesX.data,self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY), plt.show()
-#~ 
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_previousInterpolatedMembraneCoordinatesX.data,self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue,self.dev_previousInterpolatedMembraneCoordinatesY.data,self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ plt.plot(self.host_previousInterpolatedMembraneCoordinatesX,self.host_previousInterpolatedMembraneCoordinatesY), plt.show()
-			#~ ipdb.set_trace()
-		
-		#~ if self.nrOfTrackingIterations>=stopInd:
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-			#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-			#~ ipdb.set_trace()
-
-		
-		# calculate new normal vectors
-		#if self.nrOfTrackingIterations<10: # ToDo: If final, add parameter to for when to turn of the calculation of the membrane normals
-			##~ ipdb.set_trace()
-			#self.prg.calculateMembraneNormalVectors(self.queue, self.gradientGlobalSize, None, \
-												    #self.dev_interpolatedMembraneCoordinatesX.data, self.dev_interpolatedMembraneCoordinatesY.data, \
-												    #self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data \
-												    ##~ cl.LocalMemory(membraneNormalVectors_memSize) \
-												   #)
-										  
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
+		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
 										 self.dev_interpolatedMembraneCoordinatesX.data, \
@@ -1717,119 +722,17 @@ class contourTracker( object ):
 		
 		cl.enqueue_read_buffer(self.queue, self.dev_trackingFinished.data, self.trackingFinished).wait()
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		#~ ipdb.set_trace()
-		
-		#~ barrierEvent = cl.enqueue_barrier(self.queue)
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_dbgOut.data, self.host_dbgOut).wait()
-		
-		#~ self.queue.finish()
-		#~ print "self.iterationFinished:"
-		#~ print self.iterationFinished
-		
-		# write result of the interpolated contour to the arrays used checking if tracking finished
-		#~ self.dev_previousInterpolatedMembraneCoordinatesX.data = self.dev_interpolatedMembraneCoordinatesX.data
-		#~ self.dev_previousInterpolatedMembraneCoordinatesY.data = self.dev_interpolatedMembraneCoordinatesY.data
+
 		cl.enqueue_copy_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesX.data,self.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
 		cl.enqueue_copy_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 
 		cl.enqueue_copy_buffer(self.queue,self.dev_contourCenter.data,self.dev_previousContourCenter.data).wait()
 
-		#~ ipdb.set_trace()
-
 		# set variable to tell host program that the tracking iteration has finished
 		self.prg.setIterationFinished(self.queue, (1,1), None, self.dev_iterationFinished.data)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
-		
-		### debugging stuff ###
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarRadius.data, self.host_membranePolarRadius).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membranePolarTheta.data, self.host_membranePolarTheta).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembranePolarRadius.data, self.host_interpolatedMembranePolarRadius).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolationAngles.data, self.host_interpolationAngles).wait()
-		#~ 
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesX.data, self.host_previousInterpolatedMembraneCoordinatesX).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_previousInterpolatedMembraneCoordinatesY.data, self.host_previousInterpolatedMembraneCoordinatesY).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
-		
-		#~ print "self.dev_contourCenter:"
-		#~ print self.dev_contourCenter
-		#~ print "self.trackingFinished:"
-		#~ print self.trackingFinished
-		
-		#~ if self.nrOfTrackingIterations>200:
-		#~ if self.nrOfTrackingIterations>=1:
-			#~ self.iterationFinished = 1
-			#~ print "Execution time: "+str(self.getExectionTime())+" sec"
-			#~ ipdb.set_trace()
-		
-		#~ ipdb.set_trace()
-		#~ if self.trackingFinished:
-		#~ if self.getContourId() == 5:
-			#~ ipdb.set_trace()
-			#~ self.getContourId()
-			
-			#~ plt.plot(self.host_membranePolarTheta,self.host_membranePolarRadius,'r')
-			#~ plt.plot(self.host_interpolationAngles,self.host_interpolatedMembranePolarRadius,'b')
-			#~ plt.show()
-			
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,'r')
-			#~ plt.plot(self.host_previousInterpolatedMembraneCoordinatesX,self.host_previousInterpolatedMembraneCoordinatesY,'b')
-			#~ plt.show()
-			
-			#~ plt.imshow(self.host_Img)
-			#~ ax = plt.gca()
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY,'k')
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,'k')
-			#~ x=self.host_membraneCoordinatesX
-			#~ y=self.host_membraneCoordinatesY
-			#~ pointIndexes = range(self.host_membraneCoordinatesX.shape[0])
-			#~ z=pointIndexes
-			#~ index = 990
-			#~ plt.text(x[index],y[index],str(z[index]))
-			#~ plt.show()
-
-
-			#~ plt.imshow(self.host_Img)
-			#~ ax = plt.gca()
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,'k')
-			#~ ax.invert_yaxis() # needed so that usage of 'plt.quiver' (below), will play along
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,'r')
-			#~ normalVectorScalingFactor = 3e-2
-			#~ plt.quiver(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,self.host_membraneNormalVectorsX,self.host_membraneNormalVectorsY,units='dots', pivot='tail',scale=normalVectorScalingFactor) #, pivot='middle'
-			#~ pointIndexes = range(self.host_membraneCoordinatesX.shape[0])
-			#~ z=pointIndexes
-			#~ x=self.host_membraneCoordinatesX
-			#~ y=self.host_membraneCoordinatesY
-			#~ index = 990
-			#~ plt.text(x[index],y[index],str(z[index]))
-			#~ plt.show()
-			
-			
-			#~ plt.imshow(self.host_Img)
-			#~ ax = plt.gca()
-			#~ ax.invert_yaxis() # needed so that usage of 'plt.quiver' (below), will play along
-			#~ plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY,'r')
-			#~ plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY,'b')
-			#~ normalVectorScalingFactor = 3e-2
-			#~ plt.show()
-
-		#cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-		#cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-		#plt.imshow(self.host_Img)
-		#ax = plt.gca()
-		#ax.invert_yaxis() # needed so that usage of 'plt.quiver' (below), will play along
-		#plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY,'r')
-		#plt.show()
 		pass
-		
-		#~ self.dev_trackingFinished = cl_array.to_device(self.queue, self.host_trackingFinished)
-		#~ self.dev_iterationFinished = cl_array.to_device(self.queue, self.host_iterationFinished)
 		
 	def checkTrackingFinished(self):
 		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:
