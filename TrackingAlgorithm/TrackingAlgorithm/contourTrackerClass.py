@@ -743,29 +743,21 @@ class contourTracker( object ):
 		pass
 		
 	def getMembraneCoordinatesX(self):
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-		#~ return self.host_membraneCoordinatesX
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
 		return self.host_interpolatedMembraneCoordinatesX/self.scalingFactor
 		pass
 	
 	def getMembraneCoordinatesY(self):
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-		#~ return self.host_membraneCoordinatesY
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
 		return self.host_interpolatedMembraneCoordinatesY/self.scalingFactor
 		pass
 
 	def getMembraneCoordinatesXscaled(self):
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-		#~ return self.host_membraneCoordinatesX
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
 		return self.host_interpolatedMembraneCoordinatesX
 		pass
 	
 	def getMembraneCoordinatesYscaled(self):
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-		#~ return self.host_membraneCoordinatesY
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
 		return self.host_interpolatedMembraneCoordinatesY
 		pass
@@ -788,9 +780,6 @@ class contourTracker( object ):
 		pass
 
 	def getFitInclines(self):
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
-		#~ return self.host_membraneCoordinatesY
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
 		cl.enqueue_read_buffer(self.queue, self.dev_fitInclines.data, self.host_fitInclines).wait()
 		return self.host_fitInclines * self.scalingFactor # needs to be multiplied, since putting in more pixels artificially reduces the value of the incline
 		pass
@@ -822,6 +811,5 @@ class contourTracker( object ):
 		snrRoi = self.getSnrRoi()
 		snrRoiStartIndexes = snrRoi[0]
 		snrRoiStopIndexes = snrRoi[1]
-		#~ return self.host_Img[snrRoiStartIndexes[0]:snrRoiStopIndexes[1],snrRoiStartIndexes[0]:snrRoiStopIndexes[1]]
 		return self.host_ImgUnfilteredUnscaled[snrRoiStartIndexes[0]:snrRoiStopIndexes[1],snrRoiStartIndexes[0]:snrRoiStopIndexes[1]]		
 
