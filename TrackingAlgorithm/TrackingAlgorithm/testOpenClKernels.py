@@ -12,7 +12,7 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.setupClContext()
 		self.loadClKernels()
 		self.setupClQueue(self.ctx)
-		path='C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/UnitTestData/interpolatePolarCoordinatesLinear/'
+		path='C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/'
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
 		self.nrOfStrides = 1
