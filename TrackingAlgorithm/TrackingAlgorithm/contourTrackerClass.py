@@ -14,7 +14,8 @@ import os
 import time
 
 class contourTracker( object ):
-	def __init__(self, ctx, config):
+	def __init__(self, ctx, config, imageProcessor):
+		self.imageProcessor = imageProcessor
 		self.setupClQueue(ctx)
 		self.loadClKernels()
 		self.loadConfig(config)
@@ -32,64 +33,66 @@ class contourTracker( object ):
 		self.sampler = cl.Sampler(self.ctx,True,cl.addressing_mode.REPEAT,cl.filter_mode.LINEAR)
 		pass
 		
-	def loadDarkfield(self, darkfieldList):
-		if darkfieldList == []:
-			self.darkfieldData = None
-		else:
-			for darkfieldIndex, darkfieldFile in enumerate(darkfieldList):
-				dark = Image.open(darkfieldFile)
-				darkData = list(dark.getdata())
-				if darkfieldIndex == 0:
-					darkfieldDataSum = np.asarray(darkData, dtype=np.float32).reshape(dark.size)
-				else:
-					darkfieldDataSum = darkfieldDataSum + np.asarray(darkData, dtype=np.float32).reshape(dark.size)
+	#def loadDarkfield(self, darkfieldList):
+	#	if darkfieldList == []:
+	#		self.darkfieldData = None
+	#	else:
+	#		for darkfieldIndex, darkfieldFile in enumerate(darkfieldList):
+	#			dark = Image.open(darkfieldFile)
+	#			darkData = list(dark.getdata())
+	#			if darkfieldIndex == 0:
+	#				darkfieldDataSum = np.asarray(darkData, dtype=np.float32).reshape(dark.size)
+	#			else:
+	#				darkfieldDataSum = darkfieldDataSum + np.asarray(darkData, dtype=np.float32).reshape(dark.size)
 		
-			nrOfDarkfieldFiles = darkfieldList.__len__()
-			self.darkfieldData = darkfieldDataSum/nrOfDarkfieldFiles # calculate mean darkfield
-		pass
+	#		nrOfDarkfieldFiles = darkfieldList.__len__()
+	#		self.darkfieldData = darkfieldDataSum/nrOfDarkfieldFiles # calculate mean darkfield
+	#	pass
 		
-	def loadBackground(self, backgroundList):
-		if backgroundList == []:
-			self.backgroundData = None
-		else:
-			for backgroundIndex, backgroundFile in enumerate(backgroundList):
-				bkgr = Image.open(backgroundFile)
-				bkgrdata = list(bkgr.getdata())
-				bkgrdataArray = np.asarray(bkgrdata, dtype=np.float32).reshape(bkgr.size)
-				if self.darkfieldData is not None:
-					bkgrdataArray = bkgrdataArray - self.darkfieldData
+	#def loadBackground(self, backgroundList):
+	#	if backgroundList == []:
+	#		self.backgroundData = None
+	#	else:
+	#		for backgroundIndex, backgroundFile in enumerate(backgroundList):
+	#			bkgr = Image.open(backgroundFile)
+	#			bkgrdata = list(bkgr.getdata())
+	#			bkgrdataArray = np.asarray(bkgrdata, dtype=np.float32).reshape(bkgr.size)
+	#			if self.darkfieldData is not None:
+	#				bkgrdataArray = bkgrdataArray - self.darkfieldData
 
-				if backgroundIndex == 0:
-					backgroundDataSum = bkgrdataArray
-				else:
-					backgroundDataSum = backgroundDataSum + bkgrdataArray
+	#			if backgroundIndex == 0:
+	#				backgroundDataSum = bkgrdataArray
+	#			else:
+	#				backgroundDataSum = backgroundDataSum + bkgrdataArray
 			
-			nrOfBackgroundFiles = backgroundList.__len__()
-			self.backgroundData = backgroundDataSum/nrOfBackgroundFiles # calculate mean background
-		pass
+	#		nrOfBackgroundFiles = backgroundList.__len__()
+	#		self.backgroundData = backgroundDataSum/nrOfBackgroundFiles # calculate mean background
+	#	pass
 		
 	def loadImage(self, imagePath):
 		im = Image.open(imagePath)
-		imgdata = list(im.getdata())
-		
-		imshape = im.size;
-		imageData = np.asarray(imgdata, dtype=np.float32).reshape((imshape[1],imshape[0]))
-		
-		if self.darkfieldData is not None:
-			imageData = imageData - self.darkfieldData
-			
-		if self.backgroundData is None:
-			self.host_Img = imageData
-		else:
-			self.host_Img = imageData/self.backgroundData
+		self.host_Img = self.imageProcessor.processImage(im)
 
-		self.host_ImgUnfilteredUnscaled = self.host_Img
+		#imgdata = list(im.getdata())
 		
-		if self.performImageFiltering is True:
-			self.filterImage()
+		#imshape = im.size;
+		#imageData = np.asarray(imgdata, dtype=np.float32).reshape((imshape[1],imshape[0]))
 		
-		if self.performImageScaling is True:
-			self.rescaleImage()
+		#if self.darkfieldData is not None:
+		#	imageData = imageData - self.darkfieldData
+			
+		#if self.backgroundData is None:
+		#	self.host_Img = imageData
+		#else:
+		#	self.host_Img = imageData/self.backgroundData
+
+		#self.host_ImgUnfilteredUnscaled = self.host_Img
+		
+		#if self.performImageFiltering is True:
+		#	self.filterImage()
+		
+		#if self.performImageScaling is True:
+		#	self.rescaleImage()
 		
 		self.loadImageToGpu()
 		pass
@@ -97,24 +100,24 @@ class contourTracker( object ):
 	def loadImageToGpu(self):
 		self.dev_Img = cl.image_from_array(self.ctx, ary=self.host_Img, mode="r", norm_int=False, num_channels=1)
 	
-	def filterImage(self):
-		imageOrig = self.host_Img
-		imageNew = self.imageFilter(imageOrig)
-		self.host_Img = np.array(imageNew,dtype=np.float32)
-		pass
+	#def filterImage(self):
+	#	imageOrig = self.host_Img
+	#	imageNew = self.imageFilter(imageOrig)
+	#	self.host_Img = np.array(imageNew,dtype=np.float32)
+	#	pass
 		
-	def rescaleImage(self):
-		# get image data into image structure for manipulations
-		imgShape = np.asarray(self.host_ImgUnfilteredUnscaled.shape, dtype=np.float32)
-		im = Image.fromarray(self.host_Img)
-		imgShapeTmp = np.asarray([imgShape[1],imgShape[0]], dtype=np.float32)
-		newImageShape = tuple(np.int32(np.round(self.scalingFactor * imgShapeTmp)))
-		newImage = im.resize(newImageShape, self.scalingMethodVar)
+	#def rescaleImage(self):
+	#	# get image data into image structure for manipulations
+	#	imgShape = np.asarray(self.host_ImgUnfilteredUnscaled.shape, dtype=np.float32)
+	#	im = Image.fromarray(self.host_Img)
+	#	imgShapeTmp = np.asarray([imgShape[1],imgShape[0]], dtype=np.float32)
+	#	newImageShape = tuple(np.int32(np.round(self.imageProcessor.scalingFactor * imgShapeTmp)))
+	#	newImage = im.resize(newImageShape, self.scalingMethodVar)
 
-		# read back manipulated image data to host image array
-		imgDataTmp = list(newImage.getdata())
-		self.host_Img = np.asarray(imgDataTmp, dtype=np.float32).reshape((newImageShape[1],newImageShape[0]))
-		pass
+	#	# read back manipulated image data to host image array
+	#	imgDataTmp = list(newImage.getdata())
+	#	self.host_Img = np.asarray(imgDataTmp, dtype=np.float32).reshape((newImageShape[1],newImageShape[0]))
+	#	pass
 	
 	def setContourId(self, id):
 		self.id = id
@@ -131,95 +134,95 @@ class contourTracker( object ):
 		self.prg = cl.Program(self.ctx,self.kernelString).build()
 		pass
 	
-	def setImageScalingMethod(self,scalingMethod):
-		if scalingMethod == "BICUBIC":
-			scalingMethodVar = Image.BICUBIC
-		if scalingMethod == "BILINEAR":
-			scalingMethodVar = Image.BILINEAR
-		if scalingMethod == "NEAREST":
-			scalingMethodVar = Image.NEAREST
-		if scalingMethod == "ANTIALIAS":
-			scalingMethodVar = Image.ANTIALIAS
+	#def setImageScalingMethod(self,scalingMethod):
+	#	if scalingMethod == "BICUBIC":
+	#		scalingMethodVar = Image.BICUBIC
+	#	if scalingMethod == "BILINEAR":
+	#		scalingMethodVar = Image.BILINEAR
+	#	if scalingMethod == "NEAREST":
+	#		scalingMethodVar = Image.NEAREST
+	#	if scalingMethod == "ANTIALIAS":
+	#		scalingMethodVar = Image.ANTIALIAS
 		
-		return scalingMethodVar
-		pass
+	#	return scalingMethodVar
+	#	pass
 	
-	def setupWienerFilter(self,config):
-		filterKernelSize = json.loads(config.get("ImageFilterParameters","filterKernelSize"))
-		if filterKernelSize == "None":
-			filterKernelSize = None
-		else:
-			filterKernelSize = json.loads(config.get("ImageFilterParameters","filterKernelSize"))
+	#def setupWienerFilter(self,config):
+	#	filterKernelSize = json.loads(config.get("ImageFilterParameters","filterKernelSize"))
+	#	if filterKernelSize == "None":
+	#		filterKernelSize = None
+	#	else:
+	#		filterKernelSize = json.loads(config.get("ImageFilterParameters","filterKernelSize"))
 		
-		noisePowerEstimate = config.get("ImageFilterParameters","noisePowerEstimate")
-		if noisePowerEstimate == "None":
-			noisePowerEstimate = None
-			#~ if self.snrRoi is not None:
-				#~ noisePowerEstimate = "estimateFromSnrRoi"
-		else:
-			noisePowerEstimate = json.loads(config.get("ImageFilterParameters","noisePowerEstimate"))
-		self.imageFilter = self.wienerFilterMod
-		self.filterArguments = (filterKernelSize,noisePowerEstimate)
-		pass
+	#	noisePowerEstimate = config.get("ImageFilterParameters","noisePowerEstimate")
+	#	if noisePowerEstimate == "None":
+	#		noisePowerEstimate = None
+	#		#~ if self.snrRoi is not None:
+	#			#~ noisePowerEstimate = "estimateFromSnrRoi"
+	#	else:
+	#		noisePowerEstimate = json.loads(config.get("ImageFilterParameters","noisePowerEstimate"))
+	#	self.imageFilter = self.wienerFilterMod
+	#	self.filterArguments = (filterKernelSize,noisePowerEstimate)
+	#	pass
 		
-	def wienerFilterMod(self,imageData):
-		kernelSize = self.filterArguments[0]
-		if self.filterArguments[1] == "estimateFromSnrRoi":
-			noisePower = self.getImageStd()**2
-		else:
-			noisePower = self.filterArguments[1]
-		filterArgs = (kernelSize,noisePower)
-		return signal.wiener(imageData,*filterArgs)
+	#def wienerFilterMod(self,imageData):
+	#	kernelSize = self.filterArguments[0]
+	#	if self.filterArguments[1] == "estimateFromSnrRoi":
+	#		noisePower = self.getImageStd()**2
+	#	else:
+	#		noisePower = self.filterArguments[1]
+	#	filterArgs = (kernelSize,noisePower)
+	#	return signal.wiener(imageData,*filterArgs)
 		
-	def setupFilter(self,config):
-		filterType = json.loads(config.get("ImageFilterParameters","filterType"))
+	#def setupFilter(self,config):
+	#	filterType = json.loads(config.get("ImageFilterParameters","filterType"))
 		
-		if filterType == "wiener":
-			self.setupWienerFilter(config)
-		pass
+	#	if filterType == "wiener":
+	#		self.setupWienerFilter(config)
+	#	pass
 	
 	def loadConfig(self,config):
 	# from: http://stackoverflow.com/questions/335695/lists-in-configparser
 	# json.loads(self.config.get("SectionOne","startingCoordinate"))
-		snrRoi = config.get("TrackingParameters","snrRoi")
-		if snrRoi == "" or snrRoi == "None":
-			self.snrRoi = None
-		else:
-			self.snrRoi = np.array(json.loads(config.get("TrackingParameters","snrRoi")))
+		#snrRoi = config.get("TrackingParameters","snrRoi")
+		#if snrRoi == "" or snrRoi == "None":
+		#	self.snrRoi = None
+		#else:
+		#	self.snrRoi = np.array(json.loads(config.get("TrackingParameters","snrRoi")))
 		
-		performImageFiltering = config.get("ImageFilterParameters","performImageFiltering")
-		if performImageFiltering == "True":
-			self.performImageFiltering = True
-		else:
-			self.performImageFiltering = False
+		#performImageFiltering = config.get("ImageFilterParameters","performImageFiltering")
+		#if performImageFiltering == "True":
+		#	self.performImageFiltering = True
+		#else:
+		#	self.performImageFiltering = False
 		
-		if self.performImageFiltering:
-			self.setupFilter(config)
+		#if self.performImageFiltering:
+		#	self.setupFilter(config)
 			
-		performImageScaling = config.get("ImageManipulationParameters","performImageScaling")
+		#performImageScaling = config.get("ImageManipulationParameters","performImageScaling")
 
-		if performImageScaling == "True":
-			self.performImageScaling = True
-		else:
-			self.performImageScaling = False
+		#if performImageScaling == "True":
+		#	self.performImageScaling = True
+		#else:
+		#	self.performImageScaling = False
 		
-		if self.performImageScaling == True:
-			self.scalingFactor = np.float64(json.loads(config.get("ImageManipulationParameters","scalingFactor")))
-		else:
-			self.scalingFactor = np.float64(1)
+		#if self.performImageScaling == True:
+		#	self.imageProcessor.scalingFactor = np.float64(json.loads(config.get("ImageManipulationParameters","scalingFactor")))
+		#else:
+		#	self.imageProcessor.scalingFactor = np.float64(1)
 
-		self.scalingMethod = json.loads(config.get("ImageManipulationParameters","scalingMethod"))
-		self.scalingMethodVar = self.setImageScalingMethod(self.scalingMethod)
+		#self.scalingMethod = json.loads(config.get("ImageManipulationParameters","scalingMethod"))
+		#self.scalingMethodVar = self.setImageScalingMethod(self.scalingMethod)
 		
-		self.startingCoordinate = self.scalingFactor * np.array(json.loads(config.get("TrackingParameters","startingCoordinate")))
-		self.rotationCenterCoordinate = self.scalingFactor * np.array(json.loads(config.get("TrackingParameters","rotationCenterCoordinate")))
+		self.startingCoordinate = self.imageProcessor.scalingFactor * np.array(json.loads(config.get("TrackingParameters","startingCoordinate")))
+		self.rotationCenterCoordinate = self.imageProcessor.scalingFactor * np.array(json.loads(config.get("TrackingParameters","rotationCenterCoordinate")))
 		
-		self.linFitParameter = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","linFitParameter")))
-		self.linFitSearchRange = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","linFitSearchRange")))
-		self.interpolationFactor = np.int32(np.float64(json.loads(config.get("TrackingParameters","interpolationFactor")))/self.scalingFactor)
+		self.linFitParameter = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","linFitParameter")))
+		self.linFitSearchRange = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","linFitSearchRange")))
+		self.interpolationFactor = np.int32(np.float64(json.loads(config.get("TrackingParameters","interpolationFactor")))/self.imageProcessor.scalingFactor)
 		
-		self.meanParameter = np.int32(np.round(self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","meanParameter")))))
-		self.meanRangePositionOffset = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","meanRangePositionOffset")))
+		self.meanParameter = np.int32(np.round(self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","meanParameter")))))
+		self.meanRangePositionOffset = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","meanRangePositionOffset")))
 
 		self.localAngleRange = np.float64(json.loads(config.get("TrackingParameters","localAngleRange")))
 		self.nrOfLocalAngleSteps = np.int32(json.loads(config.get("TrackingParameters","nrOfLocalAngleSteps")))
@@ -235,15 +238,15 @@ class contourTracker( object ):
 
 		self.inclineTolerance = np.float64(json.loads(config.get("TrackingParameters","inclineTolerance")))
 		
-		self.coordinateTolerance = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","coordinateTolerance")))
+		self.coordinateTolerance = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","coordinateTolerance")))
 		
 		self.maxNrOfTrackingIterations = json.loads(config.get("TrackingParameters","maxNrOfTrackingIterations"))
 		self.minNrOfTrackingIterations = json.loads(config.get("TrackingParameters","minNrOfTrackingIterations"))
 		
-		self.centerTolerance = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","centerTolerance")))
+		self.centerTolerance = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","centerTolerance")))
 		
 		self.maxInterCoordinateAngle = np.float64(json.loads(config.get("TrackingParameters","maxInterCoordinateAngle")))
-		self.maxCoordinateShift = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","maxCoordinateShift")))
+		self.maxCoordinateShift = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","maxCoordinateShift")))
 		
 		resetNormalsAfterEachImage = config.get("TrackingParameters","resetNormalsAfterEachImage")
 		if resetNormalsAfterEachImage == 'True':
@@ -831,12 +834,12 @@ class contourTracker( object ):
 		
 	def getMembraneCoordinatesX(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-		return self.host_interpolatedMembraneCoordinatesX/self.scalingFactor
+		return self.host_interpolatedMembraneCoordinatesX/self.imageProcessor.scalingFactor
 		pass
 	
 	def getMembraneCoordinatesY(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-		return self.host_interpolatedMembraneCoordinatesY/self.scalingFactor
+		return self.host_interpolatedMembraneCoordinatesY/self.imageProcessor.scalingFactor
 		pass
 
 	def getMembraneCoordinatesXscaled(self):
@@ -861,42 +864,42 @@ class contourTracker( object ):
 
 	def getContourCenterCoordinates(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_contourCenter.data, self.host_contourCenter).wait()
-		self.host_contourCenter[0]['x']=self.host_contourCenter[0]['x']/self.scalingFactor
-		self.host_contourCenter[0]['y']=self.host_contourCenter[0]['y']/self.scalingFactor
+		self.host_contourCenter[0]['x']=self.host_contourCenter[0]['x']/self.imageProcessor.scalingFactor
+		self.host_contourCenter[0]['y']=self.host_contourCenter[0]['y']/self.imageProcessor.scalingFactor
 		return self.host_contourCenter
 		pass
 
 	def getFitInclines(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_fitInclines.data, self.host_fitInclines).wait()
-		return self.host_fitInclines * self.scalingFactor # needs to be multiplied, since putting in more pixels artificially reduces the value of the incline
+		return self.host_fitInclines * self.imageProcessor.scalingFactor # needs to be multiplied, since putting in more pixels artificially reduces the value of the incline
 		pass
 	
 	def getSnrRoiScaled(self):
-		return np.floor(self.snrRoi*self.scalingFactor)
+		return np.floor(self.snrRoi*self.imageProcessor.scalingFactor)
 		pass
 	
-	def getSnrRoi(self):
-		return self.snrRoi
-		pass
+	#def getSnrRoi(self):
+	#	return self.snrRoi
+	#	pass
 	
-	def getImageSnr(self):
-		roiStd = self.getImageStd()
-		roiMean = self.getImageIntensity()
-		return roiMean/roiStd
-		pass
+	#def getImageSnr(self):
+	#	roiStd = self.getImageStd()
+	#	roiMean = self.getImageIntensity()
+	#	return roiMean/roiStd
+	#	pass
 
-	def getImageStd(self):
-		roiValues = self.getRoiIntensityValues()
-		return roiValues.std()
+	#def getImageStd(self):
+	#	roiValues = self.getRoiIntensityValues()
+	#	return roiValues.std()
 		
-	def getImageIntensity(self):
-		roiValues = self.getRoiIntensityValues()
-		return roiValues.mean()
-		pass
+	#def getImageIntensity(self):
+	#	roiValues = self.getRoiIntensityValues()
+	#	return roiValues.mean()
+	#	pass
 
-	def getRoiIntensityValues(self):
-		snrRoi = self.getSnrRoi()
-		snrRoiStartIndexes = snrRoi[0]
-		snrRoiStopIndexes = snrRoi[1]
-		return self.host_ImgUnfilteredUnscaled[snrRoiStartIndexes[0]:snrRoiStopIndexes[1],snrRoiStartIndexes[0]:snrRoiStopIndexes[1]]		
+	#def getRoiIntensityValues(self):
+	#	snrRoi = self.getSnrRoi()
+	#	snrRoiStartIndexes = snrRoi[0]
+	#	snrRoiStopIndexes = snrRoi[1]
+	#	return self.host_ImgUnfilteredUnscaled[snrRoiStartIndexes[0]:snrRoiStopIndexes[1],snrRoiStartIndexes[0]:snrRoiStopIndexes[1]]		
 

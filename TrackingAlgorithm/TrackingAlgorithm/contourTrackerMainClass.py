@@ -1,4 +1,5 @@
 from contourTrackerClass import contourTracker
+from imagePreprocessor import imagePreprocessor
 
 import configparser
 import json
@@ -178,7 +179,7 @@ class contourTrackerMain( object ):
 		self.managementQueue.finish()
 		
 	def drawSnrRoiRectangle(self):
-		snrRoi = self.sequentialTracker.getSnrRoiScaled()
+		snrRoi = self.preprocessor.getSnrRoiScaled()
 		snrRoiStartIndexes = snrRoi[0]
 		snrRoiStopIndexes = snrRoi[1]
 		plt.plot((snrRoiStartIndexes[0], snrRoiStartIndexes[0]),(snrRoiStartIndexes[1], snrRoiStopIndexes[1]),'k')
@@ -378,17 +379,22 @@ class contourTrackerMain( object ):
 		pass
 
 	def setupTrackingQueues(self):
+		self.preprocessor = imagePreprocessor(self.config)
+		self.preprocessor.loadDarkfield(self.darkfieldList) # load darkfield images
+		self.preprocessor.loadBackground(self.backgroundList) # load background images
+
 		#~ for index in range(nrOfTrackingQueues):
 			#~ trackingQueues(index) = contourTracker( self.config )
-		self.trackingQueues = [contourTracker(self.ctx, self.config) for count in range(self.nrOfTrackingQueues)]
+
+		self.trackingQueues = [contourTracker(self.ctx, self.config, self.preprocessor) for count in range(self.nrOfTrackingQueues)]
 		
-		for tracker in self.trackingQueues:
-			tracker.loadDarkfield(self.darkfieldList) # load darkfield images
-			tracker.loadBackground(self.backgroundList) # load background images
+		#for tracker in self.trackingQueues:
+		#	tracker.loadDarkfield(self.darkfieldList) # load darkfield images
+		#	tracker.loadBackground(self.backgroundList) # load background images
 		
-		self.sequentialTracker = contourTracker(self.ctx, self.config)
-		self.sequentialTracker.loadDarkfield(self.darkfieldList)  # load darkfield images
-		self.sequentialTracker.loadBackground(self.backgroundList)  # load background images
+		self.sequentialTracker = contourTracker(self.ctx, self.config, self.preprocessor)
+		#self.sequentialTracker.loadDarkfield(self.darkfieldList)  # load darkfield images
+		#self.sequentialTracker.loadBackground(self.backgroundList)  # load background images
 		
 		#~ ipdb.set_trace()
 		#~ trackingQueue[0].setupClQueue(self.ctx)
@@ -658,9 +664,9 @@ class contourTrackerMain( object ):
 			self.fitInclines[:,contourNr] = fitInclines
 		
 		if self.snrRoi is not None:
-			imageSnr = tracker.getImageSnr()
+			imageSnr = self.preprocessor.getImageSnr()
 			self.imageSnr[0,contourNr] = imageSnr
-			imageIntensity = tracker.getImageIntensity()
+			imageIntensity = self.preprocessor.getImageIntensity()
 			self.imageIntensity[0,contourNr] = imageIntensity
 			
 		if np.any(np.isnan(membraneCoordinatesX)) or np.any(np.isnan(membraneCoordinatesY)):

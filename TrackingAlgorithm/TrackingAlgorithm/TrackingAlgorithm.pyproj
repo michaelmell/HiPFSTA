@@ -24,6 +24,9 @@
   <ItemGroup>
     <Compile Include="contourTrackerClass.py" />
     <Compile Include="contourTrackerMainClass.py" />
+    <Compile Include="imagePreprocessor.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="integrationTests.py">
       <SubType>Code</SubType>
     </Compile>
