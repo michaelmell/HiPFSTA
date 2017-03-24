@@ -23,10 +23,6 @@ class sequentialContourTracker( object ):
 		self.setupClTrackingVariables()
 		self.setContourId(-1) # initialize the contour id to -1; this will later change at run time
 		self.nrOfTrackingIterations = 0
-		
-		# tracking status variables
-		self.trackingFinished = np.int32(1) # True
-		self.iterationFinished = np.int32(1) # True
 		pass
 	
 	def setupClQueue(self,ctx):
@@ -524,7 +520,11 @@ class sequentialContourTracker( object ):
 		np.save(path+"/"+variableName+".npy", host_variable, allow_pickle=True, fix_imports=True)
 		pass
 
-	def trackContour(self):
+	def trackContourSequentially(self):
+		## tracking status variables
+		#self.trackingFinished = np.int32(1) # True
+		#self.iterationFinished = np.int32(1) # True
+
 		for coordinateIndex in range(int(self.nrOfDetectionAngleSteps)):
 			coordinateIndex = np.int32(coordinateIndex)
 			
@@ -605,6 +605,222 @@ class sequentialContourTracker( object ):
 			 
 		self.queue.finish()
 
+	def trackContour(self):
+		# tracking status variables
+		self.nrOfTrackingIterations = self.nrOfTrackingIterations + 1
+		
+		stopInd = 1
+
+		self.trackingFinished = np.array(1,dtype=np.int32) # True
+		self.dev_trackingFinished = cl_array.to_device(self.queue, self.trackingFinished)
+		
+		self.iterationFinished = np.array(0,dtype=np.int32) # True
+		self.dev_iterationFinished = cl_array.to_device(self.queue, self.iterationFinished)
+		
+		for strideNr in range(self.nrOfStrides):
+			# set the starting index of the coordinate array for each kernel instance
+			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
+			self.prg.findMembranePositionNew2(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
+											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
+											 self.buf_localRotationMatrices, \
+											 self.buf_linFitSearchRangeXvalues, \
+											 self.linFitParameter, \
+											 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+											 cl.LocalMemory(self.rotatedUnitVector_memSize), \
+											 #~ self.dev_fitIntercept.data, self.dev_fitIncline.data, \
+											 self.meanParameter, \
+											 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+											 cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
+											 #~ self.dev_localMembranePositionsX.data, self.dev_localMembranePositionsY.data, \
+											 self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+											 self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
+											 self.dev_fitInclines.data, \
+											 kernelCoordinateStartingIndex, \
+											 self.inclineTolerance)
+			barrierEvent = cl.enqueue_barrier(self.queue)
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		self.prg.filterNanValues(self.queue, self.gradientGlobalSize, None, \
+								 self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+								 self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
+								 cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes) \
+								 #~ self.dev_dbgOut.data, \
+								 #~ self.dev_dbgOut2.data \
+								 )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		self.prg.filterJumpedCoordinates(self.queue, self.gradientGlobalSize, None, \
+											self.dev_previousContourCenter.data, \
+											self.dev_membraneCoordinatesX.data, \
+											self.dev_membraneCoordinatesY.data, \
+											self.dev_membraneNormalVectorsX.data, \
+											self.dev_membraneNormalVectorsY.data, \
+										    self.dev_previousInterpolatedMembraneCoordinatesX.data, \
+											self.dev_previousInterpolatedMembraneCoordinatesY.data, \
+										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), \
+											cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
+											cl.LocalMemory(self.listOfGoodCoordinates_memSize), \
+											self.maxCoordinateShift, \
+											self.dev_listOfGoodCoordinates.data \
+											)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.prg.calculateInterCoordinateAngles(self.queue, self.gradientGlobalSize, None, \
+												self.dev_interCoordinateAngles.data, \
+												self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data \
+											   )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
+											self.dev_previousContourCenter.data, \
+										    self.dev_interCoordinateAngles.data, \
+										    self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+										    self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
+										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
+										    self.maxInterCoordinateAngle \
+										    #~ self.dev_dbgOut.data, \
+										    #~ self.dev_dbgOut2.data \
+										    )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
+
+	########################################################################
+	### Calculate contour center
+	########################################################################
+		
+		### Use this for CPU and when number of detected points <1024
+		#if self.computeDeviceId is 10:
+			##~ print bla
+			#self.prg.calculateContourCenter(self.queue, self.gradientGlobalSize, self.gradientGlobalSize, \
+										   #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+										   #cl.LocalMemory(self.membraneNormalVectors_memSize), cl.LocalMemory(self.membraneNormalVectors_memSize), \
+										   #self.dev_contourCenter.data \
+										  #)
+		
+		#### Use this for GPU and when number of detected points >500
+		#### NOTE: There is a in the OpenCL driver for the Intel CPU. So that in the funciton below,
+		#### 	  the CLK_GLOBAL_MEM_FENCE is not respected correctly leading to incorrect results
+		#if self.computeDeviceId is 10:
+			#self.prg.calculateContourCenterNew(self.queue, self.gradientGlobalSize, None, \
+											   #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+											   #self.dev_ds.data, self.dev_sumds.data, \
+											   #self.dev_contourCenter.data \
+											  #)
+		
+		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
+					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+					   self.dev_ds.data \
+					 )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
+					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+					   self.dev_ds.data, self.dev_sumds.data \
+					 )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
+								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+								   self.dev_ds.data, self.dev_sumds.data, \
+								   self.dev_contourCenter.data, \
+								   np.int32(self.nrOfDetectionAngleSteps) \
+								  )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		########################################################################
+		### Convert cartesian coordinates to polar coordinates
+		########################################################################
+		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
+						  self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+						  self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
+						  self.dev_contourCenter.data)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		########################################################################
+		### Interpolate polar coordinates
+		########################################################################
+		self.prg.sortCoordinates(self.queue, (1,1), None, \
+								self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
+								self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+								self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
+								np.int32(self.nrOfDetectionAngleSteps) \
+								)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
+													self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
+													self.dev_radialVectors.data, \
+													self.dev_contourCenter.data, \
+													self.dev_membraneCoordinatesX.data, \
+													self.dev_membraneCoordinatesY.data, \
+													self.dev_interpolatedMembraneCoordinatesX.data, \
+													self.dev_interpolatedMembraneCoordinatesY.data, \
+													self.dev_membranePolarRadiusTMP.data, \
+													self.dev_membranePolarThetaTMP.data, \
+													self.dev_membranePolarRadiusInterpolation.data, \
+													self.dev_membranePolarThetaInterpolation.data, \
+													self.dev_membranePolarRadiusInterpolationTesting.data, \
+													self.dev_membranePolarThetaInterpolationTesting.data, \
+													self.dev_interpolationAngles.data, \
+													self.nrOfInterpolationPoints, \
+													np.int32(self.nrOfDetectionAngleSteps), \
+													self.nrOfAnglesToCompare, \
+													self.dev_dbgOut.data, \
+													self.dev_dbgOut2.data, \
+													)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		########################################################################
+		### Convert polar coordinates to cartesian coordinates
+		########################################################################
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
+										 self.dev_interpolatedMembraneCoordinatesX.data, \
+										 self.dev_interpolatedMembraneCoordinatesY.data, \
+										 self.dev_previousInterpolatedMembraneCoordinatesX.data, \
+										 self.dev_previousInterpolatedMembraneCoordinatesY.data, \
+										 self.dev_trackingFinished.data, \
+										 self.coordinateTolerance)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.prg.checkIfCenterConverged(self.queue, (1,1), None, \
+										self.dev_contourCenter.data, \
+										self.dev_previousContourCenter.data, \
+										self.dev_trackingFinished.data, \
+										self.centerTolerance)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		cl.enqueue_read_buffer(self.queue, self.dev_trackingFinished.data, self.trackingFinished).wait()
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		cl.enqueue_copy_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesX.data,self.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
+		cl.enqueue_copy_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
+
+		cl.enqueue_copy_buffer(self.queue,self.dev_contourCenter.data,self.dev_previousContourCenter.data).wait()
+
+		# set variable to tell host program that the tracking iteration has finished
+		self.prg.setIterationFinished(self.queue, (1,1), None, self.dev_iterationFinished.data)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
+		pass
+		
 	def checkTrackingFinished(self):
 		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:
 			self.trackingFinished = 0 # force another iterations

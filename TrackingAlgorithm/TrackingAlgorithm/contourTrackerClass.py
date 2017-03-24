@@ -520,6 +520,91 @@ class contourTracker( object ):
 		np.save(path+"/"+variableName+".npy", host_variable, allow_pickle=True, fix_imports=True)
 		pass
 
+	def trackContourSequentially(self):
+		## tracking status variables
+		#self.trackingFinished = np.int32(1) # True
+		#self.iterationFinished = np.int32(1) # True
+
+		for coordinateIndex in range(int(self.nrOfDetectionAngleSteps)):
+			coordinateIndex = np.int32(coordinateIndex)
+			
+			angle = self.angleStepSize*np.float64(coordinateIndex+1)
+			
+			radiusVectorRotationMatrix = np.array([[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
+			
+			self.prg.findMembranePositionNew2(self.queue, self.global_size, self.local_size, self.sampler, \
+											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
+											 self.buf_localRotationMatrices, \
+											 self.buf_linFitSearchRangeXvalues, \
+											 self.linFitParameter, \
+											 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+											 cl.LocalMemory(self.rotatedUnitVector_memSize), \
+											 #~ self.dev_fitIntercept.data, self.dev_fitIncline.data, \
+											 self.meanParameter, \
+											 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+											 cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
+											 #~ self.dev_localMembranePositionsX.data, self.dev_localMembranePositionsY.data, \
+											 self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+											 self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
+											 self.dev_fitInclines.data, \
+											 coordinateIndex, \
+											 self.inclineTolerance)
+			
+			cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
+			cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
+
+			cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
+			cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsY.data, self.host_membraneNormalVectorsY).wait()
+
+			currentMembraneCoordinate = np.array([self.host_membraneCoordinatesX[coordinateIndex],self.host_membraneCoordinatesY[coordinateIndex]])
+			
+			radiusVector = currentMembraneCoordinate - self.rotationCenterCoordinate
+			radiusVectorNorm = np.sqrt(radiusVector[0]**2 + radiusVector[1]**2)
+			
+			rotatedRadiusUnitVector = radiusVectorRotationMatrix.dot(self.radiusUnitVector)
+			
+			nextMembranePosition = self.rotationCenterCoordinate + rotatedRadiusUnitVector*radiusVectorNorm
+			nextMembraneNormalVector = np.array([self.host_membraneNormalVectorsX[coordinateIndex],self.host_membraneNormalVectorsY[coordinateIndex]])
+			
+			if coordinateIndex < self.host_membraneCoordinatesX.shape[0]-1:
+				self.host_membraneCoordinatesX[coordinateIndex+1] = nextMembranePosition[0]
+				self.host_membraneCoordinatesY[coordinateIndex+1] = nextMembranePosition[1]
+				
+				self.host_membraneNormalVectorsX[coordinateIndex+1] = nextMembraneNormalVector[0]
+				self.host_membraneNormalVectorsY[coordinateIndex+1] = nextMembraneNormalVector[1]
+
+				self.dev_membraneCoordinatesX = cl_array.to_device(self.queue, self.host_membraneCoordinatesX)
+				self.dev_membraneCoordinatesY = cl_array.to_device(self.queue, self.host_membraneCoordinatesY)
+				
+				self.dev_membraneNormalVectorsX = cl_array.to_device(self.queue, self.host_membraneNormalVectorsX)
+				self.dev_membraneNormalVectorsY = cl_array.to_device(self.queue, self.host_membraneNormalVectorsY)
+				
+		# calculate new normal vectors
+		self.prg.calculateMembraneNormalVectors(self.queue, self.gradientGlobalSize, None, \
+										   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+										   self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data \
+										   #~ cl.LocalMemory(membraneNormalVectors_memSize) \
+										  )
+		
+		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
+			   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+			   self.dev_ds.data \
+			 )
+			 
+		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
+			   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+			   self.dev_ds.data, self.dev_sumds.data \
+			 )
+			 
+		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
+								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+								   self.dev_ds.data, self.dev_sumds.data, \
+								   self.dev_contourCenter.data, \
+								   np.int32(self.nrOfDetectionAngleSteps) \
+								  )		
+			 
+		self.queue.finish()
+
 	def trackContour(self):
 		# tracking status variables
 		self.nrOfTrackingIterations = self.nrOfTrackingIterations + 1

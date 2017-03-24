@@ -158,7 +158,7 @@ class contourTrackerMain( object ):
 		self.nrOfFinishedImages = 0
 		
 		self.sequentialTracker.loadImage(self.imageList[self.currentImageIndex]) # load first image for initial tracking
-		self.sequentialTracker.trackContour()
+		self.sequentialTracker.trackContourSequentially()
 		
 		if self.runInteractive:
 			#~ plt.imshow(self.sequentialTracker.host_Img)
@@ -387,7 +387,7 @@ class contourTrackerMain( object ):
 			tracker.loadDarkfield(self.darkfieldList) # load darkfield images
 			tracker.loadBackground(self.backgroundList) # load background images
 		
-		self.sequentialTracker = sequentialContourTracker(self.ctx, self.config)
+		self.sequentialTracker = contourTracker(self.ctx, self.config)
 		self.sequentialTracker.loadDarkfield(self.darkfieldList)  # load darkfield images
 		self.sequentialTracker.loadBackground(self.backgroundList)  # load background images
 		
