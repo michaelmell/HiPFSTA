@@ -385,16 +385,9 @@ class contourTrackerMain( object ):
 
 		#~ for index in range(nrOfTrackingQueues):
 			#~ trackingQueues(index) = contourTracker( self.config )
-
 		self.trackingQueues = [contourTracker(self.ctx, self.config, self.preprocessor) for count in range(self.nrOfTrackingQueues)]
 		
-		#for tracker in self.trackingQueues:
-		#	tracker.loadDarkfield(self.darkfieldList) # load darkfield images
-		#	tracker.loadBackground(self.backgroundList) # load background images
-		
 		self.sequentialTracker = contourTracker(self.ctx, self.config, self.preprocessor)
-		#self.sequentialTracker.loadDarkfield(self.darkfieldList)  # load darkfield images
-		#self.sequentialTracker.loadBackground(self.backgroundList)  # load background images
 		
 		#~ ipdb.set_trace()
 		#~ trackingQueue[0].setupClQueue(self.ctx)

@@ -8,8 +8,6 @@ class imagePreprocessor(object):
 	
 	def __init__(self, config):
 		self.loadConfig(config)
-		#self.loadDarkfield(self.darkfieldList) # load darkfield images
-		#self.loadBackground(self.backgroundList) # load background images
 
 	def processImage(self, im):
 		#im = Image.open(imagePath)
