@@ -3,6 +3,7 @@ import pyopencl.array as cl_array
 import numpy as np
 #~ import cv2 # OpenCV 2.3.1
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.image as mpimg
 import PIL.Image as Image
 import json
@@ -231,13 +232,13 @@ class contourTracker( object ):
 		self.nrOfIterationsPerContour = np.int32(json.loads(config.get("TrackingParameters","nrOfIterationsPerContour")))
 		
 		self.computeDeviceId = json.loads(config.get("OpenClParameters","computeDeviceId"))
+
+		self.inclineTolerance = np.float64(json.loads(config.get("TrackingParameters","inclineTolerance")))
 		
 		self.coordinateTolerance = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","coordinateTolerance")))
 		
 		self.maxNrOfTrackingIterations = json.loads(config.get("TrackingParameters","maxNrOfTrackingIterations"))
 		self.minNrOfTrackingIterations = json.loads(config.get("TrackingParameters","minNrOfTrackingIterations"))
-		
-		self.inclineTolerance = np.float64(json.loads(config.get("TrackingParameters","inclineTolerance")))
 		
 		self.centerTolerance = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","centerTolerance")))
 		
@@ -407,11 +408,12 @@ class contourTracker( object ):
 		self.localMembranePositions_memSize = self.dev_localMembranePositionsX.nbytes * int(self.contourPointsPerWorkGroup)
 		self.fitIncline_memSize = self.dev_fitIncline.nbytes * int(self.contourPointsPerWorkGroup)
 		self.fitIntercept_memSize = self.dev_fitIntercept.nbytes * int(self.contourPointsPerWorkGroup)
-		self.fitIntercept_memSize = self.dev_fitIntercept.nbytes * int(self.contourPointsPerWorkGroup)
 		
 		self.membranePolarTheta_memSize = self.dev_membranePolarTheta.nbytes
 		self.membranePolarRadius_memSize = self.dev_membranePolarRadius.nbytes
-		
+		self.membranePolarThetaInterpolation_memSize = self.dev_membranePolarThetaInterpolation.nbytes
+		self.membranePolarRadiusInterpolation_memSize = self.dev_membranePolarRadiusInterpolation.nbytes
+
 		self.host_membraneNormalVectors = np.zeros(self.nrOfDetectionAngleSteps, cl.array.vec.double2)
 		self.dev_membraneNormalVectors = cl_array.to_device(self.queue, self.host_membraneNormalVectors)
 		self.membraneNormalVectors_memSize = self.dev_membraneNormalVectors.nbytes

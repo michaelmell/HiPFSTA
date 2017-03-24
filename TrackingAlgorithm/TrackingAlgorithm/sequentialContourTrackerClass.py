@@ -1,14 +1,17 @@
 import pyopencl as cl
 import pyopencl.array as cl_array
 import numpy as np
+#~ import cv2 # OpenCV 2.3.1
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.image as mpimg
 import PIL.Image as Image
 import json
 from scipy import signal
+#~ import ConfigParser
 import ipdb
 import os
+import time
 
 class sequentialContourTracker( object ):
 	def __init__(self, ctx, config):
@@ -18,6 +21,8 @@ class sequentialContourTracker( object ):
 		self.setupTrackingParameters()
 		self.setWorkGroupSizes()
 		self.setupClTrackingVariables()
+		self.setContourId(-1) # initialize the contour id to -1; this will later change at run time
+		self.nrOfTrackingIterations = 0
 		
 		# tracking status variables
 		self.trackingFinished = np.int32(1) # True
@@ -26,11 +31,11 @@ class sequentialContourTracker( object ):
 	
 	def setupClQueue(self,ctx):
 		self.ctx = ctx
-		self.queue = cl.CommandQueue(ctx, properties=cl.command_queue_properties.PROFILING_ENABLE)
+		self.queue = cl.CommandQueue(self.ctx, properties=cl.command_queue_properties.OUT_OF_ORDER_EXEC_MODE_ENABLE)
 		self.mf = cl.mem_flags
 		self.sampler = cl.Sampler(self.ctx,True,cl.addressing_mode.REPEAT,cl.filter_mode.LINEAR)
 		pass
-	
+		
 	def loadDarkfield(self, darkfieldList):
 		if darkfieldList == []:
 			self.darkfieldData = None
@@ -81,7 +86,7 @@ class sequentialContourTracker( object ):
 			self.host_Img = imageData
 		else:
 			self.host_Img = imageData/self.backgroundData
-		
+
 		self.host_ImgUnfilteredUnscaled = self.host_Img
 		
 		if self.performImageFiltering is True:
@@ -109,7 +114,7 @@ class sequentialContourTracker( object ):
 		imgShapeTmp = np.asarray([imgShape[1],imgShape[0]], dtype=np.float32)
 		newImageShape = tuple(np.int32(np.round(self.scalingFactor * imgShapeTmp)))
 		newImage = im.resize(newImageShape, self.scalingMethodVar)
-		
+
 		# read back manipulated image data to host image array
 		imgDataTmp = list(newImage.getdata())
 		self.host_Img = np.asarray(imgDataTmp, dtype=np.float32).reshape((newImageShape[1],newImageShape[0]))
@@ -120,7 +125,7 @@ class sequentialContourTracker( object ):
 	
 	def getContourId(self):
 		return self.id
-	
+
 	def loadClKernels(self):
 		modulePath = __file__
 		codePath, filename = os.path.split(modulePath) # get location of path where our tracking code is located
@@ -153,9 +158,10 @@ class sequentialContourTracker( object ):
 		noisePowerEstimate = config.get("ImageFilterParameters","noisePowerEstimate")
 		if noisePowerEstimate == "None":
 			noisePowerEstimate = None
+			#~ if self.snrRoi is not None:
+				#~ noisePowerEstimate = "estimateFromSnrRoi"
 		else:
 			noisePowerEstimate = json.loads(config.get("ImageFilterParameters","noisePowerEstimate"))
-
 		self.imageFilter = self.wienerFilterMod
 		self.filterArguments = (filterKernelSize,noisePowerEstimate)
 		pass
@@ -177,7 +183,8 @@ class sequentialContourTracker( object ):
 		pass
 	
 	def loadConfig(self,config):
-		# from: http://stackoverflow.com/questions/335695/lists-in-configparser
+	# from: http://stackoverflow.com/questions/335695/lists-in-configparser
+	# json.loads(self.config.get("SectionOne","startingCoordinate"))
 		snrRoi = config.get("TrackingParameters","snrRoi")
 		if snrRoi == "" or snrRoi == "None":
 			self.snrRoi = None
@@ -194,7 +201,7 @@ class sequentialContourTracker( object ):
 			self.setupFilter(config)
 			
 		performImageScaling = config.get("ImageManipulationParameters","performImageScaling")
-		
+
 		if performImageScaling == "True":
 			self.performImageScaling = True
 		else:
@@ -214,21 +221,39 @@ class sequentialContourTracker( object ):
 		self.linFitParameter = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","linFitParameter")))
 		self.linFitSearchRange = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","linFitSearchRange")))
 		self.interpolationFactor = np.int32(np.float64(json.loads(config.get("TrackingParameters","interpolationFactor")))/self.scalingFactor)
-
+		
 		self.meanParameter = np.int32(np.round(self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","meanParameter")))))
 		self.meanRangePositionOffset = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","meanRangePositionOffset")))
-		
+
 		self.localAngleRange = np.float64(json.loads(config.get("TrackingParameters","localAngleRange")))
 		self.nrOfLocalAngleSteps = np.int32(json.loads(config.get("TrackingParameters","nrOfLocalAngleSteps")))
 		
 		self.detectionKernelStrideSize = np.int32(json.loads(config.get("TrackingParameters","detectionKernelStrideSize")))
 		self.nrOfStrides = np.int32(json.loads(config.get("TrackingParameters","nrOfStrides")))
 		
+		self.nrOfAnglesToCompare = np.int32(json.loads(config.get("TrackingParameters","nrOfAnglesToCompare")))
+		
 		self.nrOfIterationsPerContour = np.int32(json.loads(config.get("TrackingParameters","nrOfIterationsPerContour")))
 		
+		self.computeDeviceId = json.loads(config.get("OpenClParameters","computeDeviceId"))
+
 		self.inclineTolerance = np.float64(json.loads(config.get("TrackingParameters","inclineTolerance")))
 		
-		self.computeDeviceId = json.loads(config.get("OpenClParameters","computeDeviceId"))
+		self.coordinateTolerance = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","coordinateTolerance")))
+		
+		self.maxNrOfTrackingIterations = json.loads(config.get("TrackingParameters","maxNrOfTrackingIterations"))
+		self.minNrOfTrackingIterations = json.loads(config.get("TrackingParameters","minNrOfTrackingIterations"))
+		
+		self.centerTolerance = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","centerTolerance")))
+		
+		self.maxInterCoordinateAngle = np.float64(json.loads(config.get("TrackingParameters","maxInterCoordinateAngle")))
+		self.maxCoordinateShift = self.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","maxCoordinateShift")))
+		
+		resetNormalsAfterEachImage = config.get("TrackingParameters","resetNormalsAfterEachImage")
+		if resetNormalsAfterEachImage == 'True':
+			self.resetNormalsAfterEachImage = True
+		else:
+			self.resetNormalsAfterEachImage = False
 		
 	def setupTrackingParameters(self):
 		### parameters for linear fit
@@ -252,7 +277,7 @@ class sequentialContourTracker( object ):
 		endAngle = self.localAngleRange/2
 
 		localAngles = np.linspace(startAngle,endAngle,self.nrOfLocalAngleSteps)
-		
+
 		localRotationMatrices = np.empty((localAngles.shape[0],2,2),np.dtype(np.float64))
 		for index in range(localAngles.shape[0]):
 			localAngle = localAngles[index]
@@ -267,13 +292,13 @@ class sequentialContourTracker( object ):
 		
 		detectionStartAngle = 0
 		detectionEndAngle = 2*np.pi
-		
-		self.nrOfDetectionAngleSteps = int(self.nrOfStrides*self.detectionKernelStrideSize)
 
+		self.nrOfDetectionAngleSteps = int(self.nrOfStrides*self.detectionKernelStrideSize)
+		
 		self.angleStepSize = np.float64((detectionEndAngle-detectionStartAngle)/self.nrOfDetectionAngleSteps)
 		
 		self.nrOfInterpolationPoints = np.int32(2*self.nrOfDetectionAngleSteps)
-
+		
 		self.imgSizeY = np.int32(self.linFitSearchRangeNrOfInterpolationPoints)
 		self.imgSizeX = np.int32(self.nrOfLocalAngleSteps)
 		
@@ -282,7 +307,7 @@ class sequentialContourTracker( object ):
 	def setupClTrackingVariables(self):
 		self.host_fitIncline = np.empty(self.nrOfLocalAngleSteps,dtype=np.float64)
 		self.dev_fitIncline = cl_array.to_device(self.queue, self.host_fitIncline)
-
+		
 		self.host_fitIntercept = np.empty(self.nrOfLocalAngleSteps,dtype=np.float64)
 		self.dev_fitIntercept = cl_array.to_device(self.queue, self.host_fitIntercept)
 		
@@ -299,9 +324,24 @@ class sequentialContourTracker( object ):
 		self.host_membraneCoordinatesY = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.host_membraneCoordinatesY[0] = self.startingCoordinate[1]
 		self.dev_membraneCoordinatesY = cl_array.to_device(self.queue, self.host_membraneCoordinatesY)
+		
+		self.host_interCoordinateAngles = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_interCoordinateAngles = cl_array.to_device(self.queue, self.host_interCoordinateAngles)
 
 		self.host_fitInclines = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_fitInclines = cl_array.to_device(self.queue, self.host_fitInclines)
+
+
+		# these device arrays are not used on the host
+		self.host_interpolatedMembraneCoordinatesX = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_interpolatedMembraneCoordinatesX = cl_array.to_device(self.queue, self.host_interpolatedMembraneCoordinatesX)
+		self.host_interpolatedMembraneCoordinatesY = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_interpolatedMembraneCoordinatesY = cl_array.to_device(self.queue, self.host_interpolatedMembraneCoordinatesY)
+
+		self.host_previousInterpolatedMembraneCoordinatesX = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_previousInterpolatedMembraneCoordinatesX = cl_array.to_device(self.queue, self.host_previousInterpolatedMembraneCoordinatesX)
+		self.host_previousInterpolatedMembraneCoordinatesY = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_previousInterpolatedMembraneCoordinatesY = cl_array.to_device(self.queue, self.host_previousInterpolatedMembraneCoordinatesY)
 
 		self.host_ds = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_ds = cl_array.to_device(self.queue, self.host_ds)
@@ -315,15 +355,29 @@ class sequentialContourTracker( object ):
 		self.host_membraneNormalVectorsY = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.host_membraneNormalVectorsY[0] = self.radiusUnitVector[1]
 		self.dev_membraneNormalVectorsY = cl_array.to_device(self.queue, self.host_membraneNormalVectorsY)
-
+		
+		self.host_closestLowerNoneNanIndex = np.int32(range(0,np.int32(self.nrOfDetectionAngleSteps)))
+		self.dev_closestLowerNoneNanIndex = cl_array.to_device(self.queue, self.host_closestLowerNoneNanIndex)
+		
+		self.host_closestUpperNoneNanIndex = np.int32(range(0,np.int32(self.nrOfDetectionAngleSteps)))
+		self.dev_closestUpperNoneNanIndex = cl_array.to_device(self.queue, self.host_closestUpperNoneNanIndex)
+		
 		self.host_membranePolarRadius = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_membranePolarRadius = cl_array.to_device(self.queue, self.host_membranePolarRadius)
 		self.dev_membranePolarRadiusTMP = cl_array.to_device(self.queue, self.host_membranePolarRadius)
+		
+		self.host_interpolatedMembranePolarRadius = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_interpolatedMembranePolarRadius = cl_array.to_device(self.queue, self.host_interpolatedMembranePolarRadius)
 
 		self.host_membranePolarTheta = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_membranePolarTheta = cl_array.to_device(self.queue, self.host_membranePolarTheta)
 		self.dev_membranePolarThetaTMP = cl_array.to_device(self.queue, self.host_membranePolarTheta)
 		
+		self.host_angleDifferencesUpper = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_angleDifferencesUpper = cl_array.to_device(self.queue, self.host_angleDifferencesUpper)
+		self.host_angleDifferencesLower = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_angleDifferencesLower = cl_array.to_device(self.queue, self.host_angleDifferencesLower)
+				
 		self.host_membranePolarRadiusInterpolation = np.zeros(shape=2*self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_membranePolarRadiusInterpolation = cl_array.to_device(self.queue, self.host_membranePolarRadiusInterpolation)
 		self.dev_membranePolarRadiusInterpolationTesting = cl_array.to_device(self.queue, self.host_membranePolarRadiusInterpolation)
@@ -332,9 +386,11 @@ class sequentialContourTracker( object ):
 		self.dev_membranePolarThetaInterpolation = cl_array.to_device(self.queue, self.host_membranePolarThetaInterpolation)
 		self.dev_membranePolarThetaInterpolationTesting = cl_array.to_device(self.queue, self.host_membranePolarThetaInterpolation)
 
-		self.host_interpolationAngles = np.float64(np.linspace(-np.pi,np.pi,self.nrOfDetectionAngleSteps))
+		startAngle = -np.pi
+		endAngle = np.pi - 2*np.pi/self.nrOfDetectionAngleSteps # we substract, so that we have no angle overlap
+		self.host_interpolationAngles = np.float64(np.linspace(startAngle,endAngle,self.nrOfDetectionAngleSteps))
 		self.dev_interpolationAngles = cl_array.to_device(self.queue, self.host_interpolationAngles)
-
+		
 		self.host_b = np.zeros(shape=2*self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_b = cl_array.to_device(self.queue, self.host_b)
 
@@ -346,41 +402,128 @@ class sequentialContourTracker( object ):
 
 		self.host_dbgOut = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_dbgOut = cl_array.to_device(self.queue, self.host_dbgOut)
-
+		
+		self.host_dbgOut2 = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
+		self.dev_dbgOut2 = cl_array.to_device(self.queue, self.host_dbgOut)
+		
 		########################################################################
 		### setup OpenCL local memory
 		########################################################################
-		self.localMembranePositions_memSize = self.dev_localMembranePositionsX.nbytes
-		self.fitIncline_memSize = self.dev_fitIncline.nbytes
-		self.fitIntercept_memSize = self.dev_fitIntercept.nbytes
+		self.localMembranePositions_memSize = self.dev_localMembranePositionsX.nbytes * int(self.contourPointsPerWorkGroup)
+		self.fitIncline_memSize = self.dev_fitIncline.nbytes * int(self.contourPointsPerWorkGroup)
+		self.fitIntercept_memSize = self.dev_fitIntercept.nbytes * int(self.contourPointsPerWorkGroup)
+		
+		self.membranePolarTheta_memSize = self.dev_membranePolarTheta.nbytes
+		self.membranePolarRadius_memSize = self.dev_membranePolarRadius.nbytes
 		self.membranePolarThetaInterpolation_memSize = self.dev_membranePolarThetaInterpolation.nbytes
 		self.membranePolarRadiusInterpolation_memSize = self.dev_membranePolarRadiusInterpolation.nbytes
 
 		self.host_membraneNormalVectors = np.zeros(self.nrOfDetectionAngleSteps, cl.array.vec.double2)
 		self.dev_membraneNormalVectors = cl_array.to_device(self.queue, self.host_membraneNormalVectors)
 		self.membraneNormalVectors_memSize = self.dev_membraneNormalVectors.nbytes
-
-		self.host_contourCenter = np.zeros(1, cl.array.vec.double2)
-		self.dev_contourCenter = cl_array.to_device(self.queue, self.host_contourCenter)
 		
 		self.host_rotatedUnitVector = np.zeros(self.nrOfLocalAngleSteps, cl.array.vec.double2)
 		self.dev_rotatedUnitVector = cl_array.to_device(self.queue, self.host_rotatedUnitVector)
 		self.rotatedUnitVector_memSize = self.dev_rotatedUnitVector.nbytes * int(self.contourPointsPerWorkGroup)
 		
+		self.host_contourCenter = np.zeros(1, cl.array.vec.double2)
+		self.dev_contourCenter = cl_array.to_device(self.queue, self.host_contourCenter)
+		self.dev_previousContourCenter = cl_array.to_device(self.queue, self.host_contourCenter)
+		
+		self.host_listOfGoodCoordinates = np.zeros(self.nrOfDetectionAngleSteps, dtype=np.int32)
+		self.dev_listOfGoodCoordinates = cl_array.to_device(self.queue, self.host_listOfGoodCoordinates)
+		self.listOfGoodCoordinates_memSize = self.dev_listOfGoodCoordinates.nbytes
+		
+		### setup radial vectors used for linear interpolation
+		self.host_radialVectors = np.zeros(shape=self.nrOfDetectionAngleSteps, dtype=cl.array.vec.double2)
+		self.host_radialVectorsX = np.zeros(shape=self.nrOfDetectionAngleSteps, dtype=np.float64)
+		self.host_radialVectorsY = np.zeros(shape=self.nrOfDetectionAngleSteps, dtype=np.float64)
+		radiusUnitVector = np.array([1,0],dtype=np.float64)
+		
+		for counter, angle in enumerate(self.host_interpolationAngles):
+			radiusVectorRotationMatrix = np.array([[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
+			rotatedRadiusUnitVector = radiusVectorRotationMatrix.dot(radiusUnitVector)
+			self.host_radialVectors[counter] = rotatedRadiusUnitVector
+			self.host_radialVectorsX[counter] = rotatedRadiusUnitVector[0]
+			self.host_radialVectorsY[counter] = rotatedRadiusUnitVector[1]
+		
+		self.dev_radialVectors = cl_array.to_device(self.queue, self.host_radialVectors)
+		self.dev_radialVectorsX = cl_array.to_device(self.queue, self.host_radialVectorsX)
+		self.dev_radialVectorsY = cl_array.to_device(self.queue, self.host_radialVectorsY)
 		pass
-	
+
 	def setWorkGroupSizes(self):
 		self.global_size = (1,int(self.nrOfLocalAngleSteps))
 		self.local_size = (1,int(self.nrOfLocalAngleSteps))
 		self.gradientGlobalSize = (int(self.nrOfDetectionAngleSteps),1)
-
+		
 		vendorString = self.queue.device.vendor
 		# set work dimension of work group used in tracking kernel
 		if "intel" in vendorString.lower() or "nvidia" in vendorString.lower():  # work-around since the 'max_work_group_size' is not reported correctly for Intel-CPU using the AMD OpenCL driver (tested on: Intel(R) Core(TM) i5-3470)
 			self.contourPointsPerWorkGroup = 256/self.nrOfLocalAngleSteps
 		else:
 			self.contourPointsPerWorkGroup = self.queue.device.max_work_group_size/self.nrOfLocalAngleSteps
-	
+		
+		self.trackingWorkGroupSize = (int(self.contourPointsPerWorkGroup),int(self.nrOfLocalAngleSteps))
+		self.trackingGlobalSize = (int(self.detectionKernelStrideSize),int(self.nrOfLocalAngleSteps))
+		
+	def setStartingCoordinates(self,dev_initialMembraneCoordinatesX,dev_initialMembraneCoordinatesY, \
+									dev_initialMembranNormalVectorsX,dev_initialMembranNormalVectorsY):
+		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_membraneCoordinatesX.data).wait() #<-
+		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_membraneCoordinatesY.data).wait()
+		cl.enqueue_copy_buffer(self.queue,dev_initialMembranNormalVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
+		cl.enqueue_copy_buffer(self.queue,dev_initialMembranNormalVectorsY.data,self.dev_membraneNormalVectorsY.data).wait()
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		self.queue.finish()
+		
+	def setStartingCoordinatesNew(self,dev_initialMembraneCoordinatesX,dev_initialMembraneCoordinatesY):
+		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_membraneCoordinatesX.data).wait() #<-
+		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_membraneCoordinatesY.data).wait()
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+	def setStartingMembraneNormals(self,dev_initialMembranNormalVectorsX,dev_initialMembranNormalVectorsY):
+		if self.resetNormalsAfterEachImage and not self.getContourId()==0: # reset contour normal vector to radial vectors; we do this only starting for the second, since doing this for image 0, would destroy the correspondence of the indexes of the contour coordinates to their corresponding contour normals
+			cl.enqueue_copy_buffer(self.queue,self.dev_radialVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
+			cl.enqueue_copy_buffer(self.queue,self.dev_radialVectorsY.data,self.dev_membraneNormalVectorsY.data).wait()
+		else: # copy contour normal vectors from last image to use as initial normal vectors for next image
+			cl.enqueue_copy_buffer(self.queue,dev_initialMembranNormalVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
+			cl.enqueue_copy_buffer(self.queue,dev_initialMembranNormalVectorsY.data,self.dev_membraneNormalVectorsY.data).wait()
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+	def getNrOfTrackingIterations(self):
+		return self.nrOfTrackingIterations
+		
+	def resetNrOfTrackingIterations(self):
+		self.nrOfTrackingIterations = 0
+
+	def startTimer(self):
+		self.startingTime = time.time()
+		
+	def getExectionTime(self):
+		currentTime = time.time()
+		return currentTime - self.startingTime
+		
+	def plotCurrentMembraneCoordinates(self):
+		cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
+		cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesY.data, self.host_membraneCoordinatesY).wait()
+		plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY)
+
+	def plotCurrentInterpolatedMembraneCoordinates(self):
+		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
+		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
+		plt.plot(self.host_interpolatedMembraneCoordinatesX,self.host_interpolatedMembraneCoordinatesY)
+
+	def saveDeviceVariable(self,variableName,path):
+		dev_variable = getattr(self,variableName)
+		varOnHost = dev_variable.get()
+		np.save(path+"/"+variableName+".npy", varOnHost, allow_pickle=True, fix_imports=True)
+		pass
+
+	def saveHostVariable(self,variableName,path):
+		host_variable = getattr(self,variableName)
+		np.save(path+"/"+variableName+".npy", host_variable, allow_pickle=True, fix_imports=True)
+		pass
+
 	def trackContour(self):
 		for coordinateIndex in range(int(self.nrOfDetectionAngleSteps)):
 			coordinateIndex = np.int32(coordinateIndex)
@@ -462,30 +605,56 @@ class sequentialContourTracker( object ):
 			 
 		self.queue.finish()
 
-	def getMembraneCoordinatesX(self):
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_membraneCoordinatesX.data, self.host_membraneCoordinatesX).wait()
-		#~ return self.host_membraneCoordinatesX
-		#~ cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-		return self.host_membraneCoordinatesX/self.scalingFactor
+	def checkTrackingFinished(self):
+		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:
+			self.trackingFinished = 0 # force another iterations
+		if self.nrOfTrackingIterations >= self.maxNrOfTrackingIterations:
+			self.trackingFinished = 1 # force finish
+		return self.trackingFinished
 		pass
-
+		
+	def getMembraneCoordinatesX(self):
+		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
+		return self.host_interpolatedMembraneCoordinatesX/self.scalingFactor
+		pass
+	
 	def getMembraneCoordinatesY(self):
-		return self.host_membraneCoordinatesY/self.scalingFactor
+		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
+		return self.host_interpolatedMembraneCoordinatesY/self.scalingFactor
 		pass
 
 	def getMembraneCoordinatesXscaled(self):
-		return self.host_membraneCoordinatesX
+		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
+		return self.host_interpolatedMembraneCoordinatesX
+		pass
+	
+	def getMembraneCoordinatesYscaled(self):
+		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
+		return self.host_interpolatedMembraneCoordinatesY
 		pass
 
-	def getMembraneCoordinatesYscaled(self):
-		return self.host_membraneCoordinatesY
+	def getMembraneNormalVectorsX(self):
+		cl.enqueue_read_buffer(self.queue, self.dev_membraneNormalVectorsX.data, self.host_membraneNormalVectorsX).wait()
+		return self.host_membraneNormalVectorsX
+		pass
+
+	def getMembraneNormalVectorsY(self):
+		cl.enqueue_read_buffer(self.queue,self.dev_membraneNormalVectorsY.data,self.host_membraneNormalVectorsY).wait()
+		return self.host_membraneNormalVectorsY
+		pass
+
+	def getContourCenterCoordinates(self):
+		cl.enqueue_read_buffer(self.queue, self.dev_contourCenter.data, self.host_contourCenter).wait()
+		self.host_contourCenter[0]['x']=self.host_contourCenter[0]['x']/self.scalingFactor
+		self.host_contourCenter[0]['y']=self.host_contourCenter[0]['y']/self.scalingFactor
+		return self.host_contourCenter
 		pass
 
 	def getFitInclines(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_fitInclines.data, self.host_fitInclines).wait()
 		return self.host_fitInclines * self.scalingFactor # needs to be multiplied, since putting in more pixels artificially reduces the value of the incline
 		pass
-
+	
 	def getSnrRoiScaled(self):
 		return np.floor(self.snrRoi*self.scalingFactor)
 		pass
@@ -514,4 +683,4 @@ class sequentialContourTracker( object ):
 		snrRoiStartIndexes = snrRoi[0]
 		snrRoiStopIndexes = snrRoi[1]
 		return self.host_ImgUnfilteredUnscaled[snrRoiStartIndexes[0]:snrRoiStopIndexes[1],snrRoiStartIndexes[0]:snrRoiStopIndexes[1]]		
-		
+
