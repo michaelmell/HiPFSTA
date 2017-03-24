@@ -28,7 +28,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Main.py" />
-    <Compile Include="sequentialContourTrackerClass.py" />
     <Compile Include="testOpenClKernels.py">
       <SubType>Code</SubType>
     </Compile>

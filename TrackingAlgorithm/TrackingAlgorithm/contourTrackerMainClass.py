@@ -1,5 +1,4 @@
 from contourTrackerClass import contourTracker
-from sequentialContourTrackerClass import sequentialContourTracker
 
 import configparser
 import json
