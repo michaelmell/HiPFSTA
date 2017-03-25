@@ -40,7 +40,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="clKernelCode.cl" />
-    <Content Include="MainTracking.conf" />
+    <Content Include="TrackingConfigs\TrackingConfig_000.conf" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="TrackingConfigs\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

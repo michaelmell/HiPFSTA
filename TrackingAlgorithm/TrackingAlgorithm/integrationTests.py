@@ -6,7 +6,7 @@ from contourTrackerMainClass import contourTrackerMain
 
 class Test_integrationTests(unittest.TestCase):
 	def test_CompleteProgramRun_000(self):
-		prg = contourTrackerMain("MainTracking.conf",runInteractive=False)
+		prg = contourTrackerMain("TrackingConfigs/TrackingConfig_000.conf",runInteractive=False)
 		prg.initializeTracking()
 		prg.track()
 
