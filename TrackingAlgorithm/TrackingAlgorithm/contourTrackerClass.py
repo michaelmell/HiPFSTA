@@ -486,8 +486,6 @@ class contourTracker( object ):
 											 self.inclineTolerance)
 			barrierEvent = cl.enqueue_barrier(self.queue)
 
-		barrierEvent = cl.enqueue_barrier(self.queue)
-		
 		self.prg.filterNanValues(self.queue, self.gradientGlobalSize, None, \
 								 self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 								 self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
@@ -497,8 +495,6 @@ class contourTracker( object ):
 								 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		barrierEvent = cl.enqueue_barrier(self.queue)
-		
 		self.prg.filterJumpedCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
 											self.dev_membraneCoordinatesX.data, \
@@ -513,7 +509,6 @@ class contourTracker( object ):
 											self.maxCoordinateShift, \
 											self.dev_listOfGoodCoordinates.data \
 											)
-		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -521,6 +516,7 @@ class contourTracker( object ):
 												self.dev_interCoordinateAngles.data, \
 												self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data \
 											   )
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
@@ -533,6 +529,7 @@ class contourTracker( object ):
 										    #~ self.dev_dbgOut.data, \
 										    #~ self.dev_dbgOut2.data \
 										    )
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
@@ -564,7 +561,6 @@ class contourTracker( object ):
 					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data \
 					 )
-		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -572,6 +568,7 @@ class contourTracker( object ):
 					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data, self.dev_sumds.data \
 					 )
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
@@ -580,6 +577,7 @@ class contourTracker( object ):
 								   self.dev_contourCenter.data, \
 								   np.int32(self.nrOfDetectionAngleSteps) \
 								  )
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		########################################################################
@@ -589,7 +587,6 @@ class contourTracker( object ):
 						  self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 						  self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
 						  self.dev_contourCenter.data)
-		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -602,7 +599,6 @@ class contourTracker( object ):
 								self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
 								np.int32(self.nrOfDetectionAngleSteps) \
 								)
-		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -627,17 +623,12 @@ class contourTracker( object ):
 													self.dev_dbgOut.data, \
 													self.dev_dbgOut2.data, \
 													)
-		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		########################################################################
 		### Convert polar coordinates to cartesian coordinates
 		########################################################################
-		barrierEvent = cl.enqueue_barrier(self.queue)
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
-		
 		self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
 										 self.dev_interpolatedMembraneCoordinatesX.data, \
 										 self.dev_interpolatedMembraneCoordinatesY.data, \
@@ -645,6 +636,7 @@ class contourTracker( object ):
 										 self.dev_previousInterpolatedMembraneCoordinatesY.data, \
 										 self.dev_trackingFinished.data, \
 										 self.coordinateTolerance)
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.prg.checkIfCenterConverged(self.queue, (1,1), None, \
@@ -652,19 +644,22 @@ class contourTracker( object ):
 										self.dev_previousContourCenter.data, \
 										self.dev_trackingFinished.data, \
 										self.centerTolerance)
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		cl.enqueue_read_buffer(self.queue, self.dev_trackingFinished.data, self.trackingFinished).wait()
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		cl.enqueue_copy_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesX.data,self.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
 		cl.enqueue_copy_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
-
 		cl.enqueue_copy_buffer(self.queue,self.dev_contourCenter.data,self.dev_previousContourCenter.data).wait()
 
 		# set variable to tell host program that the tracking iteration has finished
 		self.prg.setIterationFinished(self.queue, (1,1), None, self.dev_iterationFinished.data)
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
 		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
 		pass
 		
