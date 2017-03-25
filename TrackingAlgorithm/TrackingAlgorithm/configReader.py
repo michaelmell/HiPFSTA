@@ -63,8 +63,6 @@ class configReader(object):
 		self.noisePowerEstimate = self.config.get("ImageFilterParameters","noisePowerEstimate")
 		if self.noisePowerEstimate == "None":
 			self.noisePowerEstimate = None
-			#~ if self.snrRoi is not None:
-				#~ noisePowerEstimate = "estimateFromSnrRoi"
 		else:
 			self.noisePowerEstimate = json.loads(self.config.get("ImageFilterParameters","noisePowerEstimate"))
 
@@ -84,9 +82,6 @@ class configReader(object):
 		else:
 			self.performImageFiltering = False
 		
-		#if self.performImageFiltering:
-		#	self.setupFilter(self.config)
-			
 		performImageScaling = self.config.get("ImageManipulationParameters","performImageScaling")
 
 		if performImageScaling == "True":
@@ -100,11 +95,8 @@ class configReader(object):
 			self.scalingFactor = np.float64(1)
 
 		self.scalingMethod = json.loads(self.config.get("ImageManipulationParameters","scalingMethod"))
-		#self.scalingMethodVar = self.setImageScalingMethod(self.scalingMethod)
 
 	def loadContourTrackerMainConfig(self):
-		#~ self.imagePath = json.loads(self.config.get("FileParameters","imagePath"))
-		#~ self.backgroundDirectoryPath = json.loads(self.config.get("FileParameters","backgroundDirectoryPath"))
 		backgroundDirectoryPath = self.config.get("FileParameters","backgroundDirectoryPath")
 		if backgroundDirectoryPath == "" or backgroundDirectoryPath == "None":
 			self.backgroundDirectoryPath = None
@@ -159,21 +151,9 @@ class configReader(object):
 			self.snrRoi = None
 		else:
 			self.snrRoi = np.array(json.loads(self.config.get("TrackingParameters","snrRoi")))
-		
-		#~ dict = self.config.items("SectionOne")
-		
-		#~ ipdb.set_trace()
-
-		#~ for item in dict:
-			#~ print "self.configuration."+item[0]+"="+item[1]
-			#~ eval("self.configuration."+item[0]+"="+item[1])
-		#~ ipdb.set_trace()
-		
 		pass
 		
 	def readConfigFile(self,configurationFile):
-		# check if configuration file exists
-		#~ ipdb.set_trace()
 		if os.path.isfile(configurationFile) is False:
 			print("")
 			print("\tError: Configuration file not found at: "+configurationFile)

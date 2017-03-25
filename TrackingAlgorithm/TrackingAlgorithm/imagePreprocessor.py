@@ -9,7 +9,6 @@ class imagePreprocessor(object):
 	def __init__(self, configReader):
 		self.configReader = configReader
 		self.setup()
-		#self.loadConfig(config)
 
 	def setup(self):
 		if self.configReader.performImageFiltering:
@@ -19,7 +18,6 @@ class imagePreprocessor(object):
 
 	
 	def processImage(self, im):
-		#im = Image.open(imagePath)
 		imgdata = list(im.getdata())
 		
 		imshape = im.size;
