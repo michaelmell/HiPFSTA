@@ -7,7 +7,7 @@
 #endif
 //~ #pragma OPENCL EXTENSION cl_amd_printf : enable
 
-void fit(__constant double x[], double y[], int gradientCenterIndex, int linFitParameter, double *a, double *b, double *siga, double *sigb, double *chi2)
+void linearFit(__constant double x[], double y[], int gradientCenterIndex, int linFitParameter, double *a, double *b, double *siga, double *sigb, double *chi2)
 {
 	int i;
 	double t,sxoss,sx=0.0,sy=0.0,st2=0.0,ss,sigdat;
@@ -703,7 +703,7 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 		// "r = a > b ? a : b" corresponds to: "r = select(b, a, a > b)", corresponds to "if(a>b){r=a}; else{r=b}"
 		// reference: http://stackoverflow.com/questions/7635706/opencl-built-in-function-select
 		
-		fit(linFitSearchRangeXvalues, lineIntensities, gradientCenterIndex, linFitParameter, &a, &b, &siga, &sigb, &chi2);
+		linearFit(linFitSearchRangeXvalues, lineIntensities, gradientCenterIndex, linFitParameter, &a, &b, &siga, &sigb, &chi2);
 		//~ fitIntercept[xIndLoc] = a;
 		fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = a;
 		//~ fitIncline[xIndLoc] = b;
