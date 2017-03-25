@@ -183,7 +183,7 @@ __kernel void calculateSumDs(__global double* membraneCoordinatesX,
 	//~ barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
-__kernel void calculateContourCenterNew2(__global double* membraneCoordinatesX,
+__kernel void calculateContourCenter(__global double* membraneCoordinatesX,
 										 __global double* membraneCoordinatesY,
 										 __global double* ds,
 										 __global double* sumds,
@@ -407,7 +407,7 @@ __kernel void sortCoordinates(__global double* membranePolarRadius,
 }
 
 //~ #pragma OPENCL EXTENSION cl_amd_printf : enable
-__kernel void findMembranePositionNew2(sampler_t sampler, 
+__kernel void findMembranePosition(sampler_t sampler, 
 									   __read_only image2d_t Img,
 									   const int imgSizeX,
 									   const int imgSizeY,

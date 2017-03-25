@@ -367,7 +367,7 @@ class contourTracker( object ):
 			
 			radiusVectorRotationMatrix = np.array([[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
 			
-			self.prg.findMembranePositionNew2(self.queue, self.global_size, self.local_size, self.sampler, \
+			self.prg.findMembranePosition(self.queue, self.global_size, self.local_size, self.sampler, \
 											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
 											 self.buf_localRotationMatrices, \
 											 self.buf_linFitSearchRangeXvalues, \
@@ -431,7 +431,7 @@ class contourTracker( object ):
 			   self.dev_ds.data, self.dev_sumds.data \
 			 )
 			 
-		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
+		self.prg.calculateContourCenter(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 								   self.dev_ds.data, self.dev_sumds.data, \
 								   self.dev_contourCenter.data, \
@@ -455,7 +455,7 @@ class contourTracker( object ):
 		for strideNr in range(self.nrOfStrides):
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
-			self.prg.findMembranePositionNew2(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
+			self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
 											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
 											 self.buf_localRotationMatrices, \
 											 self.buf_linFitSearchRangeXvalues, \
@@ -539,7 +539,7 @@ class contourTracker( object ):
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
+		self.prg.calculateContourCenter(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 								   self.dev_ds.data, self.dev_sumds.data, \
 								   self.dev_contourCenter.data, \
