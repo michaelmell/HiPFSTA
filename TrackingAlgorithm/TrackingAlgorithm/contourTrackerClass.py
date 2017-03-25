@@ -522,29 +522,9 @@ class contourTracker( object ):
 		
 		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
 
-	########################################################################
-	### Calculate contour center
-	########################################################################
-		
-		### Use this for CPU and when number of detected points <1024
-		#if self.computeDeviceId is 10:
-			##~ print bla
-			#self.prg.calculateContourCenter(self.queue, self.gradientGlobalSize, self.gradientGlobalSize, \
-										   #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-										   #cl.LocalMemory(self.membraneNormalVectors_memSize), cl.LocalMemory(self.membraneNormalVectors_memSize), \
-										   #self.dev_contourCenter.data \
-										  #)
-		
-		#### Use this for GPU and when number of detected points >500
-		#### NOTE: There is a in the OpenCL driver for the Intel CPU. So that in the funciton below,
-		#### 	  the CLK_GLOBAL_MEM_FENCE is not respected correctly leading to incorrect results
-		#if self.computeDeviceId is 10:
-			#self.prg.calculateContourCenterNew(self.queue, self.gradientGlobalSize, None, \
-											   #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-											   #self.dev_ds.data, self.dev_sumds.data, \
-											   #self.dev_contourCenter.data \
-											  #)
-		
+		########################################################################
+		### Calculate contour center
+		########################################################################
 		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data \
