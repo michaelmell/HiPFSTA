@@ -14,11 +14,12 @@ import os
 import time
 
 class contourTracker( object ):
-	def __init__(self, ctx, config, imageProcessor):
+	def __init__(self, ctx, configReader, imageProcessor):
+		self.configReader = configReader
 		self.imageProcessor = imageProcessor
 		self.setupClQueue(ctx)
 		self.loadClKernels()
-		self.loadConfig(config)
+		self.loadConfig(configReader)
 		self.setupTrackingParameters()
 		self.setWorkGroupSizes()
 		self.setupClTrackingVariables()
@@ -57,46 +58,42 @@ class contourTracker( object ):
 		self.prg = cl.Program(self.ctx,self.kernelString).build()
 		pass
 	
-	def loadConfig(self,config):
-		self.startingCoordinate = self.imageProcessor.scalingFactor * np.array(json.loads(config.get("TrackingParameters","startingCoordinate")))
-		self.rotationCenterCoordinate = self.imageProcessor.scalingFactor * np.array(json.loads(config.get("TrackingParameters","rotationCenterCoordinate")))
+	def loadConfig(self,configReader):
+		self.startingCoordinate = configReader.startingCoordinate
+		self.rotationCenterCoordinate = configReader.rotationCenterCoordinate
 		
-		self.linFitParameter = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","linFitParameter")))
-		self.linFitSearchRange = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","linFitSearchRange")))
-		self.interpolationFactor = np.int32(np.float64(json.loads(config.get("TrackingParameters","interpolationFactor")))/self.imageProcessor.scalingFactor)
+		self.linFitParameter = configReader.linFitParameter
+		self.linFitSearchRange = configReader.linFitSearchRange
+		self.interpolationFactor = configReader.interpolationFactor
 		
-		self.meanParameter = np.int32(np.round(self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","meanParameter")))))
-		self.meanRangePositionOffset = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","meanRangePositionOffset")))
+		self.meanParameter = configReader.meanParameter
+		self.meanRangePositionOffset = configReader.meanRangePositionOffset
 
-		self.localAngleRange = np.float64(json.loads(config.get("TrackingParameters","localAngleRange")))
-		self.nrOfLocalAngleSteps = np.int32(json.loads(config.get("TrackingParameters","nrOfLocalAngleSteps")))
+		self.localAngleRange = configReader.localAngleRange
+		self.nrOfLocalAngleSteps = configReader.nrOfLocalAngleSteps
 		
-		self.detectionKernelStrideSize = np.int32(json.loads(config.get("TrackingParameters","detectionKernelStrideSize")))
-		self.nrOfStrides = np.int32(json.loads(config.get("TrackingParameters","nrOfStrides")))
+		self.detectionKernelStrideSize = configReader.detectionKernelStrideSize
+		self.nrOfStrides = configReader.nrOfStrides
 		
-		self.nrOfAnglesToCompare = np.int32(json.loads(config.get("TrackingParameters","nrOfAnglesToCompare")))
+		self.nrOfAnglesToCompare = configReader.nrOfAnglesToCompare
 		
-		self.nrOfIterationsPerContour = np.int32(json.loads(config.get("TrackingParameters","nrOfIterationsPerContour")))
+		self.nrOfIterationsPerContour = configReader.nrOfIterationsPerContour
 		
-		self.computeDeviceId = json.loads(config.get("OpenClParameters","computeDeviceId"))
+		self.computeDeviceId = configReader.computeDeviceId
 
-		self.inclineTolerance = np.float64(json.loads(config.get("TrackingParameters","inclineTolerance")))
+		self.inclineTolerance = configReader.inclineTolerance
 		
-		self.coordinateTolerance = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","coordinateTolerance")))
+		self.coordinateTolerance = configReader.coordinateTolerance
 		
-		self.maxNrOfTrackingIterations = json.loads(config.get("TrackingParameters","maxNrOfTrackingIterations"))
-		self.minNrOfTrackingIterations = json.loads(config.get("TrackingParameters","minNrOfTrackingIterations"))
+		self.maxNrOfTrackingIterations = configReader.maxNrOfTrackingIterations
+		self.minNrOfTrackingIterations = configReader.minNrOfTrackingIterations
 		
-		self.centerTolerance = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","centerTolerance")))
+		self.centerTolerance = configReader.centerTolerance
 		
-		self.maxInterCoordinateAngle = np.float64(json.loads(config.get("TrackingParameters","maxInterCoordinateAngle")))
-		self.maxCoordinateShift = self.imageProcessor.scalingFactor * np.float64(json.loads(config.get("TrackingParameters","maxCoordinateShift")))
+		self.maxInterCoordinateAngle = configReader.maxInterCoordinateAngle
+		self.maxCoordinateShift = configReader.maxCoordinateShift
 		
-		resetNormalsAfterEachImage = config.get("TrackingParameters","resetNormalsAfterEachImage")
-		if resetNormalsAfterEachImage == 'True':
-			self.resetNormalsAfterEachImage = True
-		else:
-			self.resetNormalsAfterEachImage = False
+		self.resetNormalsAfterEachImage = configReader.resetNormalsAfterEachImage
 		
 	def setupTrackingParameters(self):
 		### parameters for linear fit
@@ -673,12 +670,12 @@ class contourTracker( object ):
 		
 	def getMembraneCoordinatesX(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesX.data, self.host_interpolatedMembraneCoordinatesX).wait()
-		return self.host_interpolatedMembraneCoordinatesX/self.imageProcessor.scalingFactor
+		return self.host_interpolatedMembraneCoordinatesX/self.configReader.scalingFactor
 		pass
 	
 	def getMembraneCoordinatesY(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_interpolatedMembraneCoordinatesY.data, self.host_interpolatedMembraneCoordinatesY).wait()
-		return self.host_interpolatedMembraneCoordinatesY/self.imageProcessor.scalingFactor
+		return self.host_interpolatedMembraneCoordinatesY/self.configReader.scalingFactor
 		pass
 
 	def getMembraneCoordinatesXscaled(self):
@@ -703,13 +700,13 @@ class contourTracker( object ):
 
 	def getContourCenterCoordinates(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_contourCenter.data, self.host_contourCenter).wait()
-		self.host_contourCenter[0]['x']=self.host_contourCenter[0]['x']/self.imageProcessor.scalingFactor
-		self.host_contourCenter[0]['y']=self.host_contourCenter[0]['y']/self.imageProcessor.scalingFactor
+		self.host_contourCenter[0]['x']=self.host_contourCenter[0]['x']/self.configReader.scalingFactor
+		self.host_contourCenter[0]['y']=self.host_contourCenter[0]['y']/self.configReader.scalingFactor
 		return self.host_contourCenter
 		pass
 
 	def getFitInclines(self):
 		cl.enqueue_read_buffer(self.queue, self.dev_fitInclines.data, self.host_fitInclines).wait()
-		return self.host_fitInclines * self.imageProcessor.scalingFactor # needs to be multiplied, since putting in more pixels artificially reduces the value of the incline
+		return self.host_fitInclines * self.configReader.scalingFactor # needs to be multiplied, since putting in more pixels artificially reduces the value of the incline
 		pass
 

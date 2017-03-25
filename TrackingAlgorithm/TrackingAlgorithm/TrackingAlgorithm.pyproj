@@ -22,6 +22,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="configReader.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="contourTrackerClass.py" />
     <Compile Include="contourTrackerMainClass.py" />
     <Compile Include="imagePreprocessor.py">
