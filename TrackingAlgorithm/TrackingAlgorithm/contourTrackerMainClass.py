@@ -26,6 +26,9 @@ class contourTrackerMain( object ):
 		self.getImageFileList()
 		self.getDarkfieldFileList()
 		self.getBackgroundFileList()
+		self.imagePreprocessor = imagePreprocessor(self.configReader)
+		self.imagePreprocessor.loadDarkfield(self.darkfieldList) # load darkfield images
+		self.imagePreprocessor.loadBackground(self.backgroundList) # load background images
 		self.setupClContext()
 		self.setupManagementQueue()
 		self.setupClVariables()
@@ -179,7 +182,7 @@ class contourTrackerMain( object ):
 		self.managementQueue.finish()
 		
 	def drawSnrRoiRectangle(self):
-		snrRoi = self.preprocessor.getSnrRoiScaled()
+		snrRoi = self.imagePreprocessor.getSnrRoiScaled()
 		snrRoiStartIndexes = snrRoi[0]
 		snrRoiStopIndexes = snrRoi[1]
 		plt.plot((snrRoiStartIndexes[0], snrRoiStartIndexes[0]),(snrRoiStartIndexes[1], snrRoiStopIndexes[1]),'k')
@@ -344,11 +347,8 @@ class contourTrackerMain( object ):
 		pass
 
 	def setupTrackingQueues(self):
-		self.preprocessor = imagePreprocessor(self.configReader)
-		self.preprocessor.loadDarkfield(self.darkfieldList) # load darkfield images
-		self.preprocessor.loadBackground(self.backgroundList) # load background images
-		self.trackingQueues = [contourTracker(self.ctx, self.configReader, self.preprocessor) for count in range(self.configReader.nrOfTrackingQueues)]
-		self.sequentialTracker = contourTracker(self.ctx, self.configReader, self.preprocessor)
+		self.trackingQueues = [contourTracker(self.ctx, self.configReader, self.imagePreprocessor) for count in range(self.configReader.nrOfTrackingQueues)]
+		self.sequentialTracker = contourTracker(self.ctx, self.configReader, self.imagePreprocessor)
 		pass
 
 	def getImageFileList(self):
@@ -488,9 +488,9 @@ class contourTrackerMain( object ):
 			self.fitInclines[:,contourNr] = fitInclines
 		
 		if self.configReader.snrRoi is not None:
-			imageSnr = self.preprocessor.getImageSnr()
+			imageSnr = self.imagePreprocessor.getImageSnr()
 			self.imageSnr[0,contourNr] = imageSnr
-			imageIntensity = self.preprocessor.getImageIntensity()
+			imageIntensity = self.imagePreprocessor.getImageIntensity()
 			self.imageIntensity[0,contourNr] = imageIntensity
 			
 		if np.any(np.isnan(membraneCoordinatesX)) or np.any(np.isnan(membraneCoordinatesY)):
