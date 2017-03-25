@@ -1,8 +1,6 @@
 from contourTrackerClass import contourTracker
 from imagePreprocessor import imagePreprocessor
 
-import configparser
-import json
 import pyopencl as cl
 import pyopencl.array as cl_array
 import numpy as np
@@ -15,13 +13,15 @@ import time
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from configReader import configReader
 
 class contourTrackerMain( object ):
 	def __init__(self, configurationFile,runInteractive=False):
 		self.runInteractive = runInteractive
 		self.setInteractive(runInteractive)
 		#~ self.configurationFile = configurationFile
-		self.loadSettings(configurationFile)
+		#self.loadSettings(configurationFile)
+		self.configReader = configReader(configurationFile)
 		self.runConfigChecks()
 		self.getImageFileList()
 		self.getDarkfieldFileList()
@@ -32,18 +32,18 @@ class contourTrackerMain( object ):
 		self.printTrackingSetupInformation()
 		self.setupTrackingQueues()
 		
-		if self.nrOfFramesToSaveFitInclinesFor:
-			self.fitInclines = np.empty((self.nrOfContourPoints,self.nrOfFramesToSaveFitInclinesFor),dtype=np.float64)
+		if self.configReader.nrOfFramesToSaveFitInclinesFor:
+			self.fitInclines = np.empty((self.configReader.nrOfContourPoints,self.configReader.nrOfFramesToSaveFitInclinesFor),dtype=np.float64)
 		
-		if self.snrRoi is not None:
+		if self.configReader.snrRoi is not None:
 			self.imageSnr = np.zeros((1,self.totalNrOfImages),dtype=np.float64)
 			self.imageIntensity = np.zeros((1,self.totalNrOfImages),dtype=np.float64)
 		
-		self.contourCoordinatesX = np.empty((self.nrOfContourPoints,self.totalNrOfImages),dtype=np.float64)
-		self.contourCoordinatesY = np.empty((self.nrOfContourPoints,self.totalNrOfImages),dtype=np.float64)
+		self.contourCoordinatesX = np.empty((self.configReader.nrOfContourPoints,self.totalNrOfImages),dtype=np.float64)
+		self.contourCoordinatesY = np.empty((self.configReader.nrOfContourPoints,self.totalNrOfImages),dtype=np.float64)
 		
-		self.contourNormalVectorsX = np.empty((self.nrOfContourPoints,self.totalNrOfImages),dtype=np.float64)
-		self.contourNormalVectorsY = np.empty((self.nrOfContourPoints,self.totalNrOfImages),dtype=np.float64)
+		self.contourNormalVectorsX = np.empty((self.configReader.nrOfContourPoints,self.totalNrOfImages),dtype=np.float64)
+		self.contourNormalVectorsY = np.empty((self.configReader.nrOfContourPoints,self.totalNrOfImages),dtype=np.float64)
 		
 		self.contourCenterCoordinatesX = np.empty(self.totalNrOfImages,dtype=np.float64)
 		self.contourCenterCoordinatesY = np.empty(self.totalNrOfImages,dtype=np.float64)
@@ -62,14 +62,14 @@ class contourTrackerMain( object ):
 		pass
 
 	def initializeTracking(self):
-		if self.imageIndexToContinueFrom is 0:
+		if self.configReader.imageIndexToContinueFrom is 0:
 			self.doInitialTracking()
 		else:
 			self.setupContinuationOfTracking()
 		pass
 
 	def setupClVariables(self):
-		self.nrOfDetectionAngleSteps = int(self.detectionKernelStrideSize * self.nrOfStrides)
+		self.nrOfDetectionAngleSteps = self.configReader.nrOfDetectionAngleSteps
 		self.host_mostRecentMembraneCoordinatesX = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_mostRecentMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_mostRecentMembraneCoordinatesX)
 		self.host_mostRecentMembraneCoordinatesY = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
@@ -295,7 +295,7 @@ class contourTrackerMain( object ):
 						print("\n")
 						
 						# do intermediate save points
-						if self.mostRecentImageIndex % self.stepsBetweenSavingResults is 0:
+						if self.mostRecentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
 							print("Saving intermediate results.")
 							print("\n")
 							self.saveTrackingResult()
@@ -357,7 +357,7 @@ class contourTrackerMain( object ):
 		counter = 0
 		for platform in self.clPlatformList:
 			#~ tmp = self.clPlatformList[0]
-			if self.clPlatform in platform.name.lower():
+			if self.configReader.clPlatform in platform.name.lower():
 				self.platformIndex = counter
 			counter = counter + 1
 		clDevicesList = self.clPlatformList[self.platformIndex].get_devices()
@@ -366,7 +366,7 @@ class contourTrackerMain( object ):
 		#~ # set work dimension of work group used in tracking kernel
 		#~ if "intel" in vendorString.lower():  # work-around since the 'max_work_group_size' is not reported correctly for Intel-CPU using the AMD OpenCL driver (tested on: Intel(R) Core(TM) i5-3470)
 
-		computeDeviceIdSelection = self.computeDeviceId # 0: AMD-GPU; 1: Intel CPU
+		computeDeviceIdSelection = self.configReader.computeDeviceId # 0: AMD-GPU; 1: Intel CPU
 		self.device = clDevicesList[computeDeviceIdSelection]
 		# ipdb.set_trace()
 		self.ctx = cl.Context([self.device])
@@ -379,98 +379,20 @@ class contourTrackerMain( object ):
 		pass
 
 	def setupTrackingQueues(self):
-		self.preprocessor = imagePreprocessor(self.config)
+		self.preprocessor = imagePreprocessor(self.configReader)
 		self.preprocessor.loadDarkfield(self.darkfieldList) # load darkfield images
 		self.preprocessor.loadBackground(self.backgroundList) # load background images
 
 		#~ for index in range(nrOfTrackingQueues):
 			#~ trackingQueues(index) = contourTracker( self.config )
-		self.trackingQueues = [contourTracker(self.ctx, self.config, self.preprocessor) for count in range(self.nrOfTrackingQueues)]
+		self.trackingQueues = [contourTracker(self.ctx, self.configReader, self.preprocessor) for count in range(self.configReader.nrOfTrackingQueues)]
 		
-		self.sequentialTracker = contourTracker(self.ctx, self.config, self.preprocessor)
+		self.sequentialTracker = contourTracker(self.ctx, self.configReader, self.preprocessor)
 		
 		#~ ipdb.set_trace()
 		#~ trackingQueue[0].setupClQueue(self.ctx)
 		pass
 
-	def loadSettings(self,configurationFile):
-		# check if configuration file exists
-		#~ ipdb.set_trace()
-		if os.path.isfile(configurationFile) is False:
-			print("")
-			print("\tError: Configuration file not found at: "+configurationFile)
-			sys.exit(1)
-				
-		self.config = configparser.ConfigParser()
-		self.config.read(configurationFile,encoding="utf8")
-		
-		#~ self.imagePath = json.loads(self.config.get("FileParameters","imagePath"))
-		#~ self.backgroundDirectoryPath = json.loads(self.config.get("FileParameters","backgroundDirectoryPath"))
-		backgroundDirectoryPath = self.config.get("FileParameters","backgroundDirectoryPath")
-		if backgroundDirectoryPath == "" or backgroundDirectoryPath == "None":
-			self.backgroundDirectoryPath = None
-		else:
-			self.backgroundDirectoryPath = json.loads(backgroundDirectoryPath)
-		
-		darkfieldDirectoryPath = self.config.get("FileParameters","darkfieldDirectoryPath")
-		if darkfieldDirectoryPath == "" or darkfieldDirectoryPath == "None":
-			self.darkfieldDirectoryPath = None
-		else:
-			self.darkfieldDirectoryPath = json.loads(darkfieldDirectoryPath)
-		
-		self.imageDirectoryPath = json.loads(self.config.get("FileParameters","imageDirectoryPath"))
-		
-		ignoredImageIndices = self.config.get("FileParameters","ignoredImageIndices")
-		if ignoredImageIndices == "" or ignoredImageIndices == "None":
-			self.ignoredImageIndices = None
-		else:
-			if not ":" in ignoredImageIndices:
-				self.ignoredImageIndices = np.array(json.loads(self.config.get("FileParameters","ignoredImageIndices")))
-			else:
-				self.ignoredImageIndices = self.parseIndexRanges(ignoredImageIndices)
-
-			
-		nrOfFramesToSaveFitInclinesFor = self.config.get("FileParameters","nrOfFramesToSaveFitInclinesFor")
-		if nrOfFramesToSaveFitInclinesFor == "" or nrOfFramesToSaveFitInclinesFor == "None":
-			self.nrOfFramesToSaveFitInclinesFor = None
-		else:
-			self.nrOfFramesToSaveFitInclinesFor = json.loads(self.config.get("FileParameters","nrOfFramesToSaveFitInclinesFor"))
-		
-		self.imageFileExtension = json.loads(self.config.get("FileParameters","imageFileExtension"))
-		self.dataAnalysisDirectoryPath = json.loads(self.config.get("FileParameters","dataAnalysisDirectoryPath"))
-
-		self.detectionKernelStrideSize = np.int32(json.loads(self.config.get("TrackingParameters","detectionKernelStrideSize")))
-		self.nrOfStrides = np.int32(json.loads(self.config.get("TrackingParameters","nrOfStrides")))
-		self.nrOfContourPoints = self.detectionKernelStrideSize*self.nrOfStrides
-		
-		self.clPlatform = json.loads(self.config.get("OpenClParameters","clPlatform"))
-		self.computeDeviceId = json.loads(self.config.get("OpenClParameters","computeDeviceId"))
-		self.nrOfTrackingQueues = json.loads(self.config.get("OpenClParameters","nrOfTrackingQueues"))
-		
-		self.detectionKernelStrideSize = np.int32(json.loads(self.config.get("TrackingParameters","detectionKernelStrideSize")))
-		self.nrOfStrides = np.int32(json.loads(self.config.get("TrackingParameters","nrOfStrides")))
-		
-		self.imageIndexToContinueFrom = json.loads(self.config.get("TrackingParameters","imageIndexToContinueFrom"))
-		
-		self.stepsBetweenSavingResults = json.loads(self.config.get("TrackingParameters","stepsBetweenSavingResults"))
-		
-		snrRoi = self.config.get("TrackingParameters","snrRoi")
-		if snrRoi == "" or snrRoi == "None":
-			self.snrRoi = None
-		else:
-			self.snrRoi = np.array(json.loads(self.config.get("TrackingParameters","snrRoi")))
-		
-		#~ dict = self.config.items("SectionOne")
-		
-		#~ ipdb.set_trace()
-
-		#~ for item in dict:
-			#~ print "self.configuration."+item[0]+"="+item[1]
-			#~ eval("self.configuration."+item[0]+"="+item[1])
-		#~ ipdb.set_trace()
-		
-		pass
-		
 	def parseIndexRanges(self,ignoredImageIndices):
 		ignoredImageIndicesTmp = ignoredImageIndices
 		ignoredImageIndicesTmp = ignoredImageIndicesTmp.strip('[[')
@@ -489,92 +411,82 @@ class contourTrackerMain( object ):
 		pass
 	
 	def getImageFileList(self):
-		#~ self.imageList = glob.glob(self.imagePath+"/*.tif")
-		self.imageList = glob.glob(self.imageDirectoryPath+"/*."+self.imageFileExtension)
+		self.imageList = glob.glob(self.configReader.imageDirectoryPath+"/*."+self.configReader.imageFileExtension)
 		self.imageList.sort() # or else their order is random...
 
-		if self.ignoredImageIndices is not None:
+		if self.configReader.ignoredImageIndices is not None:
 			self.removeIgnoredImages()
 			pass
 		self.totalNrOfImages = self.imageList.__len__()
-		#~ ipdb.set_trace()
 		pass
 		
 	def removeIgnoredImages(self):
-		#~ ipdb.set_trace()
 		self.ignoredImageIndices.sort()
-		#~ self.ignoredImageIndicesReversed = self.ignoredImageIndices[::-1]
 		for imageIndex in reversed(self.ignoredImageIndices): # remove in reverse order since we change the indexation, if we remove from small to large indexes
-			#~ print self.imageList[imageIndex-1]
 			del self.imageList[imageIndex-1]
-		#~ ipdb.set_trace()
 		pass
 		
 	def getBackgroundFileList(self):
-		if self.backgroundDirectoryPath != None:
-		#~ self.imageList = glob.glob(self.imagePath+"/*.tif")
-			self.backgroundList = glob.glob(self.backgroundDirectoryPath+"/*."+self.imageFileExtension)
+		if self.configReader.backgroundDirectoryPath != None:
+			self.backgroundList = glob.glob(self.configReader.backgroundDirectoryPath+"/*."+self.configReader.imageFileExtension)
 			self.backgroundList.sort() # or else their order is random...
 		else:
 			self.backgroundList = []
 			
 		self.totalNrOfBackgrounds = self.backgroundList.__len__()
-		#~ ipdb.set_trace()
 		pass
 	
 	def getDarkfieldFileList(self):
-		if self.darkfieldDirectoryPath != None:
-		#~ self.imageList = glob.glob(self.imagePath+"/*.tif")
-			self.darkfieldList = glob.glob(self.darkfieldDirectoryPath+"/*."+self.imageFileExtension)
+		if self.configReader.darkfieldDirectoryPath != None:
+			self.darkfieldList = glob.glob(self.configReader.darkfieldDirectoryPath+"/*."+self.configReader.imageFileExtension)
 			self.darkfieldList.sort() # or else their order is random...
 		else:
 			self.darkfieldList = []
 			
 		self.totalNrOfDarkfields = self.darkfieldList.__len__()
-		#~ ipdb.set_trace()
 		pass
 	
 	def runConfigChecks(self):
-		if self.darkfieldDirectoryPath is not None:
-			if not os.path.isdir(self.darkfieldDirectoryPath):
+		if self.configReader.darkfieldDirectoryPath is not None:
+			if not os.path.isdir(self.configReader.darkfieldDirectoryPath):
 				print("")
 				print("\tERROR: Directory at 'darkfieldDirectoryPath' does not exist.")
 				sys.exit(1)
-		if self.backgroundDirectoryPath is not None:
-			if not os.path.isdir(self.backgroundDirectoryPath):
+		if self.configReader.backgroundDirectoryPath is not None:
+			if not os.path.isdir(self.configReader.backgroundDirectoryPath):
 				print("")
 				print("\tERROR: Directory at 'backgroundDirectoryPath' does not exist.")
 				sys.exit(1)
-		if not os.path.isdir(self.imageDirectoryPath):
+		if not os.path.isdir(self.configReader.imageDirectoryPath):
 			print("")
 			print("\tERROR: Directory at 'imageDirectoryPath' does not exist.")
 			sys.exit(1)
-		if not os.path.isdir(self.dataAnalysisDirectoryPath):
+		if not os.path.isdir(self.configReader.dataAnalysisDirectoryPath):
 			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
 				print("")
 				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' does not exist. Create it?")
 				print("")
 				print("\t'dataAnalysisDirectoryPath':")
-				print("\t"+self.dataAnalysisDirectoryPath)
+				print("\t"+self.configReader.dataAnalysisDirectoryPath)
 				print("")
 				answer = input("\tContinue? (y: yes, n: no) ")
 				if answer.lower().startswith("y"):
-					os.makedirs(self.dataAnalysisDirectoryPath)
+					os.makedirs(self.configReader.dataAnalysisDirectoryPath)
 				else:
 					exit()
 			else:
 				print("")
 				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' did not exist. Created it.")
 				print("")
-				os.makedirs(self.dataAnalysisDirectoryPath)
+				os.makedirs(self.configReader.dataAnalysisDirectoryPath)
 
-		if os.listdir(self.dataAnalysisDirectoryPath) != [] and self.imageIndexToContinueFrom == 0:
+		if os.listdir(self.configReader.dataAnalysisDirectoryPath) != [] and self.configReader.imageIndexToContinueFrom == 0:
 			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
 				print("")
 				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' is not empty and 'imageIndexToContinueFrom' is 0. Continuing may result in data-loss.")
 				print("")
 				print("\t'dataAnalysisDirectoryPath':")
-				print("\t"+self.dataAnalysisDirectoryPath)
+				print("\t"+self.configReader.dataAnalysisDirectoryPath)
 				print("")
 				answer = input("\tContinue? (y: yes, n: no) ")
 				if answer.lower().startswith("n"):
@@ -587,76 +499,54 @@ class contourTrackerMain( object ):
 		print("\tOpenCL Device: "+self.device.name)
 		print("")
 		print("\tDarkfield image directory:")
-		if self.darkfieldDirectoryPath is not None:
-			print("\t"+self.darkfieldDirectoryPath)
+		if self.configReader.darkfieldDirectoryPath is not None:
+			print("\t"+self.configReader.darkfieldDirectoryPath)
 		else:
 			print("\tNo directory provided.")
 		print("")
 		print("\tImage directory: ")
-		print("\t"+self.imageDirectoryPath)
+		print("\t"+self.configReader.imageDirectoryPath)
 		print("")
 		print("\tBackground image directory:")
-		if self.backgroundDirectoryPath is not None:
-			print("\t"+self.backgroundDirectoryPath)
+		if self.configReader.backgroundDirectoryPath is not None:
+			print("\t"+self.configReader.backgroundDirectoryPath)
 		else:
 			print("\tNo directory provided.")
 		print("")
 		print("\tSaving results to:")
-		print("\t"+self.dataAnalysisDirectoryPath)
+		print("\t"+self.configReader.dataAnalysisDirectoryPath)
 		print("")
 	
 	def saveTrackingResult(self):
-		#~ ipdb.set_trace()
-		#~ self.dataAnalysisDirectoryPath
-		#~ io.savemat(self.dataAnalysisDirectoryPath+'/contourCoordinatesX', mdict={'contourCoordinatesX': self.contourCoordinatesX})
-		#~ io.savemat(self.dataAnalysisDirectoryPath+'/contourCoordinatesY', mdict={'contourCoordinatesY': self.contourCoordinatesY})
 		# for more info on usage see here: http://docs.scipy.org/doc/scipy/reference/generated/scipy.io.savemat.html
-		io.savemat(self.dataAnalysisDirectoryPath+'/contourCoordinatesX', mdict={'contourCoordinatesX': self.contourCoordinatesX},oned_as='row',do_compression=True)
-		io.savemat(self.dataAnalysisDirectoryPath+'/contourCoordinatesY', mdict={'contourCoordinatesY': self.contourCoordinatesY},oned_as='row',do_compression=True)
+		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourCoordinatesX', mdict={'contourCoordinatesX': self.contourCoordinatesX},oned_as='row',do_compression=True)
+		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourCoordinatesY', mdict={'contourCoordinatesY': self.contourCoordinatesY},oned_as='row',do_compression=True)
 		
-		#~ if self.nrOfFinishedImages <= self.nrOfFramesToSaveFitInclinesFor:
-		if self.nrOfFramesToSaveFitInclinesFor:
-			io.savemat(self.dataAnalysisDirectoryPath+'/fitInclines', mdict={'fitInclines': self.fitInclines},oned_as='row',do_compression=True)
+		if self.configReader.nrOfFramesToSaveFitInclinesFor:
+			io.savemat(self.configReader.dataAnalysisDirectoryPath+'/fitInclines', mdict={'fitInclines': self.fitInclines},oned_as='row',do_compression=True)
 
-		if self.snrRoi is not None:
-			io.savemat(self.dataAnalysisDirectoryPath+'/imageSnr', mdict={'imageSnr': self.imageSnr},oned_as='row',do_compression=True)
-			io.savemat(self.dataAnalysisDirectoryPath+'/imageIntensity', mdict={'imageIntensity': self.imageIntensity},oned_as='row',do_compression=True)
+		if self.configReader.snrRoi is not None:
+			io.savemat(self.configReader.dataAnalysisDirectoryPath+'/imageSnr', mdict={'imageSnr': self.imageSnr},oned_as='row',do_compression=True)
+			io.savemat(self.configReader.dataAnalysisDirectoryPath+'/imageIntensity', mdict={'imageIntensity': self.imageIntensity},oned_as='row',do_compression=True)
 		
-		io.savemat(self.dataAnalysisDirectoryPath+'/contourNormalVectorsX', mdict={'contourNormalVectorsX': self.contourNormalVectorsX},oned_as='row',do_compression=True)
-		io.savemat(self.dataAnalysisDirectoryPath+'/contourNormalVectorsY', mdict={'contourNormalVectorsY': self.contourNormalVectorsY},oned_as='row',do_compression=True)
+		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourNormalVectorsX', mdict={'contourNormalVectorsX': self.contourNormalVectorsX},oned_as='row',do_compression=True)
+		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourNormalVectorsY', mdict={'contourNormalVectorsY': self.contourNormalVectorsY},oned_as='row',do_compression=True)
 		
-		io.savemat(self.dataAnalysisDirectoryPath+'/contourCenterCoordinatesX', mdict={'contourCenterCoordinatesX': self.contourCenterCoordinatesX},oned_as='row',do_compression=True)
-		io.savemat(self.dataAnalysisDirectoryPath+'/contourCenterCoordinatesY', mdict={'contourCenterCoordinatesY': self.contourCenterCoordinatesY},oned_as='row',do_compression=True)
-		
-		# DEBUGGING; TODO: REMOVE THIS LATER...
-		#~ ipdb.set_trace()
-		#~ tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCoordinatesX_REF.mat')
-		#~ contourCoordinatesX_REF = tmp['contourCoordinatesX']
-		#~ tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCoordinatesY_REF.mat')
-		#~ contourCoordinatesY_REF = tmp['contourCoordinatesY']
-		
-		#~ if np.all(contourCoordinatesX_REF==self.contourCoordinatesX) and np.all(contourCoordinatesY_REF==self.contourCoordinatesY):
-		#~ if np.allclose(contourCoordinatesX_REF,self.contourCoordinatesX) and np.allclose(contourCoordinatesY_REF,self.contourCoordinatesY):
-			#~ print "Coordinate test PASSED."
-		#~ else:
-			#~ print "Coordinate test FAILED."
-			
+		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesX', mdict={'contourCenterCoordinatesX': self.contourCenterCoordinatesX},oned_as='row',do_compression=True)
+		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesY', mdict={'contourCenterCoordinatesY': self.contourCenterCoordinatesY},oned_as='row',do_compression=True)
 		pass
 		
 	def writeContourToFinalArray(self,tracker):
 		contourNr = tracker.getContourId()
-		#~ ipdb.set_trace()
-		#~ self.contourCoordinatesX[:,contourNr] = tracker.getMembraneCoordinatesX()
-		#~ self.contourCoordinatesY[:,contourNr] = tracker.getMembraneCoordinatesY()
+
 		membraneCoordinatesX = tracker.getMembraneCoordinatesX()
 		membraneCoordinatesY = tracker.getMembraneCoordinatesY()
 		
-		#~ ipdb.set_trace()
-		if self.nrOfFinishedImages < self.nrOfFramesToSaveFitInclinesFor:
+		if self.nrOfFinishedImages < self.configReader.nrOfFramesToSaveFitInclinesFor:
 			fitInclines = tracker.getFitInclines()
 			self.fitInclines[:,contourNr] = fitInclines
 		
-		if self.snrRoi is not None:
+		if self.configReader.snrRoi is not None:
 			imageSnr = self.preprocessor.getImageSnr()
 			self.imageSnr[0,contourNr] = imageSnr
 			imageIntensity = self.preprocessor.getImageIntensity()
@@ -680,36 +570,7 @@ class contourTrackerMain( object ):
 		self.contourNormalVectorsY[:,contourNr] = contourNormalVectorsY
 		
 		contourCenter = tracker.getContourCenterCoordinates()
-		#~ ipdb.set_trace()
+
 		self.contourCenterCoordinatesX[contourNr] = contourCenter['x'][0]
 		self.contourCenterCoordinatesY[contourNr] = contourCenter['y'][0]
-				
-		
-		#~ if np.any(np.isnan(self.contourCoordinatesX)) or np.any(np.isnan(self.contourCoordinatesY)):
-			#~ ipdb.set_trace()
-		
-		#~ if contourNr == 1:
-		#~ if contourNr > self.contourCoordinatesX.shape[1]-10:
-			#~ ipdb.set_trace()
-			#~ 
-			#~ import matplotlib.pyplot as plt
-			#~ 
-			#~ plt.plot(self.contourCoordinatesX[:,0:2],self.contourCoordinatesY[:,0:2])
-			#~ plt.show()
-			
-			#~ ax = plt.gca()
-			#~ nrOfContourPoints = self.contourCoordinatesX.shape[0]
-			#~ contourCentersX = np.tile(self.contourCenterCoordinatesX,[nrOfContourPoints,1])
-			#~ contourCentersY = np.tile(self.contourCenterCoordinatesY,[nrOfContourPoints,1])
-			#~ plt.plot(self.contourCoordinatesX[:,0:20]-contourCentersX[:,0:20],self.contourCoordinatesY[:,0:20]-contourCentersY[:,0:20])
-			#~ plt.show()
-			
-			#~ ax = plt.gca()
-			#~ selectedContourNr = 6
-			#~ nrOfContourPoints = self.contourCoordinatesX.shape[0]
-			#~ contourCentersX = np.tile(self.contourCenterCoordinatesX,[nrOfContourPoints,1])
-			#~ contourCentersY = np.tile(self.contourCenterCoordinatesY,[nrOfContourPoints,1])
-			#~ plt.plot(self.contourCoordinatesX[:,selectedContourNr]-contourCentersX[:,selectedContourNr],self.contourCoordinatesY[:,selectedContourNr]-contourCentersY[:,selectedContourNr])
-			#~ plt.show()
-
 		pass

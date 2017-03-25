@@ -6,11 +6,18 @@ from scipy import signal
 class imagePreprocessor(object):
 	"""description of class"""
 	
-	def __init__(self, config):
-		self.loadConfig(config)
+	def __init__(self, configReader):
+		self.configReader = configReader
+		self.setup()
 
+	def setup(self):
+		if self.configReader.performImageFiltering:
+			self.setupFilter()
+
+		self.scalingMethodVar = self.setImageScalingMethod(self.configReader.scalingMethod)
+
+	
 	def processImage(self, im):
-		#im = Image.open(imagePath)
 		imgdata = list(im.getdata())
 		
 		imshape = im.size;
@@ -26,10 +33,10 @@ class imagePreprocessor(object):
 
 		self.host_ImgUnfilteredUnscaled = self.host_Img
 		
-		if self.performImageFiltering is True:
+		if self.configReader.performImageFiltering is True:
 			self.filterImage()
 		
-		if self.performImageScaling is True:
+		if self.configReader.performImageScaling is True:
 			self.rescaleImage()
 		
 		return self.host_Img
@@ -103,22 +110,9 @@ class imagePreprocessor(object):
 		return scalingMethodVar
 		pass
 	
-	def setupWienerFilter(self,config):
-		filterKernelSize = json.loads(config.get("ImageFilterParameters","filterKernelSize"))
-		if filterKernelSize == "None":
-			filterKernelSize = None
-		else:
-			filterKernelSize = json.loads(config.get("ImageFilterParameters","filterKernelSize"))
-		
-		noisePowerEstimate = config.get("ImageFilterParameters","noisePowerEstimate")
-		if noisePowerEstimate == "None":
-			noisePowerEstimate = None
-			#~ if self.snrRoi is not None:
-				#~ noisePowerEstimate = "estimateFromSnrRoi"
-		else:
-			noisePowerEstimate = json.loads(config.get("ImageFilterParameters","noisePowerEstimate"))
+	def setupWienerFilter(self):
 		self.imageFilter = self.wienerFilterMod
-		self.filterArguments = (filterKernelSize,noisePowerEstimate)
+		self.filterArguments = (self.configReader.filterKernelSize,self.configReader.noisePowerEstimate)
 		pass
 		
 	def wienerFilterMod(self,imageData):
@@ -130,46 +124,11 @@ class imagePreprocessor(object):
 		filterArgs = (kernelSize,noisePower)
 		return signal.wiener(imageData,*filterArgs)
 		
-	def setupFilter(self,config):
-		filterType = json.loads(config.get("ImageFilterParameters","filterType"))
-		
-		if filterType == "wiener":
-			self.setupWienerFilter(config)
+	def setupFilter(self):
+		if self.configReader.filterType == "wiener":
+			self.setupWienerFilter()
 		pass
 
-	def loadConfig(self,config):
-	# from: http://stackoverflow.com/questions/335695/lists-in-configparser
-	# json.loads(self.config.get("SectionOne","startingCoordinate"))
-		snrRoi = config.get("TrackingParameters","snrRoi")
-		if snrRoi == "" or snrRoi == "None":
-			self.snrRoi = None
-		else:
-			self.snrRoi = np.array(json.loads(config.get("TrackingParameters","snrRoi")))
-		
-		performImageFiltering = config.get("ImageFilterParameters","performImageFiltering")
-		if performImageFiltering == "True":
-			self.performImageFiltering = True
-		else:
-			self.performImageFiltering = False
-		
-		if self.performImageFiltering:
-			self.setupFilter(config)
-			
-		performImageScaling = config.get("ImageManipulationParameters","performImageScaling")
-
-		if performImageScaling == "True":
-			self.performImageScaling = True
-		else:
-			self.performImageScaling = False
-		
-		if self.performImageScaling == True:
-			self.scalingFactor = np.float64(json.loads(config.get("ImageManipulationParameters","scalingFactor")))
-		else:
-			self.scalingFactor = np.float64(1)
-
-		self.scalingMethod = json.loads(config.get("ImageManipulationParameters","scalingMethod"))
-		self.scalingMethodVar = self.setImageScalingMethod(self.scalingMethod)
-		
 	def getImageStd(self):
 		roiValues = self.getRoiIntensityValues()
 		return roiValues.std()
@@ -181,11 +140,11 @@ class imagePreprocessor(object):
 		return self.host_ImgUnfilteredUnscaled[snrRoiStartIndexes[0]:snrRoiStopIndexes[1],snrRoiStartIndexes[0]:snrRoiStopIndexes[1]]		
 		
 	def getSnrRoi(self):
-		return self.snrRoi
+		return self.configReader.snrRoi
 		pass
 
 	def getSnrRoiScaled(self):
-		return np.floor(self.snrRoi*self.scalingFactor)
+		return np.floor(self.configReader.snrRoi*self.configReader.scalingFactor)
 		pass
 
 	def getImageSnr(self):
