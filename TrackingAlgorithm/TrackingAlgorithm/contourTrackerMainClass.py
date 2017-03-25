@@ -411,7 +411,6 @@ class contourTrackerMain( object ):
 		pass
 	
 	def getImageFileList(self):
-		#~ self.imageList = glob.glob(self.imagePath+"/*.tif")
 		self.imageList = glob.glob(self.configReader.imageDirectoryPath+"/*."+self.configReader.imageFileExtension)
 		self.imageList.sort() # or else their order is random...
 
@@ -419,41 +418,32 @@ class contourTrackerMain( object ):
 			self.removeIgnoredImages()
 			pass
 		self.totalNrOfImages = self.imageList.__len__()
-		#~ ipdb.set_trace()
 		pass
 		
 	def removeIgnoredImages(self):
-		#~ ipdb.set_trace()
 		self.ignoredImageIndices.sort()
-		#~ self.ignoredImageIndicesReversed = self.ignoredImageIndices[::-1]
 		for imageIndex in reversed(self.ignoredImageIndices): # remove in reverse order since we change the indexation, if we remove from small to large indexes
-			#~ print self.imageList[imageIndex-1]
 			del self.imageList[imageIndex-1]
-		#~ ipdb.set_trace()
 		pass
 		
 	def getBackgroundFileList(self):
 		if self.configReader.backgroundDirectoryPath != None:
-		#~ self.imageList = glob.glob(self.imagePath+"/*.tif")
 			self.backgroundList = glob.glob(self.configReader.backgroundDirectoryPath+"/*."+self.configReader.imageFileExtension)
 			self.backgroundList.sort() # or else their order is random...
 		else:
 			self.backgroundList = []
 			
 		self.totalNrOfBackgrounds = self.backgroundList.__len__()
-		#~ ipdb.set_trace()
 		pass
 	
 	def getDarkfieldFileList(self):
 		if self.configReader.darkfieldDirectoryPath != None:
-		#~ self.imageList = glob.glob(self.imagePath+"/*.tif")
 			self.darkfieldList = glob.glob(self.configReader.darkfieldDirectoryPath+"/*."+self.configReader.imageFileExtension)
 			self.darkfieldList.sort() # or else their order is random...
 		else:
 			self.darkfieldList = []
 			
 		self.totalNrOfDarkfields = self.darkfieldList.__len__()
-		#~ ipdb.set_trace()
 		pass
 	
 	def runConfigChecks(self):
@@ -528,15 +518,10 @@ class contourTrackerMain( object ):
 		print("")
 	
 	def saveTrackingResult(self):
-		#~ ipdb.set_trace()
-		#~ self.dataAnalysisDirectoryPath
-		#~ io.savemat(self.dataAnalysisDirectoryPath+'/contourCoordinatesX', mdict={'contourCoordinatesX': self.contourCoordinatesX})
-		#~ io.savemat(self.dataAnalysisDirectoryPath+'/contourCoordinatesY', mdict={'contourCoordinatesY': self.contourCoordinatesY})
 		# for more info on usage see here: http://docs.scipy.org/doc/scipy/reference/generated/scipy.io.savemat.html
 		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourCoordinatesX', mdict={'contourCoordinatesX': self.contourCoordinatesX},oned_as='row',do_compression=True)
 		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourCoordinatesY', mdict={'contourCoordinatesY': self.contourCoordinatesY},oned_as='row',do_compression=True)
 		
-		#~ if self.nrOfFinishedImages <= self.nrOfFramesToSaveFitInclinesFor:
 		if self.configReader.nrOfFramesToSaveFitInclinesFor:
 			io.savemat(self.configReader.dataAnalysisDirectoryPath+'/fitInclines', mdict={'fitInclines': self.fitInclines},oned_as='row',do_compression=True)
 
@@ -549,31 +534,14 @@ class contourTrackerMain( object ):
 		
 		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesX', mdict={'contourCenterCoordinatesX': self.contourCenterCoordinatesX},oned_as='row',do_compression=True)
 		io.savemat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesY', mdict={'contourCenterCoordinatesY': self.contourCenterCoordinatesY},oned_as='row',do_compression=True)
-		
-		# DEBUGGING; TODO: REMOVE THIS LATER...
-		#~ ipdb.set_trace()
-		#~ tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCoordinatesX_REF.mat')
-		#~ contourCoordinatesX_REF = tmp['contourCoordinatesX']
-		#~ tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCoordinatesY_REF.mat')
-		#~ contourCoordinatesY_REF = tmp['contourCoordinatesY']
-		
-		#~ if np.all(contourCoordinatesX_REF==self.contourCoordinatesX) and np.all(contourCoordinatesY_REF==self.contourCoordinatesY):
-		#~ if np.allclose(contourCoordinatesX_REF,self.contourCoordinatesX) and np.allclose(contourCoordinatesY_REF,self.contourCoordinatesY):
-			#~ print "Coordinate test PASSED."
-		#~ else:
-			#~ print "Coordinate test FAILED."
-			
 		pass
 		
 	def writeContourToFinalArray(self,tracker):
 		contourNr = tracker.getContourId()
-		#~ ipdb.set_trace()
-		#~ self.contourCoordinatesX[:,contourNr] = tracker.getMembraneCoordinatesX()
-		#~ self.contourCoordinatesY[:,contourNr] = tracker.getMembraneCoordinatesY()
+
 		membraneCoordinatesX = tracker.getMembraneCoordinatesX()
 		membraneCoordinatesY = tracker.getMembraneCoordinatesY()
 		
-		#~ ipdb.set_trace()
 		if self.nrOfFinishedImages < self.configReader.nrOfFramesToSaveFitInclinesFor:
 			fitInclines = tracker.getFitInclines()
 			self.fitInclines[:,contourNr] = fitInclines
@@ -602,36 +570,7 @@ class contourTrackerMain( object ):
 		self.contourNormalVectorsY[:,contourNr] = contourNormalVectorsY
 		
 		contourCenter = tracker.getContourCenterCoordinates()
-		#~ ipdb.set_trace()
+
 		self.contourCenterCoordinatesX[contourNr] = contourCenter['x'][0]
 		self.contourCenterCoordinatesY[contourNr] = contourCenter['y'][0]
-				
-		
-		#~ if np.any(np.isnan(self.contourCoordinatesX)) or np.any(np.isnan(self.contourCoordinatesY)):
-			#~ ipdb.set_trace()
-		
-		#~ if contourNr == 1:
-		#~ if contourNr > self.contourCoordinatesX.shape[1]-10:
-			#~ ipdb.set_trace()
-			#~ 
-			#~ import matplotlib.pyplot as plt
-			#~ 
-			#~ plt.plot(self.contourCoordinatesX[:,0:2],self.contourCoordinatesY[:,0:2])
-			#~ plt.show()
-			
-			#~ ax = plt.gca()
-			#~ nrOfContourPoints = self.contourCoordinatesX.shape[0]
-			#~ contourCentersX = np.tile(self.contourCenterCoordinatesX,[nrOfContourPoints,1])
-			#~ contourCentersY = np.tile(self.contourCenterCoordinatesY,[nrOfContourPoints,1])
-			#~ plt.plot(self.contourCoordinatesX[:,0:20]-contourCentersX[:,0:20],self.contourCoordinatesY[:,0:20]-contourCentersY[:,0:20])
-			#~ plt.show()
-			
-			#~ ax = plt.gca()
-			#~ selectedContourNr = 6
-			#~ nrOfContourPoints = self.contourCoordinatesX.shape[0]
-			#~ contourCentersX = np.tile(self.contourCenterCoordinatesX,[nrOfContourPoints,1])
-			#~ contourCentersY = np.tile(self.contourCenterCoordinatesY,[nrOfContourPoints,1])
-			#~ plt.plot(self.contourCoordinatesX[:,selectedContourNr]-contourCentersX[:,selectedContourNr],self.contourCoordinatesY[:,selectedContourNr]-contourCentersY[:,selectedContourNr])
-			#~ plt.show()
-
 		pass
