@@ -162,5 +162,20 @@ class configReader(object):
 		self.config = configparser.ConfigParser()
 		self.config.read(configurationFile,encoding="utf8")
 
-
+	def parseIndexRanges(self,ignoredImageIndices):
+		ignoredImageIndicesTmp = ignoredImageIndices
+		ignoredImageIndicesTmp = ignoredImageIndicesTmp.strip('[[')
+		ignoredImageIndicesTmp = ignoredImageIndicesTmp.strip(']]')
+		indexRanges = ignoredImageIndicesTmp.split(',')
+		parsedIndexes = np.array((),dtype=np.int64)
+		for indexRange in indexRanges:
+			indexRangeTmp = indexRange.strip('[')
+			indexRangeTmp = indexRangeTmp.strip(']')
+			if ':' not in indexRangeTmp:
+				parsedIndexes = np.append(parsedIndexes,np.int64(indexRangeTmp))
+			else:
+				[startIndex,endIndex] = indexRangeTmp.split(':')
+				parsedIndexes = np.append(parsedIndexes,np.arange(np.int64(startIndex),np.int64(endIndex)+1))
+		return parsedIndexes
+		pass
 

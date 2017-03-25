@@ -249,16 +249,9 @@ class contourTrackerMain( object ):
 			tracker.trackContour()
 			self.currentImageIndex = self.currentImageIndex + 1
 		
-		#~ iterationNr = 0
-		#~ self.nrOfFinishedImages = 0
 		while(self.nrOfFinishedImages<self.totalNrOfImages): # enter control-loop for checking an controlling the states of the tracking-queues
 			for tracker in self.trackingQueues:
-				#~ print "self.currentImageIndex: "+str(self.currentImageIndex)
-				#~ print "self.mostRecentImageIndex: "+str(self.mostRecentImageIndex)
-				#~ print "self.nrOfFinishedImages: "+str(self.nrOfFinishedImages)
-
 				if tracker.iterationFinished:
-					#~ if tracker.trackingFinished:
 					if tracker.checkTrackingFinished():
 						self.nrOfFinishedImages = self.nrOfFinishedImages + 1
 						
@@ -273,7 +266,7 @@ class contourTrackerMain( object ):
 							cl.enqueue_copy_buffer(self.managementQueue,tracker.dev_membraneNormalVectorsY.data,self.dev_mostRecentMembraneNormalVectorsY.data).wait()
 							
 							cl.enqueue_copy_buffer(self.managementQueue,tracker.dev_previousContourCenter.data,self.dev_mostRecentContourCenter.data).wait()
-							#~ self.managementQueue.finish()
+
 							self.mostRecentImageIndex = self.currentImageIndex
 						
 						frameId = tracker.getContourId()
@@ -281,11 +274,6 @@ class contourTrackerMain( object ):
 						print("Nr of iterations: "+str(tracker.getNrOfTrackingIterations()))
 						self.executionTimePerContour[frameId] = np.float64(tracker.getExectionTime())
 						print("Execution time: "+str(self.executionTimePerContour[frameId])+" sec")
-						
-						#~ if self.executionTimePerContour[frameId] > 2:
-							#~ ipdb.set_trace()
-							#~ plt.plot(tracker.getMembraneCoordinatesX(),tracker.getMembraneCoordinatesY())
-							#~ plt.show()
 						
 						self.currentTime = time.time()
 						runningTime = self.currentTime - self.startTime
@@ -316,33 +304,17 @@ class contourTrackerMain( object ):
 							tracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
 															   self.dev_mostRecentMembraneNormalVectorsY)
 							
-							#~ cl.enqueue_copy_buffer(self.managementQueue,self.dev_mostRecentContourCenter.data,tracker.dev_previousContourCenter.data).wait()
-							
 							tracker.trackContour()
-							#~ tracker.queue.finish() # this is for debugging!! TODO: remove this
+
 							self.currentImageIndex = self.currentImageIndex + 1
 						
 					else: # start new tracking iteration with the previous contour as starting position
-						#~ print "Image File: "+self.imageList[self.currentImageIndex] # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
 						tracker.setStartingCoordinatesNew(tracker.dev_interpolatedMembraneCoordinatesX, \
 														  tracker.dev_interpolatedMembraneCoordinatesY \
 													     )
-						#print("Nr of iterations: "+str(tracker.getNrOfTrackingIterations())
-						
-						#contourCenter = tracker.getContourCenterCoordinates() # TODO: remove this, once done DEBUGGING
-						#print("centerX: "+str(contourCenter['x'][0])
-						#print("centerY: "+str(contourCenter['y'][0])
-						##~ xCenter = float(contourCenter['x'][0])
-						##~ yCenter = float(contourCenter['y'][0])
-						##~ ipdb.set_trace()
-						##~ print "centerX: "+"{:3.7f}".format(xCenter)
-						##~ print "centerY: "+"{:3.7f}".format(yCenter)
 						
 						tracker.trackContour()
-						#~ tracker.queue.finish() # this is for debugging!! TODO: remove this
-		
-		# save fit results
-		#~ ipdb.set_trace()
+
 		print("Tracking finished. Saving results.")
 		self.saveTrackingResult()
 
@@ -356,21 +328,14 @@ class contourTrackerMain( object ):
 		self.clPlatformList = cl.get_platforms()
 		counter = 0
 		for platform in self.clPlatformList:
-			#~ tmp = self.clPlatformList[0]
 			if self.configReader.clPlatform in platform.name.lower():
 				self.platformIndex = counter
 			counter = counter + 1
 		clDevicesList = self.clPlatformList[self.platformIndex].get_devices()
 		
-		#~ vendorString = self.queue.device.vendor
-		#~ # set work dimension of work group used in tracking kernel
-		#~ if "intel" in vendorString.lower():  # work-around since the 'max_work_group_size' is not reported correctly for Intel-CPU using the AMD OpenCL driver (tested on: Intel(R) Core(TM) i5-3470)
-
 		computeDeviceIdSelection = self.configReader.computeDeviceId # 0: AMD-GPU; 1: Intel CPU
 		self.device = clDevicesList[computeDeviceIdSelection]
-		# ipdb.set_trace()
 		self.ctx = cl.Context([self.device])
-
 		pass
 		
 	def setupManagementQueue(self):
@@ -382,34 +347,10 @@ class contourTrackerMain( object ):
 		self.preprocessor = imagePreprocessor(self.configReader)
 		self.preprocessor.loadDarkfield(self.darkfieldList) # load darkfield images
 		self.preprocessor.loadBackground(self.backgroundList) # load background images
-
-		#~ for index in range(nrOfTrackingQueues):
-			#~ trackingQueues(index) = contourTracker( self.config )
 		self.trackingQueues = [contourTracker(self.ctx, self.configReader, self.preprocessor) for count in range(self.configReader.nrOfTrackingQueues)]
-		
 		self.sequentialTracker = contourTracker(self.ctx, self.configReader, self.preprocessor)
-		
-		#~ ipdb.set_trace()
-		#~ trackingQueue[0].setupClQueue(self.ctx)
 		pass
 
-	def parseIndexRanges(self,ignoredImageIndices):
-		ignoredImageIndicesTmp = ignoredImageIndices
-		ignoredImageIndicesTmp = ignoredImageIndicesTmp.strip('[[')
-		ignoredImageIndicesTmp = ignoredImageIndicesTmp.strip(']]')
-		indexRanges = ignoredImageIndicesTmp.split(',')
-		parsedIndexes = np.array((),dtype=np.int64)
-		for indexRange in indexRanges:
-			indexRangeTmp = indexRange.strip('[')
-			indexRangeTmp = indexRangeTmp.strip(']')
-			if ':' not in indexRangeTmp:
-				parsedIndexes = np.append(parsedIndexes,np.int64(indexRangeTmp))
-			else:
-				[startIndex,endIndex] = indexRangeTmp.split(':')
-				parsedIndexes = np.append(parsedIndexes,np.arange(np.int64(startIndex),np.int64(endIndex)+1))
-		return parsedIndexes
-		pass
-	
 	def getImageFileList(self):
 		self.imageList = glob.glob(self.configReader.imageDirectoryPath+"/*."+self.configReader.imageFileExtension)
 		self.imageList.sort() # or else their order is random...

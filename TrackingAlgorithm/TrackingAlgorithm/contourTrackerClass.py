@@ -231,15 +231,6 @@ class contourTracker( object ):
 		self.host_interpolationAngles = np.float64(np.linspace(startAngle,endAngle,self.nrOfDetectionAngleSteps))
 		self.dev_interpolationAngles = cl_array.to_device(self.queue, self.host_interpolationAngles)
 		
-		self.host_b = np.zeros(shape=2*self.nrOfDetectionAngleSteps,dtype=np.float64)
-		self.dev_b = cl_array.to_device(self.queue, self.host_b)
-
-		self.host_c = np.zeros(shape=2*self.nrOfDetectionAngleSteps,dtype=np.float64)
-		self.dev_c = cl_array.to_device(self.queue, self.host_c)
-
-		self.host_d = np.zeros(shape=2*self.nrOfDetectionAngleSteps,dtype=np.float64)
-		self.dev_d = cl_array.to_device(self.queue, self.host_d)
-
 		self.host_dbgOut = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_dbgOut = cl_array.to_device(self.queue, self.host_dbgOut)
 		
