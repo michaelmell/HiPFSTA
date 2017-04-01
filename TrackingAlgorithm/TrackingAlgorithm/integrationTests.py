@@ -7,8 +7,7 @@ from contourTrackerMainClass import contourTrackerMain
 class Test_integrationTests(unittest.TestCase):
 	def test_CompleteProgramRun_000(self):
 		prg = contourTrackerMain("TrackingConfigs/TrackingConfig_000.conf",runInteractive=False)
-		prg.initializeTracking()
-		prg.track()
+		prg.startTracking()
 
 		dataAnalysisDirectoryReferencePath = "C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/IntegrationTests/CompleteProgramRun_000"
 		tmp=io.loadmat(dataAnalysisDirectoryReferencePath+'/contourCoordinatesX.mat')

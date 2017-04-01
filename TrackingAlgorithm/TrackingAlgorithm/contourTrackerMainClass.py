@@ -63,11 +63,12 @@ class contourTrackerMain( object ):
 		self.runInteractive = boolean # using setProfiling with argument 'True' will deactivate interactivity
 		pass
 
-	def initializeTracking(self):
+	def startTracking(self):
 		if self.configReader.imageIndexToContinueFrom is 0:
 			self.doInitialTracking()
 		else:
 			self.setupContinuationOfTracking()
+		self.__track()
 		pass
 
 	def setupClVariables(self):
@@ -231,7 +232,7 @@ class contourTrackerMain( object ):
 		print("")
 		pass
 	
-	def track(self):
+	def __track(self):
 		# start tracking for all tracking-queues
 		for tracker in self.trackingQueues:
 			tracker.loadImage(self.imageList[self.currentImageIndex])
