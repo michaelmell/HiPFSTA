@@ -315,6 +315,10 @@ class contourTracker( object ):
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
+	def setContourCenter(self,dev_initialContourCenter):
+		cl.enqueue_copy_buffer(self.queue,dev_initialContourCenter.data,self.dev_previousContourCenter.data).wait()
+		pass
+
 	def setStartingMembraneNormals(self,dev_initialMembranNormalVectorsX,dev_initialMembranNormalVectorsY):
 		if self.resetNormalsAfterEachImage and not self.getContourId()==0: # reset contour normal vector to radial vectors; we do this only starting for the second, since doing this for image 0, would destroy the correspondence of the indexes of the contour coordinates to their corresponding contour normals
 			cl.enqueue_copy_buffer(self.queue,self.dev_radialVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
