@@ -139,7 +139,6 @@ class configReader(object):
 		
 		self.clPlatform = json.loads(self.config.get("OpenClParameters","clPlatform"))
 		self.computeDeviceId = json.loads(self.config.get("OpenClParameters","computeDeviceId"))
-		self.nrOfTrackingQueues = json.loads(self.config.get("OpenClParameters","nrOfTrackingQueues"))
 		
 		self.detectionKernelStrideSize = np.int32(json.loads(self.config.get("TrackingParameters","detectionKernelStrideSize")))
 		self.nrOfStrides = np.int32(json.loads(self.config.get("TrackingParameters","nrOfStrides")))
