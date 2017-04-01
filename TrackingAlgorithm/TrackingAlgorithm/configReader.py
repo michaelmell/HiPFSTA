@@ -5,11 +5,13 @@ import numpy as np
 
 class configReader(object):
 	"""description of class"""
-	def __init__(self,configurationFile):
+	def __init__(self,configurationFile,runInteractive=False):
+		self.runInteractive = runInteractive
 		self.readConfigFile(configurationFile)
 		self.loadContourTrackerMainConfig()
 		self.loadImagePreprocessingConfig()
 		self.loadContourTrackerConfig()
+		self.runConfigChecks()
 
 	def loadContourTrackerConfig(self):
 		self.startingCoordinate = self.scalingFactor * np.array(json.loads(self.config.get("TrackingParameters","startingCoordinate")))
@@ -179,3 +181,49 @@ class configReader(object):
 		return parsedIndexes
 		pass
 
+	def runConfigChecks(self):
+		if self.darkfieldDirectoryPath is not None:
+			if not os.path.isdir(self.darkfieldDirectoryPath):
+				print("")
+				print("\tERROR: Directory at 'darkfieldDirectoryPath' does not exist.")
+				sys.exit(1)
+		if self.backgroundDirectoryPath is not None:
+			if not os.path.isdir(self.backgroundDirectoryPath):
+				print("")
+				print("\tERROR: Directory at 'backgroundDirectoryPath' does not exist.")
+				sys.exit(1)
+		if not os.path.isdir(self.imageDirectoryPath):
+			print("")
+			print("\tERROR: Directory at 'imageDirectoryPath' does not exist.")
+			sys.exit(1)
+		if not os.path.isdir(self.dataAnalysisDirectoryPath):
+			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
+				print("")
+				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' does not exist. Create it?")
+				print("")
+				print("\t'dataAnalysisDirectoryPath':")
+				print("\t"+self.dataAnalysisDirectoryPath)
+				print("")
+				answer = input("\tContinue? (y: yes, n: no) ")
+				if answer.lower().startswith("y"):
+					os.makedirs(self.dataAnalysisDirectoryPath)
+				else:
+					exit()
+			else:
+				print("")
+				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' did not exist. Created it.")
+				print("")
+				os.makedirs(self.dataAnalysisDirectoryPath)
+
+		if os.listdir(self.dataAnalysisDirectoryPath) != [] and self.imageIndexToContinueFrom == 0:
+			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
+				print("")
+				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' is not empty and 'imageIndexToContinueFrom' is 0. Continuing may result in data-loss.")
+				print("")
+				print("\t'dataAnalysisDirectoryPath':")
+				print("\t"+self.dataAnalysisDirectoryPath)
+				print("")
+				answer = input("\tContinue? (y: yes, n: no) ")
+				if answer.lower().startswith("n"):
+					exit()
+	

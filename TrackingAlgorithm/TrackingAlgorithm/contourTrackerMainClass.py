@@ -21,8 +21,7 @@ class contourTrackerMain( object ):
 		self.setInteractive(runInteractive)
 		#~ self.configurationFile = configurationFile
 		#self.loadSettings(configurationFile)
-		self.configReader = configReader(configurationFile)
-		self.runConfigChecks()
+		self.configReader = configReader(configurationFile,runInteractive)
 		self.getImageFileList()
 		self.getDarkfieldFileList()
 		self.getBackgroundFileList()
@@ -386,52 +385,6 @@ class contourTrackerMain( object ):
 			
 		self.totalNrOfDarkfields = self.darkfieldList.__len__()
 		pass
-	
-	def runConfigChecks(self):
-		if self.configReader.darkfieldDirectoryPath is not None:
-			if not os.path.isdir(self.configReader.darkfieldDirectoryPath):
-				print("")
-				print("\tERROR: Directory at 'darkfieldDirectoryPath' does not exist.")
-				sys.exit(1)
-		if self.configReader.backgroundDirectoryPath is not None:
-			if not os.path.isdir(self.configReader.backgroundDirectoryPath):
-				print("")
-				print("\tERROR: Directory at 'backgroundDirectoryPath' does not exist.")
-				sys.exit(1)
-		if not os.path.isdir(self.configReader.imageDirectoryPath):
-			print("")
-			print("\tERROR: Directory at 'imageDirectoryPath' does not exist.")
-			sys.exit(1)
-		if not os.path.isdir(self.configReader.dataAnalysisDirectoryPath):
-			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
-				print("")
-				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' does not exist. Create it?")
-				print("")
-				print("\t'dataAnalysisDirectoryPath':")
-				print("\t"+self.configReader.dataAnalysisDirectoryPath)
-				print("")
-				answer = input("\tContinue? (y: yes, n: no) ")
-				if answer.lower().startswith("y"):
-					os.makedirs(self.configReader.dataAnalysisDirectoryPath)
-				else:
-					exit()
-			else:
-				print("")
-				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' did not exist. Created it.")
-				print("")
-				os.makedirs(self.configReader.dataAnalysisDirectoryPath)
-
-		if os.listdir(self.configReader.dataAnalysisDirectoryPath) != [] and self.configReader.imageIndexToContinueFrom == 0:
-			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
-				print("")
-				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' is not empty and 'imageIndexToContinueFrom' is 0. Continuing may result in data-loss.")
-				print("")
-				print("\t'dataAnalysisDirectoryPath':")
-				print("\t"+self.configReader.dataAnalysisDirectoryPath)
-				print("")
-				answer = input("\tContinue? (y: yes, n: no) ")
-				if answer.lower().startswith("n"):
-					exit()
 	
 	def printTrackingSetupInformation(self):
 		print("")
