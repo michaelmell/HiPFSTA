@@ -231,15 +231,6 @@ class contourTracker( object ):
 		self.host_interpolationAngles = np.float64(np.linspace(startAngle,endAngle,self.nrOfDetectionAngleSteps))
 		self.dev_interpolationAngles = cl_array.to_device(self.queue, self.host_interpolationAngles)
 		
-		self.host_b = np.zeros(shape=2*self.nrOfDetectionAngleSteps,dtype=np.float64)
-		self.dev_b = cl_array.to_device(self.queue, self.host_b)
-
-		self.host_c = np.zeros(shape=2*self.nrOfDetectionAngleSteps,dtype=np.float64)
-		self.dev_c = cl_array.to_device(self.queue, self.host_c)
-
-		self.host_d = np.zeros(shape=2*self.nrOfDetectionAngleSteps,dtype=np.float64)
-		self.dev_d = cl_array.to_device(self.queue, self.host_d)
-
 		self.host_dbgOut = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.dev_dbgOut = cl_array.to_device(self.queue, self.host_dbgOut)
 		
@@ -376,7 +367,7 @@ class contourTracker( object ):
 			
 			radiusVectorRotationMatrix = np.array([[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
 			
-			self.prg.findMembranePositionNew2(self.queue, self.global_size, self.local_size, self.sampler, \
+			self.prg.findMembranePosition(self.queue, self.global_size, self.local_size, self.sampler, \
 											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
 											 self.buf_localRotationMatrices, \
 											 self.buf_linFitSearchRangeXvalues, \
@@ -440,7 +431,7 @@ class contourTracker( object ):
 			   self.dev_ds.data, self.dev_sumds.data \
 			 )
 			 
-		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
+		self.prg.calculateContourCenter(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 								   self.dev_ds.data, self.dev_sumds.data, \
 								   self.dev_contourCenter.data, \
@@ -464,7 +455,7 @@ class contourTracker( object ):
 		for strideNr in range(self.nrOfStrides):
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
-			self.prg.findMembranePositionNew2(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
+			self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
 											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
 											 self.buf_localRotationMatrices, \
 											 self.buf_linFitSearchRangeXvalues, \
@@ -531,29 +522,9 @@ class contourTracker( object ):
 		
 		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
 
-	########################################################################
-	### Calculate contour center
-	########################################################################
-		
-		### Use this for CPU and when number of detected points <1024
-		#if self.computeDeviceId is 10:
-			##~ print bla
-			#self.prg.calculateContourCenter(self.queue, self.gradientGlobalSize, self.gradientGlobalSize, \
-										   #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-										   #cl.LocalMemory(self.membraneNormalVectors_memSize), cl.LocalMemory(self.membraneNormalVectors_memSize), \
-										   #self.dev_contourCenter.data \
-										  #)
-		
-		#### Use this for GPU and when number of detected points >500
-		#### NOTE: There is a in the OpenCL driver for the Intel CPU. So that in the funciton below,
-		#### 	  the CLK_GLOBAL_MEM_FENCE is not respected correctly leading to incorrect results
-		#if self.computeDeviceId is 10:
-			#self.prg.calculateContourCenterNew(self.queue, self.gradientGlobalSize, None, \
-											   #self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-											   #self.dev_ds.data, self.dev_sumds.data, \
-											   #self.dev_contourCenter.data \
-											  #)
-		
+		########################################################################
+		### Calculate contour center
+		########################################################################
 		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data \
@@ -568,7 +539,7 @@ class contourTracker( object ):
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		self.prg.calculateContourCenterNew2(self.queue, (1,1), None, \
+		self.prg.calculateContourCenter(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 								   self.dev_ds.data, self.dev_sumds.data, \
 								   self.dev_contourCenter.data, \
