@@ -225,9 +225,6 @@ class contourTrackerMain( object ):
 			tracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
 											   self.dev_mostRecentMembraneNormalVectorsY)
 			
-			cl.enqueue_copy_buffer(self.managementQueue,self.dev_mostRecentMembraneCoordinatesX.data,tracker.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
-			cl.enqueue_copy_buffer(self.managementQueue,self.dev_mostRecentMembraneCoordinatesY.data,tracker.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
-
 			cl.enqueue_copy_buffer(self.managementQueue,self.dev_mostRecentContourCenter.data,tracker.dev_previousContourCenter.data).wait()
 
 			tracker.startTimer()
