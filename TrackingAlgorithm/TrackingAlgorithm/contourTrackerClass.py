@@ -423,24 +423,9 @@ class contourTracker( object ):
 										   self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data \
 										   #~ cl.LocalMemory(membraneNormalVectors_memSize) \
 										  )
-		
-		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
-			   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-			   self.dev_ds.data \
-			 )
-			 
-		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
-			   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-			   self.dev_ds.data, self.dev_sumds.data \
-			 )
-			 
-		self.prg.calculateContourCenter(self.queue, (1,1), None, \
-								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-								   self.dev_ds.data, self.dev_sumds.data, \
-								   self.dev_contourCenter.data, \
-								   np.int32(self.nrOfDetectionAngleSteps) \
-								  )		
-			 
+
+		self.calculateContourCenter()		
+
 		self.queue.finish()
 
 	def trackContour(self):
@@ -528,28 +513,7 @@ class contourTracker( object ):
 		########################################################################
 		### Calculate contour center
 		########################################################################
-		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
-					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-					   self.dev_ds.data \
-					 )
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
-
-		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
-					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-					   self.dev_ds.data, self.dev_sumds.data \
-					 )
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		self.prg.calculateContourCenter(self.queue, (1,1), None, \
-								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-								   self.dev_ds.data, self.dev_sumds.data, \
-								   self.dev_contourCenter.data, \
-								   np.int32(self.nrOfDetectionAngleSteps) \
-								  )
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
+		self.calculateContourCenter()		
 
 		########################################################################
 		### Convert cartesian coordinates to polar coordinates
@@ -634,6 +598,30 @@ class contourTracker( object ):
 		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
 		pass
 		
+	def calculateContourCenter(self):
+		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
+					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+					   self.dev_ds.data \
+					 )
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
+					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+					   self.dev_ds.data, self.dev_sumds.data \
+					 )
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		self.prg.calculateContourCenter(self.queue, (1,1), None, \
+								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+								   self.dev_ds.data, self.dev_sumds.data, \
+								   self.dev_contourCenter.data, \
+								   np.int32(self.nrOfDetectionAngleSteps) \
+								  )
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
 	def checkTrackingFinished(self):
 		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:
 			self.trackingFinished = 0 # force another iterations
