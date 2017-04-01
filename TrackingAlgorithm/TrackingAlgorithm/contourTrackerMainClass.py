@@ -90,42 +90,35 @@ class contourTrackerMain( object ):
 	def setupContinuationOfTracking(self):
 		self.startTime = time.time()
 
-		#~ self.currentImageIndex = self.imageIndexToContinueFrom
-		#~ self.mostRecentImageIndex = self.imageIndexToContinueFrom-1
-		#~ self.nrOfFinishedImages = self.imageIndexToContinueFrom-1
-		#~ self.imageIndexToContinueFrom = self.imageIndexToContinueFrom-1
-		
-		self.imageIndexToContinueFrom = self.imageIndexToContinueFrom-1 # this shift in index is necessary so that we continue tracking at 'self.imageIndexToContinueFrom + 1' and not 'self.imageIndexToContinueFrom + 2'
+		self.imageIndexToContinueFrom = self.configReader.imageIndexToContinueFrom-1 # this shift in index is necessary so that we continue tracking at 'self.imageIndexToContinueFrom + 1' and not 'self.imageIndexToContinueFrom + 2'
 		self.currentImageIndex = self.imageIndexToContinueFrom+1
 		self.mostRecentImageIndex = self.imageIndexToContinueFrom
 		self.nrOfFinishedImages = self.imageIndexToContinueFrom
 		
 		# load previous tracking data
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCenterCoordinatesX.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesX.mat')
 		self.contourCenterCoordinatesX = tmp['contourCenterCoordinatesX'][0]
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCenterCoordinatesY.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesY.mat')
 		self.contourCenterCoordinatesY = tmp['contourCenterCoordinatesY'][0]
 		
-		#~ ipdb.set_trace()
-		
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCoordinatesX.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCoordinatesX.mat')
 		self.contourCoordinatesX = tmp['contourCoordinatesX']
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCoordinatesY.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCoordinatesY.mat')
 		self.contourCoordinatesY = tmp['contourCoordinatesY']
 		
-		if self.nrOfFramesToSaveFitInclinesFor:
-			tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/fitInclines.mat')
+		if self.configReader.nrOfFramesToSaveFitInclinesFor:
+			tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/fitInclines.mat')
 			self.fitInclines = tmp['fitInclines']
 		
-		if self.snrRoi is not None:
-			tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/imageSnr.mat')
+		if self.configReader.snrRoi is not None:
+			tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/imageSnr.mat')
 			self.imageSnr = tmp['imageSnr']
-			tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/imageIntensity.mat')
+			tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/imageIntensity.mat')
 			self.imageIntensity = tmp['imageIntensity']
 
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourNormalVectorsX.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourNormalVectorsX.mat')
 		self.contourNormalVectorsX = tmp['contourNormalVectorsX']
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourNormalVectorsY.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourNormalVectorsY.mat')
 		self.contourNormalVectorsY = tmp['contourNormalVectorsY']
 		
 		self.host_membraneCoordinatesX = self.contourCoordinatesX[:,self.imageIndexToContinueFrom]
@@ -135,22 +128,11 @@ class contourTrackerMain( object ):
 		self.host_membraneNormalVectorsY = self.contourNormalVectorsY[:,self.imageIndexToContinueFrom]
 		
 		# copy last tracked contour to GPU
-		#~ self.dev_membraneCoordinatesX = cl_array.to_device(self.queue, self.host_membraneCoordinatesX)
-		#~ self.dev_membraneCoordinatesY = cl_array.to_device(self.queue, self.host_membraneCoordinatesY)
 		self.dev_mostRecentMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
 		self.dev_mostRecentMembraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
 		
-		#~ cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneCoordinatesX.data,self.dev_mostRecentMembraneCoordinatesX.data).wait()
-		#~ cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneCoordinatesY.data,self.dev_mostRecentMembraneCoordinatesY.data).wait()
-
-		#~ cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneNormalVectorsX.data,self.dev_mostRecentMembraneNormalVectorsX.data).wait()
-		#~ cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneNormalVectorsY.data,self.dev_mostRecentMembraneNormalVectorsY.data).wait()
-
 		self.dev_mostRecentMembraneNormalVectorsX = cl_array.to_device(self.managementQueue, self.host_membraneNormalVectorsX)
 		self.dev_mostRecentMembraneNormalVectorsY = cl_array.to_device(self.managementQueue, self.host_membraneNormalVectorsY)
-		
-		#~ ipdb.set_trace()
-		
 		pass
 
 	def doInitialTracking(self):
