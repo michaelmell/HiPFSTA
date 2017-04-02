@@ -218,7 +218,7 @@ class contourTrackerMain( object ):
 		print("Nr of iterations: "+str(self.contourTracker.getNrOfTrackingIterations()))
 		self.executionTimePerContour[frameId] = np.float64(self.contourTracker.getExectionTime())
 		print("Execution time: "+str(self.executionTimePerContour[frameId])+" sec")
-						
+		
 		self.currentTime = time.time()
 		runningTime = self.currentTime - self.startTime
 		print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
@@ -228,6 +228,8 @@ class contourTrackerMain( object ):
 						
 	def __track(self):
 		# start tracking for all tracking-queues
+		self.contourTracker.startTimer()
+
 		self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
 		self.contourTracker.setContourId(self.currentImageIndex)
 			
@@ -236,7 +238,6 @@ class contourTrackerMain( object ):
 		self.contourTracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
 											self.dev_mostRecentMembraneNormalVectorsY)
 
-		self.contourTracker.startTimer()
 		self.contourTracker.trackContour()
 
 		self.currentImageIndex = self.currentImageIndex + 1
@@ -266,12 +267,13 @@ class contourTrackerMain( object ):
 						
 					# start tracking of new image
 					if self.currentImageIndex < self.totalNrOfImages:
-						self.contourTracker.resetNrOfTrackingIterations()
-						self.contourTracker.startTimer()
-							
 						print("Tracking image: "+str(self.currentImageIndex+1)+" of "+str(self.totalNrOfImages)) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
 						print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
 						
+						self.contourTracker.resetNrOfTrackingIterations()
+
+						self.contourTracker.startTimer()
+							
 						self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
 						self.contourTracker.setContourId(self.currentImageIndex)
 						
