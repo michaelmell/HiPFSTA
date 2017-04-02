@@ -92,7 +92,6 @@ class contourTrackerMain( object ):
 
 		self.imageIndexToContinueFrom = self.configReader.imageIndexToContinueFrom-1 # this shift in index is necessary so that we continue tracking at 'self.imageIndexToContinueFrom + 1' and not 'self.imageIndexToContinueFrom + 2'
 		self.currentImageIndex = self.imageIndexToContinueFrom+1
-		self.mostRecentImageIndex = self.imageIndexToContinueFrom
 		self.nrOfFinishedImages = self.imageIndexToContinueFrom
 		
 		# load previous tracking data
@@ -139,7 +138,6 @@ class contourTrackerMain( object ):
 		self.startTime = time.time()
 		
 		self.currentImageIndex = 0
-		self.mostRecentImageIndex = 0
 		self.nrOfFinishedImages = 0
 		
 		self.contourTracker.loadImage(self.imageList[self.currentImageIndex]) # load first image for initial tracking
@@ -237,18 +235,7 @@ class contourTrackerMain( object ):
 						
 					# get tracking results
 					self.writeContourToFinalArray(self.contourTracker)
-						
-					# update most recent contour profile
-					if self.contourTracker.getContourId() >= self.mostRecentImageIndex:
-						cl.enqueue_copy_buffer(self.managementQueue,self.contourTracker.dev_interpolatedMembraneCoordinatesX.data,self.dev_mostRecentMembraneCoordinatesX.data).wait()
-						cl.enqueue_copy_buffer(self.managementQueue,self.contourTracker.dev_interpolatedMembraneCoordinatesY.data,self.dev_mostRecentMembraneCoordinatesY.data).wait()
-						cl.enqueue_copy_buffer(self.managementQueue,self.contourTracker.dev_membraneNormalVectorsX.data,self.dev_mostRecentMembraneNormalVectorsX.data).wait()
-						cl.enqueue_copy_buffer(self.managementQueue,self.contourTracker.dev_membraneNormalVectorsY.data,self.dev_mostRecentMembraneNormalVectorsY.data).wait()
-							
-						cl.enqueue_copy_buffer(self.managementQueue,self.contourTracker.dev_previousContourCenter.data,self.dev_mostRecentContourCenter.data).wait()
-
-						self.mostRecentImageIndex = self.currentImageIndex
-						
+					
 					frameId = self.contourTracker.getContourId()
 					self.nrOfIterationsPerContour[frameId] = np.int32(self.contourTracker.getNrOfTrackingIterations())
 					print("Nr of iterations: "+str(self.contourTracker.getNrOfTrackingIterations()))
@@ -263,7 +250,7 @@ class contourTrackerMain( object ):
 					print("\n")
 						
 					# do intermediate save points
-					if self.mostRecentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
+					if self.currentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
 						print("Saving intermediate results.")
 						print("\n")
 						self.saveTrackingResult()
@@ -279,10 +266,10 @@ class contourTrackerMain( object ):
 						self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
 						self.contourTracker.setContourId(self.currentImageIndex)
 							
-						self.contourTracker.setStartingCoordinatesNew(self.dev_mostRecentMembraneCoordinatesX, \
-															self.dev_mostRecentMembraneCoordinatesY)
-						self.contourTracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
-															self.dev_mostRecentMembraneNormalVectorsY)
+						self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
+															self.contourTracker.dev_interpolatedMembraneCoordinatesY)
+						self.contourTracker.setStartingMembraneNormals(self.contourTracker.dev_membraneNormalVectorsX, \
+															self.contourTracker.dev_membraneNormalVectorsY)
 							
 						self.contourTracker.trackContour()
 
