@@ -236,10 +236,9 @@ class contourTrackerMain( object ):
 		self.contourTracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
 											self.dev_mostRecentMembraneNormalVectorsY)
 
-		self.contourTracker.setContourCenter(self.dev_mostRecentContourCenter)
-
 		self.contourTracker.startTimer()
 		self.contourTracker.trackContour()
+
 		self.currentImageIndex = self.currentImageIndex + 1
 		
 		while(self.nrOfFinishedImages<self.totalNrOfImages): # enter control-loop for checking an controlling the states of the tracking-queues
@@ -272,10 +271,10 @@ class contourTrackerMain( object ):
 							
 						print("Tracking image: "+str(self.currentImageIndex+1)+" of "+str(self.totalNrOfImages)) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
 						print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
-							
+						
 						self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
 						self.contourTracker.setContourId(self.currentImageIndex)
-							
+						
 						self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
 															self.contourTracker.dev_interpolatedMembraneCoordinatesY)
 						self.contourTracker.setStartingMembraneNormals(self.contourTracker.dev_membraneNormalVectorsX, \
