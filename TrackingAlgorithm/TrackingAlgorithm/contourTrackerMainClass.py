@@ -230,7 +230,14 @@ class contourTrackerMain( object ):
 		
 		while(self.nrOfFinishedImages<self.totalNrOfImages): # enter control-loop for checking an controlling the states of the tracking-queues
 			if self.contourTracker.iterationFinished:
-				if self.contourTracker.checkTrackingFinished():
+				if not self.contourTracker.checkTrackingFinished(): # start new tracking iteration with the previous contour as starting position
+					self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
+														self.contourTracker.dev_interpolatedMembraneCoordinatesY \
+														)
+						
+					self.contourTracker.trackContour()
+
+				else :
 					self.nrOfFinishedImages = self.nrOfFinishedImages + 1
 						
 					# get tracking results
@@ -275,13 +282,6 @@ class contourTrackerMain( object ):
 
 						self.currentImageIndex = self.currentImageIndex + 1
 						
-				else: # start new tracking iteration with the previous contour as starting position
-					self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
-														self.contourTracker.dev_interpolatedMembraneCoordinatesY \
-														)
-						
-					self.contourTracker.trackContour()
-
 		print("Tracking finished. Saving results.")
 		self.saveTrackingResult()
 
