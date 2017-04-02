@@ -211,7 +211,21 @@ class contourTrackerMain( object ):
 			print("\tNo snrRoi provided.")
 		print("")
 		pass
-	
+
+	def __printImageTrackingSummary(self):
+		frameId = self.contourTracker.getContourId()
+		self.nrOfIterationsPerContour[frameId] = np.int32(self.contourTracker.getNrOfTrackingIterations())
+		print("Nr of iterations: "+str(self.contourTracker.getNrOfTrackingIterations()))
+		self.executionTimePerContour[frameId] = np.float64(self.contourTracker.getExectionTime())
+		print("Execution time: "+str(self.executionTimePerContour[frameId])+" sec")
+						
+		self.currentTime = time.time()
+		runningTime = self.currentTime - self.startTime
+		print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
+		remainingTime = (self.totalNrOfImages-(self.currentImageIndex+1))*(runningTime/(self.currentImageIndex+1))
+		print("Remaining running time (ETA): "+str(datetime.timedelta(seconds=remainingTime))+" h")
+		print("\n")
+						
 	def __track(self):
 		# start tracking for all tracking-queues
 		self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
@@ -243,18 +257,7 @@ class contourTrackerMain( object ):
 					# get tracking results
 					self.writeContourToFinalArray(self.contourTracker)
 					
-					frameId = self.contourTracker.getContourId()
-					self.nrOfIterationsPerContour[frameId] = np.int32(self.contourTracker.getNrOfTrackingIterations())
-					print("Nr of iterations: "+str(self.contourTracker.getNrOfTrackingIterations()))
-					self.executionTimePerContour[frameId] = np.float64(self.contourTracker.getExectionTime())
-					print("Execution time: "+str(self.executionTimePerContour[frameId])+" sec")
-						
-					self.currentTime = time.time()
-					runningTime = self.currentTime - self.startTime
-					print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
-					remainingTime = (self.totalNrOfImages-(self.currentImageIndex+1))*(runningTime/(self.currentImageIndex+1))
-					print("Remaining running time (ETA): "+str(datetime.timedelta(seconds=remainingTime))+" h")
-					print("\n")
+					self.__printImageTrackingSummary()
 						
 					# do intermediate save points
 					if self.currentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
