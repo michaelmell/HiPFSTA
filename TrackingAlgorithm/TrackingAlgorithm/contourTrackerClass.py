@@ -311,6 +311,9 @@ class contourTracker( object ):
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_membraneCoordinatesX.data).wait() #<-
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_membraneCoordinatesY.data).wait()
 		
+		#cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_interpolatedMembraneCoordinatesX.data).wait()
+		#cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_interpolatedMembraneCoordinatesY.data).wait()
+
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 		barrierEvent = cl.enqueue_barrier(self.queue)

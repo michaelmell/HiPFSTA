@@ -127,11 +127,14 @@ class contourTrackerMain( object ):
 		self.host_membraneNormalVectorsY = self.contourNormalVectorsY[:,self.imageIndexToContinueFrom]
 		
 		# copy last tracked contour to GPU
-		self.dev_mostRecentMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
-		self.dev_mostRecentMembraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
-		
 		self.dev_mostRecentMembraneNormalVectorsX = cl_array.to_device(self.managementQueue, self.host_membraneNormalVectorsX)
 		self.dev_mostRecentMembraneNormalVectorsY = cl_array.to_device(self.managementQueue, self.host_membraneNormalVectorsY)
+
+		self.contourTracker.dev_interpolatedMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
+		self.contourTracker.dev_interpolatedMembraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
+		
+		self.contourTracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
+													   self.dev_mostRecentMembraneNormalVectorsY)
 		pass
 
 	def doInitialTracking(self):
@@ -271,10 +274,10 @@ class contourTrackerMain( object ):
 						self.contourTracker.setContourId(self.currentImageIndex)
 						
 						self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
-															self.contourTracker.dev_interpolatedMembraneCoordinatesY)
+																	  self.contourTracker.dev_interpolatedMembraneCoordinatesY)
 						self.contourTracker.setStartingMembraneNormals(self.contourTracker.dev_membraneNormalVectorsX, \
-															self.contourTracker.dev_membraneNormalVectorsY)
-							
+																	   self.contourTracker.dev_membraneNormalVectorsY)
+						
 						self.contourTracker.trackContour()
 
 						self.currentImageIndex = self.currentImageIndex + 1
