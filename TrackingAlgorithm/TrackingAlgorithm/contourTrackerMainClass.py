@@ -132,6 +132,10 @@ class contourTrackerMain( object ):
 
 		self.contourTracker.dev_interpolatedMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
 		self.contourTracker.dev_interpolatedMembraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
+		self.contourTracker.dev_previousInterpolatedMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
+		self.contourTracker.dev_previousInterpolatedMembraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
+		self.contourTracker.dev_membraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
+		self.contourTracker.dev_membraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
 		
 		self.contourTracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
 													   self.dev_mostRecentMembraneNormalVectorsY)
@@ -229,9 +233,6 @@ class contourTrackerMain( object ):
 		self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
 		self.contourTracker.setContourId(self.currentImageIndex)
 		
-		self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
-													  self.contourTracker.dev_interpolatedMembraneCoordinatesY)
-		
 		self.contourTracker.trackContour()
 
 		self.currentImageIndex = self.currentImageIndex + 1
@@ -239,10 +240,6 @@ class contourTrackerMain( object ):
 		while(self.nrOfFinishedImages<self.totalNrOfImages): # enter control-loop for checking an controlling the states of the tracking-queues
 			if self.contourTracker.iterationFinished:
 				if not self.contourTracker.checkTrackingFinished(): # start new tracking iteration with the previous contour as starting position
-					self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
-														self.contourTracker.dev_interpolatedMembraneCoordinatesY \
-														)
-						
 					self.contourTracker.trackContour()
 
 				else :
@@ -270,9 +267,6 @@ class contourTrackerMain( object ):
 							
 						self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
 						self.contourTracker.setContourId(self.currentImageIndex)
-						
-						self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
-																	  self.contourTracker.dev_interpolatedMembraneCoordinatesY)
 						
 						self.contourTracker.trackContour()
 

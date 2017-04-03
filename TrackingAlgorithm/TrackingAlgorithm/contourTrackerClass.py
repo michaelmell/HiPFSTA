@@ -439,6 +439,8 @@ class contourTracker( object ):
 		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
 		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 		
+		self.setStartingCoordinatesNew(self.dev_interpolatedMembraneCoordinatesX, \
+									   self.dev_interpolatedMembraneCoordinatesY)
 		self.queue.finish()
 
 	def trackContour(self):
@@ -613,6 +615,9 @@ class contourTracker( object ):
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
+
+		self.setStartingCoordinatesNew(self.dev_interpolatedMembraneCoordinatesX, \
+									   self.dev_interpolatedMembraneCoordinatesY)
 		pass
 		
 	def calculateContourCenter(self):
