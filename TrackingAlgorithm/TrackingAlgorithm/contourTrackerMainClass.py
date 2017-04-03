@@ -158,7 +158,6 @@ class contourTrackerMain( object ):
 		cl.enqueue_copy_buffer(self.managementQueue,self.contourTracker.dev_membraneNormalVectorsX.data,self.dev_mostRecentMembraneNormalVectorsX.data).wait()
 		cl.enqueue_copy_buffer(self.managementQueue,self.contourTracker.dev_membraneNormalVectorsY.data,self.dev_mostRecentMembraneNormalVectorsY.data).wait()
 
-		cl.enqueue_copy_buffer(self.managementQueue,self.contourTracker.dev_contourCenter.data,self.dev_mostRecentContourCenter.data).wait()
 		self.managementQueue.finish()
 		
 	def drawSnrRoiRectangle(self):
@@ -232,7 +231,7 @@ class contourTrackerMain( object ):
 
 		self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
 		self.contourTracker.setContourId(self.currentImageIndex)
-			
+		
 		self.contourTracker.setStartingCoordinatesNew(self.dev_mostRecentMembraneCoordinatesX, \
 											self.dev_mostRecentMembraneCoordinatesY)
 		self.contourTracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
