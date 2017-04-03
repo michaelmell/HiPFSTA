@@ -231,9 +231,7 @@ class contourTrackerMain( object ):
 		
 		self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
 													  self.contourTracker.dev_interpolatedMembraneCoordinatesY)
-		#self.contourTracker.setStartingMembraneNormals(self.contourTracker.dev_membraneNormalVectorsX, \
-		#											   self.contourTracker.dev_membraneNormalVectorsY)
-
+		
 		self.contourTracker.trackContour()
 
 		self.currentImageIndex = self.currentImageIndex + 1
@@ -275,8 +273,6 @@ class contourTrackerMain( object ):
 						
 						self.contourTracker.setStartingCoordinatesNew(self.contourTracker.dev_interpolatedMembraneCoordinatesX, \
 																	  self.contourTracker.dev_interpolatedMembraneCoordinatesY)
-						self.contourTracker.setStartingMembraneNormals(self.contourTracker.dev_membraneNormalVectorsX, \
-																	   self.contourTracker.dev_membraneNormalVectorsY)
 						
 						self.contourTracker.trackContour()
 

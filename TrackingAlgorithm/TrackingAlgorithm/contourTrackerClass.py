@@ -442,6 +442,10 @@ class contourTracker( object ):
 		self.queue.finish()
 
 	def trackContour(self):
+		if self.resetNormalsAfterEachImage and not self.getContourId()==0 and self.nrOfTrackingIterations==0: # reset contour normal vector to radial vectors; we do this only starting for the second, since doing this for image 0, would destroy the correspondence of the indexes of the contour coordinates to their corresponding contour normals
+			cl.enqueue_copy_buffer(self.queue,self.dev_radialVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
+			cl.enqueue_copy_buffer(self.queue,self.dev_radialVectorsY.data,self.dev_membraneNormalVectorsY.data).wait()
+
 		# tracking status variables
 		self.nrOfTrackingIterations = self.nrOfTrackingIterations + 1
 		
