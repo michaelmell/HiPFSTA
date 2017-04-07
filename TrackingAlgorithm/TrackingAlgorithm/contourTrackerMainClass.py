@@ -230,14 +230,10 @@ class contourTrackerMain( object ):
 			print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
 						
 			self.contourTracker.startTimer()
-							
-			self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
+			
 			self.contourTracker.setContourId(self.currentImageIndex)
 			
-			while(not self.contourTracker.checkTrackingFinished()): # start new tracking iteration with the previous contour as starting position
-				self.contourTracker.trackContour()
-
-			self.contourTracker.resetNrOfTrackingIterations()
+			self.contourTracker.trackImage(self.imageList[self.currentImageIndex])
 
 			self.writeContourToFinalArray(self.contourTracker)
 					

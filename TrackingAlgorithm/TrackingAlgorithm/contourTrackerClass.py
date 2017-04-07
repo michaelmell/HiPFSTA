@@ -364,6 +364,12 @@ class contourTracker( object ):
 		host_variable = getattr(self,variableName)
 		np.save(path+"/"+variableName+".npy", host_variable, allow_pickle=True, fix_imports=True)
 		pass
+	
+	def trackImage(self,imagePath):
+		self.loadImage(imagePath)
+		while(not self.checkTrackingFinished()): # start new tracking iteration with the previous contour as starting position
+			self.trackContour()
+		self.resetNrOfTrackingIterations()
 
 	def trackContourSequentially(self):
 		## tracking status variables
