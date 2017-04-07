@@ -237,14 +237,14 @@ class contourTrackerMain( object ):
 			while(not self.contourTracker.checkTrackingFinished()): # start new tracking iteration with the previous contour as starting position
 				self.contourTracker.trackContour()
 
+			self.contourTracker.resetNrOfTrackingIterations()
+
 			self.writeContourToFinalArray(self.contourTracker)
 					
 			self.__printImageTrackingSummary()
 
 			self.currentImageIndex = self.currentImageIndex + 1
 		
-			self.contourTracker.resetNrOfTrackingIterations()
-
 			# do intermediate save points
 			if self.currentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
 				print("Saving intermediate results.")
