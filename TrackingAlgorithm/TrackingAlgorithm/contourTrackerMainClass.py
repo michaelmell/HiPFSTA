@@ -19,8 +19,6 @@ class contourTrackerMain( object ):
 	def __init__(self, configurationFile,runInteractive=False):
 		self.runInteractive = runInteractive
 		self.setInteractive(runInteractive)
-		#~ self.configurationFile = configurationFile
-		#self.loadSettings(configurationFile)
 		self.configReader = configReader(configurationFile,runInteractive)
 		self.getImageFileList()
 		self.getDarkfieldFileList()
@@ -230,15 +228,10 @@ class contourTrackerMain( object ):
 			print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
 						
 			self.contourTracker.startTimer()
-			
 			self.contourTracker.setContourId(self.currentImageIndex)
-			
 			self.contourTracker.trackImage(self.imageList[self.currentImageIndex])
-
 			self.writeContourToFinalArray(self.contourTracker)
-					
 			self.__printImageTrackingSummary()
-
 			self.currentImageIndex = self.currentImageIndex + 1
 		
 			# do intermediate save points
@@ -253,7 +246,6 @@ class contourTrackerMain( object ):
 		self.currentTime = time.time()
 		runningTime = self.currentTime - self.startTime
 		print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
-		
 		pass
 		
 	def setupClContext(self):
