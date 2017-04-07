@@ -92,7 +92,6 @@ class contourTrackerMain( object ):
 
 		self.imageIndexToContinueFrom = self.configReader.imageIndexToContinueFrom-1 # this shift in index is necessary so that we continue tracking at 'self.imageIndexToContinueFrom + 1' and not 'self.imageIndexToContinueFrom + 2'
 		self.currentImageIndex = self.imageIndexToContinueFrom+1
-		self.nrOfFinishedImages = self.imageIndexToContinueFrom
 		
 		# load previous tracking data
 		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesX.mat')
@@ -145,7 +144,6 @@ class contourTrackerMain( object ):
 		self.startTime = time.time()
 		
 		self.currentImageIndex = 0
-		self.nrOfFinishedImages = 0
 		
 		self.contourTracker.loadImage(self.imageList[self.currentImageIndex]) # load first image for initial tracking
 		self.contourTracker.trackContourSequentially()
@@ -242,8 +240,6 @@ class contourTrackerMain( object ):
 			self.writeContourToFinalArray(self.contourTracker)
 					
 			self.__printImageTrackingSummary()
-
-			self.nrOfFinishedImages = self.nrOfFinishedImages + 1
 
 			self.currentImageIndex = self.currentImageIndex + 1
 		
@@ -373,7 +369,7 @@ class contourTrackerMain( object ):
 		membraneCoordinatesX = tracker.getMembraneCoordinatesX()
 		membraneCoordinatesY = tracker.getMembraneCoordinatesY()
 		
-		if self.nrOfFinishedImages < self.configReader.nrOfFramesToSaveFitInclinesFor:
+		if self.currentImageIndex < self.configReader.nrOfFramesToSaveFitInclinesFor:
 			fitInclines = tracker.getFitInclines()
 			self.fitInclines[:,contourNr] = fitInclines
 		
