@@ -227,51 +227,34 @@ class contourTrackerMain( object ):
 		print("\n")
 						
 	def __track(self):
-		# start tracking for all tracking-queues
-		self.contourTracker.startTimer()
-
-		self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
-		self.contourTracker.setContourId(self.currentImageIndex)
-		
-		self.contourTracker.trackContour()
-
-		self.currentImageIndex = self.currentImageIndex + 1
-		
-		while(self.nrOfFinishedImages<self.totalNrOfImages): # enter control-loop for checking an controlling the states of the tracking-queues
-			if self.contourTracker.iterationFinished:
-				if not self.contourTracker.checkTrackingFinished(): # start new tracking iteration with the previous contour as starting position
-					self.contourTracker.trackContour()
-
-				else :
-					self.nrOfFinishedImages = self.nrOfFinishedImages + 1
+		while(self.currentImageIndex<self.totalNrOfImages): # enter control-loop for checking an controlling the states of the tracking-queues
+			print("Tracking image: "+str(self.currentImageIndex+1)+" of "+str(self.totalNrOfImages)) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
+			print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
 						
-					# get tracking results
-					self.writeContourToFinalArray(self.contourTracker)
-					
-					self.__printImageTrackingSummary()
-						
-					# do intermediate save points
-					if self.currentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
-						print("Saving intermediate results.")
-						print("\n")
-						self.saveTrackingResult()
-						
-					# start tracking of new image
-					if self.currentImageIndex < self.totalNrOfImages:
-						print("Tracking image: "+str(self.currentImageIndex+1)+" of "+str(self.totalNrOfImages)) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
-						print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
-						
-						self.contourTracker.resetNrOfTrackingIterations()
-
-						self.contourTracker.startTimer()
+			self.contourTracker.startTimer()
 							
-						self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
-						self.contourTracker.setContourId(self.currentImageIndex)
-						
-						self.contourTracker.trackContour()
+			self.contourTracker.loadImage(self.imageList[self.currentImageIndex])
+			self.contourTracker.setContourId(self.currentImageIndex)
+			
+			while(not self.contourTracker.checkTrackingFinished()): # start new tracking iteration with the previous contour as starting position
+				self.contourTracker.trackContour()
 
-						self.currentImageIndex = self.currentImageIndex + 1
-						
+			self.writeContourToFinalArray(self.contourTracker)
+					
+			self.__printImageTrackingSummary()
+
+			self.nrOfFinishedImages = self.nrOfFinishedImages + 1
+
+			self.currentImageIndex = self.currentImageIndex + 1
+		
+			self.contourTracker.resetNrOfTrackingIterations()
+
+			# do intermediate save points
+			if self.currentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
+				print("Saving intermediate results.")
+				print("\n")
+				self.saveTrackingResult()
+
 		print("Tracking finished. Saving results.")
 		self.saveTrackingResult()
 
