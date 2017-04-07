@@ -23,6 +23,7 @@ class contourTracker( object ):
 		self.setupTrackingParameters()
 		self.setWorkGroupSizes()
 		self.setupClTrackingVariables()
+		self.setContourId(-1) # initialize the contour id to -1; this will later change at run time
 		self.nrOfTrackingIterations = 0
 		pass
 	
@@ -42,6 +43,12 @@ class contourTracker( object ):
 	def loadImageToGpu(self):
 		self.dev_Img = cl.image_from_array(self.ctx, ary=self.host_Img, mode="r", norm_int=False, num_channels=1)
 	
+	def setContourId(self, id):
+		self.id = id
+	
+	def getContourId(self):
+		return self.id
+
 	def loadClKernels(self):
 		modulePath = __file__
 		codePath, filename = os.path.split(modulePath) # get location of path where our tracking code is located
