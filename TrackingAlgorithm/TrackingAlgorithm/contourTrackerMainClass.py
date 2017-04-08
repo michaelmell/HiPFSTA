@@ -19,10 +19,7 @@ class contourTrackerMain( object ):
 	def __init__(self, configurationFile,runInteractive=False):
 		self.runInteractive = runInteractive
 		self.setInteractive(runInteractive)
-		#~ self.configurationFile = configurationFile
-		#self.loadSettings(configurationFile)
-		self.configReader = configReader(configurationFile)
-		self.runConfigChecks()
+		self.configReader = configReader(configurationFile,runInteractive)
 		self.getImageFileList()
 		self.getDarkfieldFileList()
 		self.getBackgroundFileList()
@@ -33,7 +30,7 @@ class contourTrackerMain( object ):
 		self.setupManagementQueue()
 		self.setupClVariables()
 		self.printTrackingSetupInformation()
-		self.setupTrackingQueues()
+		self.setupContourTracker()
 		
 		if self.configReader.nrOfFramesToSaveFitInclinesFor:
 			self.fitInclines = np.empty((self.configReader.nrOfContourPoints,self.configReader.nrOfFramesToSaveFitInclinesFor),dtype=np.float64)
@@ -64,11 +61,12 @@ class contourTrackerMain( object ):
 		self.runInteractive = boolean # using setProfiling with argument 'True' will deactivate interactivity
 		pass
 
-	def initializeTracking(self):
+	def startTracking(self):
 		if self.configReader.imageIndexToContinueFrom is 0:
 			self.doInitialTracking()
 		else:
 			self.setupContinuationOfTracking()
+		self.__track()
 		pass
 
 	def setupClVariables(self):
@@ -90,42 +88,33 @@ class contourTrackerMain( object ):
 	def setupContinuationOfTracking(self):
 		self.startTime = time.time()
 
-		#~ self.currentImageIndex = self.imageIndexToContinueFrom
-		#~ self.mostRecentImageIndex = self.imageIndexToContinueFrom-1
-		#~ self.nrOfFinishedImages = self.imageIndexToContinueFrom-1
-		#~ self.imageIndexToContinueFrom = self.imageIndexToContinueFrom-1
-		
-		self.imageIndexToContinueFrom = self.imageIndexToContinueFrom-1 # this shift in index is necessary so that we continue tracking at 'self.imageIndexToContinueFrom + 1' and not 'self.imageIndexToContinueFrom + 2'
+		self.imageIndexToContinueFrom = self.configReader.imageIndexToContinueFrom-1 # this shift in index is necessary so that we continue tracking at 'self.imageIndexToContinueFrom + 1' and not 'self.imageIndexToContinueFrom + 2'
 		self.currentImageIndex = self.imageIndexToContinueFrom+1
-		self.mostRecentImageIndex = self.imageIndexToContinueFrom
-		self.nrOfFinishedImages = self.imageIndexToContinueFrom
 		
 		# load previous tracking data
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCenterCoordinatesX.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesX.mat')
 		self.contourCenterCoordinatesX = tmp['contourCenterCoordinatesX'][0]
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCenterCoordinatesY.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCenterCoordinatesY.mat')
 		self.contourCenterCoordinatesY = tmp['contourCenterCoordinatesY'][0]
 		
-		#~ ipdb.set_trace()
-		
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCoordinatesX.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCoordinatesX.mat')
 		self.contourCoordinatesX = tmp['contourCoordinatesX']
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourCoordinatesY.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourCoordinatesY.mat')
 		self.contourCoordinatesY = tmp['contourCoordinatesY']
 		
-		if self.nrOfFramesToSaveFitInclinesFor:
-			tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/fitInclines.mat')
+		if self.configReader.nrOfFramesToSaveFitInclinesFor:
+			tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/fitInclines.mat')
 			self.fitInclines = tmp['fitInclines']
 		
-		if self.snrRoi is not None:
-			tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/imageSnr.mat')
+		if self.configReader.snrRoi is not None:
+			tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/imageSnr.mat')
 			self.imageSnr = tmp['imageSnr']
-			tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/imageIntensity.mat')
+			tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/imageIntensity.mat')
 			self.imageIntensity = tmp['imageIntensity']
 
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourNormalVectorsX.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourNormalVectorsX.mat')
 		self.contourNormalVectorsX = tmp['contourNormalVectorsX']
-		tmp=io.loadmat(self.dataAnalysisDirectoryPath+'/contourNormalVectorsY.mat')
+		tmp=io.loadmat(self.configReader.dataAnalysisDirectoryPath+'/contourNormalVectorsY.mat')
 		self.contourNormalVectorsY = tmp['contourNormalVectorsY']
 		
 		self.host_membraneCoordinatesX = self.contourCoordinatesX[:,self.imageIndexToContinueFrom]
@@ -135,50 +124,37 @@ class contourTrackerMain( object ):
 		self.host_membraneNormalVectorsY = self.contourNormalVectorsY[:,self.imageIndexToContinueFrom]
 		
 		# copy last tracked contour to GPU
-		#~ self.dev_membraneCoordinatesX = cl_array.to_device(self.queue, self.host_membraneCoordinatesX)
-		#~ self.dev_membraneCoordinatesY = cl_array.to_device(self.queue, self.host_membraneCoordinatesY)
-		self.dev_mostRecentMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
-		self.dev_mostRecentMembraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
-		
-		#~ cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneCoordinatesX.data,self.dev_mostRecentMembraneCoordinatesX.data).wait()
-		#~ cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneCoordinatesY.data,self.dev_mostRecentMembraneCoordinatesY.data).wait()
-
-		#~ cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneNormalVectorsX.data,self.dev_mostRecentMembraneNormalVectorsX.data).wait()
-		#~ cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneNormalVectorsY.data,self.dev_mostRecentMembraneNormalVectorsY.data).wait()
-
 		self.dev_mostRecentMembraneNormalVectorsX = cl_array.to_device(self.managementQueue, self.host_membraneNormalVectorsX)
 		self.dev_mostRecentMembraneNormalVectorsY = cl_array.to_device(self.managementQueue, self.host_membraneNormalVectorsY)
+
+		self.contourTracker.dev_interpolatedMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
+		self.contourTracker.dev_interpolatedMembraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
+		self.contourTracker.dev_previousInterpolatedMembraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
+		self.contourTracker.dev_previousInterpolatedMembraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
+		self.contourTracker.dev_membraneCoordinatesX = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesX)
+		self.contourTracker.dev_membraneCoordinatesY = cl_array.to_device(self.managementQueue, self.host_membraneCoordinatesY)
 		
-		#~ ipdb.set_trace()
-		
+		self.contourTracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
+													   self.dev_mostRecentMembraneNormalVectorsY)
 		pass
 
 	def doInitialTracking(self):
 		self.startTime = time.time()
 		
 		self.currentImageIndex = 0
-		self.mostRecentImageIndex = 0
-		self.nrOfFinishedImages = 0
 		
-		self.sequentialTracker.loadImage(self.imageList[self.currentImageIndex]) # load first image for initial tracking
-		self.sequentialTracker.trackContourSequentially()
+		self.contourTracker.loadImage(self.imageList[self.currentImageIndex]) # load first image for initial tracking
+		self.contourTracker.trackContourSequentially()
 		
 		if self.runInteractive:
-			#~ plt.imshow(self.sequentialTracker.host_Img)
-			plt.matshow(self.sequentialTracker.host_Img)
-			plt.plot(self.sequentialTracker.getMembraneCoordinatesXscaled()-0.5,self.sequentialTracker.getMembraneCoordinatesYscaled()-0.5,'k')
+			#~ plt.imshow(self.contourTracker.host_Img)
+			plt.matshow(self.contourTracker.host_Img)
+			plt.plot(self.contourTracker.getMembraneCoordinatesXscaled()-0.5,self.contourTracker.getMembraneCoordinatesYscaled()-0.5,'k')
 			if self.snrRoi is not None:
 				self.drawSnrRoiRectangle()
 			self.printTrackingParameters()
 			plt.show()
 		
-		cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneCoordinatesX.data,self.dev_mostRecentMembraneCoordinatesX.data).wait()
-		cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneCoordinatesY.data,self.dev_mostRecentMembraneCoordinatesY.data).wait()
-
-		cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneNormalVectorsX.data,self.dev_mostRecentMembraneNormalVectorsX.data).wait()
-		cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_membraneNormalVectorsY.data,self.dev_mostRecentMembraneNormalVectorsY.data).wait()
-
-		cl.enqueue_copy_buffer(self.managementQueue,self.sequentialTracker.dev_contourCenter.data,self.dev_mostRecentContourCenter.data).wait()
 		self.managementQueue.finish()
 		
 	def drawSnrRoiRectangle(self):
@@ -198,17 +174,17 @@ class contourTrackerMain( object ):
 		self.printImageStdMsg()
 		self.printImageSnrMsg()
 		print("\tUse image filtering:")
-		print("\t"+str(self.sequentialTracker.performImageFiltering))
+		print("\t"+str(self.contourTracker.performImageFiltering))
 		print("")
 		print("\tUse image scaling:")
-		print("\t"+str(self.sequentialTracker.performImageScaling))
+		print("\t"+str(self.contourTracker.performImageScaling))
 		print("")
 		print("")
 		
 	def printImageIntensityMsg(self):
 		print("\tImage intensity (obtained from 'snrRoi'):")
 		if self.snrRoi is not None:
-			print("\t"+str(self.sequentialTracker.getImageIntensity()))
+			print("\t"+str(self.contourTracker.getImageIntensity()))
 		else:
 			print("\tNo snrRoi provided.")
 		print("")
@@ -217,7 +193,7 @@ class contourTrackerMain( object ):
 	def printImageSnrMsg(self):
 		print("\tImage SNR=intensity/std (obtained from 'snrRoi'):")
 		if self.snrRoi is not None:
-			print("\t"+str(self.sequentialTracker.getImageSnr()))
+			print("\t"+str(self.contourTracker.getImageSnr()))
 		else:
 			print("\tNo snrRoi provided.")
 		print("")
@@ -226,97 +202,43 @@ class contourTrackerMain( object ):
 	def printImageStdMsg(self):
 		print("\tImage STD (obtained from 'snrRoi'):")
 		if self.snrRoi is not None:
-			print("\t"+str(self.sequentialTracker.getImageStd()))
+			print("\t"+str(self.contourTracker.getImageStd()))
 		else:
 			print("\tNo snrRoi provided.")
 		print("")
 		pass
-	
-	def track(self):
-		# start tracking for all tracking-queues
-		for tracker in self.trackingQueues:
-			tracker.loadImage(self.imageList[self.currentImageIndex])
-			tracker.setContourId(self.currentImageIndex)
-			
-			tracker.setStartingCoordinatesNew(self.dev_mostRecentMembraneCoordinatesX, \
-											  self.dev_mostRecentMembraneCoordinatesY)
-			tracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
-											   self.dev_mostRecentMembraneNormalVectorsY)
-			
-			cl.enqueue_copy_buffer(self.managementQueue,self.dev_mostRecentMembraneCoordinatesX.data,tracker.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
-			cl.enqueue_copy_buffer(self.managementQueue,self.dev_mostRecentMembraneCoordinatesY.data,tracker.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 
-			cl.enqueue_copy_buffer(self.managementQueue,self.dev_mostRecentContourCenter.data,tracker.dev_previousContourCenter.data).wait()
-
-			tracker.startTimer()
-			tracker.trackContour()
+	def __printImageTrackingSummary(self):
+		frameId = self.contourTracker.getContourId()
+		self.nrOfIterationsPerContour[frameId] = np.int32(self.contourTracker.getNrOfTrackingIterations())
+		print("Nr of iterations: "+str(self.contourTracker.getNrOfTrackingIterations()))
+		self.executionTimePerContour[frameId] = np.float64(self.contourTracker.getExectionTime())
+		print("Execution time: "+str(self.executionTimePerContour[frameId])+" sec")
+		
+		self.currentTime = time.time()
+		runningTime = self.currentTime - self.startTime
+		print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
+		remainingTime = (self.totalNrOfImages-(self.currentImageIndex+1))*(runningTime/(self.currentImageIndex+1))
+		print("Remaining running time (ETA): "+str(datetime.timedelta(seconds=remainingTime))+" h")
+		print("\n")
+						
+	def __track(self):
+		while(self.currentImageIndex<self.totalNrOfImages): # enter control-loop for checking an controlling the states of the tracking-queues
+			print("Tracking image: "+str(self.currentImageIndex+1)+" of "+str(self.totalNrOfImages)) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
+			print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
+						
+			self.contourTracker.startTimer()
+			self.contourTracker.setContourId(self.currentImageIndex)
+			self.contourTracker.trackImage(self.imageList[self.currentImageIndex])
+			self.writeContourToFinalArray(self.contourTracker)
+			self.__printImageTrackingSummary()
 			self.currentImageIndex = self.currentImageIndex + 1
 		
-		while(self.nrOfFinishedImages<self.totalNrOfImages): # enter control-loop for checking an controlling the states of the tracking-queues
-			for tracker in self.trackingQueues:
-				if tracker.iterationFinished:
-					if tracker.checkTrackingFinished():
-						self.nrOfFinishedImages = self.nrOfFinishedImages + 1
-						
-						# get tracking results
-						self.writeContourToFinalArray(tracker)
-						
-						# update most recent contour profile
-						if tracker.getContourId() >= self.mostRecentImageIndex:
-							cl.enqueue_copy_buffer(self.managementQueue,tracker.dev_interpolatedMembraneCoordinatesX.data,self.dev_mostRecentMembraneCoordinatesX.data).wait()
-							cl.enqueue_copy_buffer(self.managementQueue,tracker.dev_interpolatedMembraneCoordinatesY.data,self.dev_mostRecentMembraneCoordinatesY.data).wait()
-							cl.enqueue_copy_buffer(self.managementQueue,tracker.dev_membraneNormalVectorsX.data,self.dev_mostRecentMembraneNormalVectorsX.data).wait()
-							cl.enqueue_copy_buffer(self.managementQueue,tracker.dev_membraneNormalVectorsY.data,self.dev_mostRecentMembraneNormalVectorsY.data).wait()
-							
-							cl.enqueue_copy_buffer(self.managementQueue,tracker.dev_previousContourCenter.data,self.dev_mostRecentContourCenter.data).wait()
-
-							self.mostRecentImageIndex = self.currentImageIndex
-						
-						frameId = tracker.getContourId()
-						self.nrOfIterationsPerContour[frameId] = np.int32(tracker.getNrOfTrackingIterations())
-						print("Nr of iterations: "+str(tracker.getNrOfTrackingIterations()))
-						self.executionTimePerContour[frameId] = np.float64(tracker.getExectionTime())
-						print("Execution time: "+str(self.executionTimePerContour[frameId])+" sec")
-						
-						self.currentTime = time.time()
-						runningTime = self.currentTime - self.startTime
-						print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
-						remainingTime = (self.totalNrOfImages-(self.currentImageIndex+1))*(runningTime/(self.currentImageIndex+1))
-						print("Remaining running time (ETA): "+str(datetime.timedelta(seconds=remainingTime))+" h")
-						print("\n")
-						
-						# do intermediate save points
-						if self.mostRecentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
-							print("Saving intermediate results.")
-							print("\n")
-							self.saveTrackingResult()
-						
-						# start tracking of new image
-						if self.currentImageIndex < self.totalNrOfImages:
-							tracker.resetNrOfTrackingIterations()
-							tracker.startTimer()
-							
-							print("Tracking image: "+str(self.currentImageIndex+1)+" of "+str(self.totalNrOfImages)) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
-							print("Image File: "+os.path.basename(self.imageList[self.currentImageIndex])) # 'self.currentImageIndex+1', because 'self.currentImageIndex' is zero-based index 
-							
-							tracker.loadImage(self.imageList[self.currentImageIndex])
-							tracker.setContourId(self.currentImageIndex)
-							
-							tracker.setStartingCoordinatesNew(self.dev_mostRecentMembraneCoordinatesX, \
-															  self.dev_mostRecentMembraneCoordinatesY)
-							tracker.setStartingMembraneNormals(self.dev_mostRecentMembraneNormalVectorsX, \
-															   self.dev_mostRecentMembraneNormalVectorsY)
-							
-							tracker.trackContour()
-
-							self.currentImageIndex = self.currentImageIndex + 1
-						
-					else: # start new tracking iteration with the previous contour as starting position
-						tracker.setStartingCoordinatesNew(tracker.dev_interpolatedMembraneCoordinatesX, \
-														  tracker.dev_interpolatedMembraneCoordinatesY \
-													     )
-						
-						tracker.trackContour()
+			# do intermediate save points
+			if self.currentImageIndex % self.configReader.stepsBetweenSavingResults is 0:
+				print("Saving intermediate results.")
+				print("\n")
+				self.saveTrackingResult()
 
 		print("Tracking finished. Saving results.")
 		self.saveTrackingResult()
@@ -324,7 +246,6 @@ class contourTrackerMain( object ):
 		self.currentTime = time.time()
 		runningTime = self.currentTime - self.startTime
 		print("Total running time: "+str(datetime.timedelta(seconds=runningTime))+" h")
-		
 		pass
 		
 	def setupClContext(self):
@@ -346,9 +267,8 @@ class contourTrackerMain( object ):
 		self.mf = cl.mem_flags
 		pass
 
-	def setupTrackingQueues(self):
-		self.trackingQueues = [contourTracker(self.ctx, self.configReader, self.imagePreprocessor) for count in range(self.configReader.nrOfTrackingQueues)]
-		self.sequentialTracker = contourTracker(self.ctx, self.configReader, self.imagePreprocessor)
+	def setupContourTracker(self):
+		self.contourTracker = contourTracker(self.ctx, self.configReader, self.imagePreprocessor)
 		pass
 
 	def getImageFileList(self):
@@ -386,52 +306,6 @@ class contourTrackerMain( object ):
 			
 		self.totalNrOfDarkfields = self.darkfieldList.__len__()
 		pass
-	
-	def runConfigChecks(self):
-		if self.configReader.darkfieldDirectoryPath is not None:
-			if not os.path.isdir(self.configReader.darkfieldDirectoryPath):
-				print("")
-				print("\tERROR: Directory at 'darkfieldDirectoryPath' does not exist.")
-				sys.exit(1)
-		if self.configReader.backgroundDirectoryPath is not None:
-			if not os.path.isdir(self.configReader.backgroundDirectoryPath):
-				print("")
-				print("\tERROR: Directory at 'backgroundDirectoryPath' does not exist.")
-				sys.exit(1)
-		if not os.path.isdir(self.configReader.imageDirectoryPath):
-			print("")
-			print("\tERROR: Directory at 'imageDirectoryPath' does not exist.")
-			sys.exit(1)
-		if not os.path.isdir(self.configReader.dataAnalysisDirectoryPath):
-			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
-				print("")
-				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' does not exist. Create it?")
-				print("")
-				print("\t'dataAnalysisDirectoryPath':")
-				print("\t"+self.configReader.dataAnalysisDirectoryPath)
-				print("")
-				answer = input("\tContinue? (y: yes, n: no) ")
-				if answer.lower().startswith("y"):
-					os.makedirs(self.configReader.dataAnalysisDirectoryPath)
-				else:
-					exit()
-			else:
-				print("")
-				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' did not exist. Created it.")
-				print("")
-				os.makedirs(self.configReader.dataAnalysisDirectoryPath)
-
-		if os.listdir(self.configReader.dataAnalysisDirectoryPath) != [] and self.configReader.imageIndexToContinueFrom == 0:
-			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
-				print("")
-				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' is not empty and 'imageIndexToContinueFrom' is 0. Continuing may result in data-loss.")
-				print("")
-				print("\t'dataAnalysisDirectoryPath':")
-				print("\t"+self.configReader.dataAnalysisDirectoryPath)
-				print("")
-				answer = input("\tContinue? (y: yes, n: no) ")
-				if answer.lower().startswith("n"):
-					exit()
 	
 	def printTrackingSetupInformation(self):
 		print("")
@@ -483,7 +357,7 @@ class contourTrackerMain( object ):
 		membraneCoordinatesX = tracker.getMembraneCoordinatesX()
 		membraneCoordinatesY = tracker.getMembraneCoordinatesY()
 		
-		if self.nrOfFinishedImages < self.configReader.nrOfFramesToSaveFitInclinesFor:
+		if self.currentImageIndex < self.configReader.nrOfFramesToSaveFitInclinesFor:
 			fitInclines = tracker.getFitInclines()
 			self.fitInclines[:,contourNr] = fitInclines
 		

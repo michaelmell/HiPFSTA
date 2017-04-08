@@ -310,8 +310,18 @@ class contourTracker( object ):
 	def setStartingCoordinatesNew(self,dev_initialMembraneCoordinatesX,dev_initialMembraneCoordinatesY):
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_membraneCoordinatesX.data).wait() #<-
 		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_membraneCoordinatesY.data).wait()
+		
+		#cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_interpolatedMembraneCoordinatesX.data).wait()
+		#cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_interpolatedMembraneCoordinatesY.data).wait()
+
+		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesX.data,self.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
+		cl.enqueue_copy_buffer(self.queue,dev_initialMembraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
+	def setContourCenter(self,dev_initialContourCenter):
+		cl.enqueue_copy_buffer(self.queue,dev_initialContourCenter.data,self.dev_previousContourCenter.data).wait()
+		pass
+
 	def setStartingMembraneNormals(self,dev_initialMembranNormalVectorsX,dev_initialMembranNormalVectorsY):
 		if self.resetNormalsAfterEachImage and not self.getContourId()==0: # reset contour normal vector to radial vectors; we do this only starting for the second, since doing this for image 0, would destroy the correspondence of the indexes of the contour coordinates to their corresponding contour normals
 			cl.enqueue_copy_buffer(self.queue,self.dev_radialVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
@@ -354,6 +364,12 @@ class contourTracker( object ):
 		host_variable = getattr(self,variableName)
 		np.save(path+"/"+variableName+".npy", host_variable, allow_pickle=True, fix_imports=True)
 		pass
+	
+	def trackImage(self,imagePath):
+		self.loadImage(imagePath)
+		while(not self.checkTrackingFinished()): # start new tracking iteration with the previous contour as starting position
+			self.trackContour()
+		self.resetNrOfTrackingIterations()
 
 	def trackContourSequentially(self):
 		## tracking status variables
@@ -420,27 +436,24 @@ class contourTracker( object ):
 										   self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data \
 										   #~ cl.LocalMemory(membraneNormalVectors_memSize) \
 										  )
+
+		self.calculateContourCenter()		
+
+		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.dev_interpolatedMembraneCoordinatesX.data).wait()
+		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.dev_interpolatedMembraneCoordinatesY.data).wait()
+
+		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.dev_previousInterpolatedMembraneCoordinatesX.data).wait()
+		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 		
-		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
-			   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-			   self.dev_ds.data \
-			 )
-			 
-		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
-			   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-			   self.dev_ds.data, self.dev_sumds.data \
-			 )
-			 
-		self.prg.calculateContourCenter(self.queue, (1,1), None, \
-								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-								   self.dev_ds.data, self.dev_sumds.data, \
-								   self.dev_contourCenter.data, \
-								   np.int32(self.nrOfDetectionAngleSteps) \
-								  )		
-			 
+		self.setStartingCoordinatesNew(self.dev_interpolatedMembraneCoordinatesX, \
+									   self.dev_interpolatedMembraneCoordinatesY)
 		self.queue.finish()
 
 	def trackContour(self):
+		if self.resetNormalsAfterEachImage and not self.getContourId()==0 and self.nrOfTrackingIterations==0: # reset contour normal vector to radial vectors; we do this only starting for the second, since doing this for image 0, would destroy the correspondence of the indexes of the contour coordinates to their corresponding contour normals
+			cl.enqueue_copy_buffer(self.queue,self.dev_radialVectorsX.data,self.dev_membraneNormalVectorsX.data).wait()
+			cl.enqueue_copy_buffer(self.queue,self.dev_radialVectorsY.data,self.dev_membraneNormalVectorsY.data).wait()
+
 		# tracking status variables
 		self.nrOfTrackingIterations = self.nrOfTrackingIterations + 1
 		
@@ -525,28 +538,7 @@ class contourTracker( object ):
 		########################################################################
 		### Calculate contour center
 		########################################################################
-		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
-					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-					   self.dev_ds.data \
-					 )
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
-
-		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
-					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-					   self.dev_ds.data, self.dev_sumds.data \
-					 )
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		self.prg.calculateContourCenter(self.queue, (1,1), None, \
-								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-								   self.dev_ds.data, self.dev_sumds.data, \
-								   self.dev_contourCenter.data, \
-								   np.int32(self.nrOfDetectionAngleSteps) \
-								  )
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
+		self.calculateContourCenter()		
 
 		########################################################################
 		### Convert cartesian coordinates to polar coordinates
@@ -629,8 +621,35 @@ class contourTracker( object ):
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
+
+		self.setStartingCoordinatesNew(self.dev_interpolatedMembraneCoordinatesX, \
+									   self.dev_interpolatedMembraneCoordinatesY)
 		pass
 		
+	def calculateContourCenter(self):
+		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
+					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+					   self.dev_ds.data \
+					 )
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
+					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+					   self.dev_ds.data, self.dev_sumds.data \
+					 )
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		self.prg.calculateContourCenter(self.queue, (1,1), None, \
+								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+								   self.dev_ds.data, self.dev_sumds.data, \
+								   self.dev_contourCenter.data, \
+								   np.int32(self.nrOfDetectionAngleSteps) \
+								  )
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
 	def checkTrackingFinished(self):
 		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:
 			self.trackingFinished = 0 # force another iterations
