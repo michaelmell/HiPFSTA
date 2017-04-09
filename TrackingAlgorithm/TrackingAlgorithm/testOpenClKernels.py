@@ -40,7 +40,7 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.loadDeviceVariable("dev_dbgOut",path)
 		self.loadDeviceVariable("dev_dbgOut2",path)
 		self.setWorkGroupSizes()
-		self.plotCurrentMembraneCoordinates()
+		#self.plotCurrentMembraneCoordinates()
 		plt.show()
 
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \

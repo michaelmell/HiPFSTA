@@ -15,6 +15,20 @@ class helpers(object):
 		return doubleVector
 
 	def ToSingleVectorsOnHost(doubleVector):
-		singleVectorX = doubleVector['x']
-		singleVectorY = doubleVector['y']
+		singleVectorX = np.copy(doubleVector['x'])
+		singleVectorY = np.copy(doubleVector['y'])
 		return singleVectorX, singleVectorY
+
+	def ToDoubleVectorOnDevice(oclQueue,dev_singleVectorX,dev_singleVectorY):
+		singleVectorX = dev_singleVectorX.get()
+		singleVectorY = dev_singleVectorY.get()
+		doubleVector = helpers.ToDoubleVectorOnHost(singleVectorX,singleVectorY)
+		dev_doubleVector = cl_array.to_device(oclQueue,doubleVector)
+		return dev_doubleVector
+
+	def ToSingleVectorsOnDevice(oclQueue,dev_doubleVector):
+		doubleVector = dev_doubleVector.get()
+		singleVectorX,singleVectorY = helpers.ToSingleVectorsOnHost(doubleVector)
+		dev_singleVectorX = cl_array.to_device(oclQueue,singleVectorX)
+		dev_singleVectorY = cl_array.to_device(oclQueue,singleVectorY)
+		return dev_singleVectorX,dev_singleVectorY
