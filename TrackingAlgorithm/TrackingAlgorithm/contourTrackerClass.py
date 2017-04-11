@@ -367,9 +367,9 @@ class contourTracker( object ):
 	
 	def trackImage(self,imagePath):
 		self.loadImage(imagePath)
+		self.resetNrOfTrackingIterations()
 		while(not self.checkTrackingFinished()): # start new tracking iteration with the previous contour as starting position
 			self.trackContour()
-		self.resetNrOfTrackingIterations()
 
 	def trackContourSequentially(self):
 		## tracking status variables
