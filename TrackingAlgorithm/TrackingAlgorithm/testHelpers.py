@@ -8,35 +8,35 @@ from numpy import random as rnd
 class Test_Helpers(unittest.TestCase):
 	vectorLength = 10
 	def test_ToDoubleVectorOnHost(self):
-		singleVectorX = rnd.rand(self.vectorLength,1);
-		singleVectorY = rnd.rand(self.vectorLength,1);
+		singleVectorX = rnd.rand(self.vectorLength);
+		singleVectorY = rnd.rand(self.vectorLength);
 		doubleVector = helpers.ToDoubleVectorOnHost(singleVectorX,singleVectorY)
-		self.assertTrue(np.all(doubleVector['x'] == singleVectorX[:,0]))
-		self.assertTrue(np.all(doubleVector['y'] == singleVectorY[:,0]))
+		self.assertTrue(np.all(doubleVector['x'] == singleVectorX[:]))
+		self.assertTrue(np.all(doubleVector['y'] == singleVectorY[:]))
 
 	def test_ToSingleVectorsOnHost(self):
 		doubleVector = np.zeros(self.vectorLength, cl_array.vec.double2)
-		xVals = rnd.rand(self.vectorLength,1);
-		yVals = rnd.rand(self.vectorLength,1);
-		doubleVector['x'] = xVals[:,0]
-		doubleVector['y'] = yVals[:,0]
+		xVals = rnd.rand(self.vectorLength);
+		yVals = rnd.rand(self.vectorLength);
+		doubleVector['x'] = xVals[:]
+		doubleVector['y'] = yVals[:]
 		xVector,yVector = helpers.ToSingleVectorsOnHost(doubleVector)
-		self.assertTrue(np.all(xVector == xVals[:,0]))
-		self.assertTrue(np.all(yVector == yVals[:,0]))
+		self.assertTrue(np.all(xVector == xVals[:]))
+		self.assertTrue(np.all(yVector == yVals[:]))
 
 	def test_ToDoubleVectorOnDevice(self):
 		self.clPlatform = "intel"
 		self.computeDeviceId = 0
 		self.setupClContext()
 		self.setupClQueue(self.ctx)
-		singleVectorX = rnd.rand(self.vectorLength,1);
-		singleVectorY = rnd.rand(self.vectorLength,1);
+		singleVectorX = rnd.rand(self.vectorLength);
+		singleVectorY = rnd.rand(self.vectorLength);
 		dev_singleVectorX = cl_array.to_device(self.queue,singleVectorX)
 		dev_singleVectorY = cl_array.to_device(self.queue,singleVectorY)
 		dev_doubleVector = helpers.ToDoubleVectorOnDevice(self.queue,dev_singleVectorX,dev_singleVectorY)
 		doubleVector = dev_doubleVector.get()
-		self.assertTrue(np.all(doubleVector['x'] == singleVectorX[:,0]))
-		self.assertTrue(np.all(doubleVector['y'] == singleVectorY[:,0]))
+		self.assertTrue(np.all(doubleVector['x'] == singleVectorX[:]))
+		self.assertTrue(np.all(doubleVector['y'] == singleVectorY[:]))
 		pass
 
 	def test_ToSingleVectorsOnDevice(self):

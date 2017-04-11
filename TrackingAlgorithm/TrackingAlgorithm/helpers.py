@@ -10,8 +10,8 @@ class helpers(object):
 	def ToDoubleVectorOnHost(singleVectorX,singleVectorY):
 		vectorLength = singleVectorX.shape[0]
 		doubleVector = np.zeros(vectorLength, cl_array.vec.double2)
-		doubleVector['x'] = singleVectorX[:,0]
-		doubleVector['y'] = singleVectorY[:,0]
+		doubleVector['x'] = singleVectorX[:]
+		doubleVector['y'] = singleVectorY[:]
 		return doubleVector
 
 	def ToSingleVectorsOnHost(doubleVector):
