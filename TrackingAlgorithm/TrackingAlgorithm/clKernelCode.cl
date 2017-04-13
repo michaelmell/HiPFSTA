@@ -100,6 +100,34 @@ __kernel void calculateMembraneNormalVectors(__global double* membraneCoordinate
 		membraneNormalVectorsY[xInd] = membraneNormalVectorsY[xInd]/vectorNorm;
 	}
 
+__kernel void calculateDsNew(
+						 __global double2* membraneCoordinates,
+						 __global double* ds
+						 )
+{
+	const int xInd = get_global_id(0);
+	const int xSize = get_global_size(0);
+
+	// __global double* membraneCoordinatesX;
+	// __global double* membraneCoordinatesY;
+	// membraneCoordinatesX[xInd] = membraneCoordinates[xInd].x;
+	// membraneCoordinatesY[xInd] = membraneCoordinates[xInd].y;
+	
+	if(xInd>=1){
+		ds[xInd] = sqrt(pow((membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x),2)
+				  + 	pow((membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y),2)
+				  );
+	}
+	else if(xInd==0){ // calculate edge gradient
+		ds[xInd] = sqrt(pow((membraneCoordinates[xInd].x - membraneCoordinates[xSize-1].x),2)
+				  + 	pow((membraneCoordinates[xInd].y - membraneCoordinates[xSize-1].y),2)
+				  );
+	}
+
+	// membraneCoordinates[xInd].x = membraneCoordinatesX[xInd];
+	// membraneCoordinates[xInd].y = membraneCoordinatesY[xInd];
+}
+
 __kernel void calculateDs(__global double* membraneCoordinatesX,
 						 __global double* membraneCoordinatesY,
 						 __global double* ds

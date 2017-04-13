@@ -6,7 +6,7 @@ import numpy as np
 from numpy import random as rnd
 
 class Test_Helpers(unittest.TestCase):
-	vectorLength = 10
+	vectorLength = 2048
 	def test_ToDoubleVectorOnHost(self):
 		singleVectorX = rnd.rand(self.vectorLength);
 		singleVectorY = rnd.rand(self.vectorLength);
