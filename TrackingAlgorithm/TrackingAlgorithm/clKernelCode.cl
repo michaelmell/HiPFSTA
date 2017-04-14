@@ -345,8 +345,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 								   const double meanRangePositionOffset,
 								   __local double* localMembranePositionsX,
 								   __local double* localMembranePositionsY,
-								   __global double* membraneCoordinatesX,
-								   __global double* membraneCoordinatesY,
+								   __global double2* membraneCoordinates,
 								   __global double* membraneNormalVectorsX,
 								   __global double* membraneNormalVectorsY,
 								   __global double* fitInclines,
@@ -396,7 +395,8 @@ __kernel void findMembranePosition(sampler_t sampler,
 	__private double2 NormCoords;
 	__private const int2 dims = get_image_dim(Img);
 	
-	__private double2 basePoint = {membraneCoordinatesX[coordinateIndex],membraneCoordinatesY[coordinateIndex]};
+	// __private double2 basePoint = {membraneCoordinatesX[coordinateIndex],membraneCoordinatesY[coordinateIndex]};
+	__private double2 basePoint = membraneCoordinates[coordinateIndex];
 	
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -537,8 +537,8 @@ __kernel void findMembranePosition(sampler_t sampler,
 					inclineSum += fitIncline[index+yIndLoc*xSizeLoc];
 				}
 			}
-			membraneCoordinatesX[coordinateIndex] = xTmp/inclineSum;
-			membraneCoordinatesY[coordinateIndex] = yTmp/inclineSum;
+			membraneCoordinates[coordinateIndex].x = xTmp/inclineSum;
+			membraneCoordinates[coordinateIndex].y = yTmp/inclineSum;
 			fitInclines[coordinateIndex] = maxFitIncline;
 			
 			xMembraneNormalTmp = xMembraneNormalTmp/inclineSum;
