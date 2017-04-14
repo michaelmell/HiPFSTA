@@ -120,67 +120,19 @@ __kernel void calculateDs(
 	}
 }
 
-__kernel void calculateSumDs(__global double* membraneCoordinatesX,
-									 __global double* membraneCoordinatesY,
-									 __global double* ds,
-									 __global double* sumds
-									 )
+__kernel void calculateSumDs(__global double* ds,
+							 __global double* sumds
+							 )
 {
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
-	//~ const int xIndLoc = get_local_id(0);
-	//~ const int xSizeLoc = get_local_size(0);
-	//~ __private double circumference=0.0;
-		
-	//~ if(xInd>=1){
-		//~ ds[xInd] = sqrt(pow((membraneCoordinatesX[xInd] - membraneCoordinatesX[xInd-1]),2)
-				  //~ + 	pow((membraneCoordinatesY[xInd] - membraneCoordinatesY[xInd-1]),2)
-				  //~ );
-	//~ }
-	//~ else if(xInd==0){ // calculate edge gradient
-		//~ ds[xInd] = sqrt(pow((membraneCoordinatesX[xInd] - membraneCoordinatesX[xSize-1]),2)
-				  //~ + 	pow((membraneCoordinatesY[xInd] - membraneCoordinatesY[xSize-1]),2)
-				  //~ );
-	//~ }
-	
-	//~ barrier(CLK_LOCAL_MEM_FENCE);
-	//~ barrier(CLK_GLOBAL_MEM_FENCE);
-	//~ write_mem_fence (CLK_GLOBAL_MEM_FENCE);
-	
+
 	if(xInd>=1){
 		sumds[xInd] = ds[xInd] + ds[xInd-1];
 	}
-	else if(xInd==0){ // calculate edge gradient
+	else if(xInd==0){
 		sumds[xInd] = ds[xInd] + ds[xSize-1];
 	}
-
-	//~ barrier(CLK_GLOBAL_MEM_FENCE);
-	//~ write_mem_fence (CLK_GLOBAL_MEM_FENCE);
-
-	//~ barrier(CLK_LOCAL_MEM_FENCE);
-	//~ barrier(CLK_GLOBAL_MEM_FENCE);
-
-	//__private double tmp1=0.0, tmp2=0.0;
-	//if(xInd==0){
-		//for(int index=0;index<xSize;index++){
-			//circumference = circumference + ds[index];
-		//}
-		
-		//for(int index=0;index<xSize;index++){
-			//tmp1 = tmp1 + membraneCoordinatesX[index] * sumds[index];
-			//tmp2 = tmp2 + membraneCoordinatesY[index] * sumds[index];
-		//}
-		//contourCenter[xInd].x = (1/(2*circumference)) * tmp1;
-		//contourCenter[xInd].y = (1/(2*circumference)) * tmp2;
-		
-		////~ printf("circumference: %f\n",circumference);
-		////~ printf("tmp1: %f\n",tmp1);
-		////~ printf("tmp2: %f\n",tmp2);
-		////~ printf("contourCenter[xInd].x: %f\n",contourCenter[xInd].x);
-		////~ printf("contourCenter[xInd].y: %f\n",contourCenter[xInd].y);
-	//}
-
-	//~ barrier(CLK_GLOBAL_MEM_FENCE);
 }
 
 __kernel void calculateContourCenter(__global double* membraneCoordinatesX,

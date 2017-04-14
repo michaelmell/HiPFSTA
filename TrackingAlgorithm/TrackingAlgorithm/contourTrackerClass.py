@@ -638,7 +638,6 @@ class contourTracker( object ):
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
-					   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
 					   self.dev_ds.data, self.dev_sumds.data \
 					 )
 
