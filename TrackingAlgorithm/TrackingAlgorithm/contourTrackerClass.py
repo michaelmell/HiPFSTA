@@ -438,7 +438,9 @@ class contourTracker( object ):
 										   #~ cl.LocalMemory(membraneNormalVectors_memSize) \
 										  )
 
-		self.calculateContourCenter()		
+		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
+		self.calculateContourCenter()
+		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
 
 		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.dev_interpolatedMembraneCoordinatesX.data).wait()
 		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.dev_interpolatedMembraneCoordinatesY.data).wait()
@@ -539,7 +541,9 @@ class contourTracker( object ):
 		########################################################################
 		### Calculate contour center
 		########################################################################
-		self.calculateContourCenter()		
+		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
+		self.calculateContourCenter()
+		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
 
 		########################################################################
 		### Convert cartesian coordinates to polar coordinates
@@ -628,9 +632,8 @@ class contourTracker( object ):
 		pass
 		
 	def calculateContourCenter(self):
-		dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
 		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
-					   dev_membraneCoordinates.data, \
+					   self.dev_membraneCoordinates.data, \
 					   self.dev_ds.data \
 					 )
 
@@ -643,15 +646,13 @@ class contourTracker( object ):
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		self.prg.calculateContourCenter(self.queue, (1,1), None, \
-								   dev_membraneCoordinates.data, \
+								   self.dev_membraneCoordinates.data, \
 								   self.dev_ds.data, self.dev_sumds.data, \
 								   self.dev_contourCenter.data, \
 								   np.int32(self.nrOfDetectionAngleSteps) \
 								  )
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
-
-		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,dev_membraneCoordinates)
 
 	def checkTrackingFinished(self):
 		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:
