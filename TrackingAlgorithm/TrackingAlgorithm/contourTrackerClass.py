@@ -151,13 +151,10 @@ class contourTracker( object ):
 		
 		self.host_fitIntercept = np.empty(self.nrOfLocalAngleSteps,dtype=np.float64)
 		self.dev_fitIntercept = cl_array.to_device(self.queue, self.host_fitIntercept)
+
+		self.host_localMembranePositions = np.zeros(self.nrOfLocalAngleSteps, cl.array.vec.double2)
+		self.dev_localMembranePositions = cl_array.to_device(self.queue, self.host_localMembranePositions)
 		
-		self.host_localMembranePositionsX = np.zeros(shape=self.nrOfLocalAngleSteps,dtype=np.float64)
-		self.dev_localMembranePositionsX = cl_array.to_device(self.queue, self.host_localMembranePositionsX)
-
-		self.host_localMembranePositionsY = np.zeros(shape=self.nrOfLocalAngleSteps,dtype=np.float64)
-		self.dev_localMembranePositionsY = cl_array.to_device(self.queue, self.host_localMembranePositionsY)
-
 		self.host_membraneCoordinatesX = np.zeros(shape=self.nrOfDetectionAngleSteps,dtype=np.float64)
 		self.host_membraneCoordinatesX[0] = self.startingCoordinate[0]
 		self.dev_membraneCoordinatesX = cl_array.to_device(self.queue, self.host_membraneCoordinatesX)
@@ -241,7 +238,8 @@ class contourTracker( object ):
 		########################################################################
 		### setup OpenCL local memory
 		########################################################################
-		self.localMembranePositions_memSize = self.dev_localMembranePositionsX.nbytes * int(self.contourPointsPerWorkGroup)
+		self.localMembranePositions_memSize = self.dev_localMembranePositions.nbytes * int(self.contourPointsPerWorkGroup)
+		
 		self.fitIncline_memSize = self.dev_fitIncline.nbytes * int(self.contourPointsPerWorkGroup)
 		self.fitIntercept_memSize = self.dev_fitIntercept.nbytes * int(self.contourPointsPerWorkGroup)
 		
@@ -396,7 +394,7 @@ class contourTracker( object ):
 											 cl.LocalMemory(self.rotatedUnitVector_memSize), \
 											 self.meanParameter, \
 											 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-											 cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
+											 cl.LocalMemory(self.localMembranePositions_memSize), \
 											 self.dev_membraneCoordinates.data, \
 											 self.dev_membraneNormalVectors.data, \
 											 self.dev_fitInclines.data, \
@@ -492,7 +490,7 @@ class contourTracker( object ):
 											 cl.LocalMemory(self.rotatedUnitVector_memSize), \
 											 self.meanParameter, \
 											 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-											 cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
+											 cl.LocalMemory(self.localMembranePositions_memSize), \
 											 self.dev_membraneCoordinates.data, \
 											 self.dev_membraneNormalVectors.data, \
 											 self.dev_fitInclines.data, \

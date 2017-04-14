@@ -343,8 +343,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 								   const int meanParameter,
 								   __constant double* meanRangeXvalues, // this should be local or constant
 								   const double meanRangePositionOffset,
-								   __local double* localMembranePositionsX,
-								   __local double* localMembranePositionsY,
+								   __local double2* localMembranePositions,
 								   __global double2* membraneCoordinates,
 								   __global double2* membraneNormalVectors,
 								   __global double* fitInclines,
@@ -485,8 +484,8 @@ __kernel void findMembranePosition(sampler_t sampler,
 		relativeMembranePositionLocalCoordSys = 0;
 	}
 
-	localMembranePositionsX[xIndLoc+yIndLoc*xSizeLoc] = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * relativeMembranePositionLocalCoordSys;
-	localMembranePositionsY[xIndLoc+yIndLoc*xSizeLoc] = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * relativeMembranePositionLocalCoordSys;
+	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc].x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * relativeMembranePositionLocalCoordSys;
+	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc].y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * relativeMembranePositionLocalCoordSys;
 	
 	write_mem_fence(CLK_LOCAL_MEM_FENCE);
 
@@ -525,8 +524,8 @@ __kernel void findMembranePosition(sampler_t sampler,
 			{
 				if(fitIncline[index+yIndLoc*xSizeLoc]>inclineTolerance*maxFitIncline)
 				{
-					xTmp += fitIncline[index+yIndLoc*xSizeLoc] * localMembranePositionsX[index+yIndLoc*xSizeLoc];
-					yTmp += fitIncline[index+yIndLoc*xSizeLoc] * localMembranePositionsY[index+yIndLoc*xSizeLoc];
+					xTmp += fitIncline[index+yIndLoc*xSizeLoc] * localMembranePositions[index+yIndLoc*xSizeLoc].x;
+					yTmp += fitIncline[index+yIndLoc*xSizeLoc] * localMembranePositions[index+yIndLoc*xSizeLoc].y;
 					
 					xMembraneNormalTmp += fitIncline[index+yIndLoc*xSizeLoc] * rotatedUnitVector2[index+yIndLoc*xSizeLoc].x;
 					yMembraneNormalTmp += fitIncline[index+yIndLoc*xSizeLoc] * rotatedUnitVector2[index+yIndLoc*xSizeLoc].y;
