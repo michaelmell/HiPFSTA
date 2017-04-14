@@ -391,7 +391,6 @@ __kernel void findMembranePosition(sampler_t sampler,
 	__private double2 NormCoords;
 	__private const int2 dims = get_image_dim(Img);
 	
-	// __private double2 basePoint = {membraneCoordinatesX[coordinateIndex],membraneCoordinatesY[coordinateIndex]};
 	__private double2 basePoint = membraneCoordinates[coordinateIndex];
 	
 	barrier(CLK_GLOBAL_MEM_FENCE);
