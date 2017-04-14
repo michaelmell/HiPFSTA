@@ -432,15 +432,17 @@ class contourTracker( object ):
 				self.dev_membraneNormalVectorsY = cl_array.to_device(self.queue, self.host_membraneNormalVectorsY)
 				
 		# calculate new normal vectors
+		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
+		self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
+
 		self.prg.calculateMembraneNormalVectors(self.queue, self.gradientGlobalSize, None, \
-										   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-										   self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data \
-										   #~ cl.LocalMemory(membraneNormalVectors_memSize) \
+										   self.dev_membraneCoordinates.data, \
+										   self.dev_membraneNormalVectors.data \
 										  )
 
-		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
 		self.calculateContourCenter()
 		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
+		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
 
 		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesX.data,self.dev_interpolatedMembraneCoordinatesX.data).wait()
 		cl.enqueue_copy_buffer(self.queue,self.dev_membraneCoordinatesY.data,self.dev_interpolatedMembraneCoordinatesY.data).wait()
