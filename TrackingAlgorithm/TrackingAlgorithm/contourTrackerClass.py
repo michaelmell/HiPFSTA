@@ -629,7 +629,7 @@ class contourTracker( object ):
 		
 	def calculateContourCenter(self):
 		dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
-		self.prg.calculateDsNew(self.queue, self.gradientGlobalSize, None, \
+		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
 					   dev_membraneCoordinates.data, \
 					   self.dev_ds.data \
 					 )
