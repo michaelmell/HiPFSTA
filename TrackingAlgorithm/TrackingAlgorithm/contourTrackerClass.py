@@ -633,7 +633,6 @@ class contourTracker( object ):
 					   dev_membraneCoordinates.data, \
 					   self.dev_ds.data \
 					 )
-		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,dev_membraneCoordinates)
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -644,13 +643,15 @@ class contourTracker( object ):
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		self.prg.calculateContourCenter(self.queue, (1,1), None, \
-								   self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
+								   dev_membraneCoordinates.data, \
 								   self.dev_ds.data, self.dev_sumds.data, \
 								   self.dev_contourCenter.data, \
 								   np.int32(self.nrOfDetectionAngleSteps) \
 								  )
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,dev_membraneCoordinates)
 
 	def checkTrackingFinished(self):
 		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:

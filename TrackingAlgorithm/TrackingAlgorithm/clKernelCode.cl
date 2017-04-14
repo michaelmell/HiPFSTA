@@ -135,42 +135,31 @@ __kernel void calculateSumDs(__global double* ds,
 	}
 }
 
-__kernel void calculateContourCenter(__global double* membraneCoordinatesX,
-										 __global double* membraneCoordinatesY,
-										 __global double* ds,
-										 __global double* sumds,
-										 __global double2* contourCenter,
-										 const int nrOfContourPoints
-										 //~ const double2 contourCenter
+__kernel void calculateContourCenter(__global double2* membraneCoordinates,
+									 __global double* ds,
+									 __global double* sumds,
+									 __global double2* contourCenter,
+									 const int nrOfContourPoints
 									 )
 {
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
-	//~ const int xIndLoc = get_local_id(0);
-	//~ const int xSizeLoc = get_local_size(0);
+
 	__private double circumference=0.0;
 	
 	__private double tmp1=0.0, tmp2=0.0;
 	if(xInd==0){
 		for(int index=0;index<nrOfContourPoints;index++){
-			//~ printf("index: %d\n",index);
 			circumference = circumference + ds[index];
 		}
 		
 		for(int index=0;index<nrOfContourPoints;index++){
-			tmp1 = tmp1 + membraneCoordinatesX[index] * sumds[index];
-			tmp2 = tmp2 + membraneCoordinatesY[index] * sumds[index];
+			tmp1 = tmp1 + membraneCoordinates[index].x * sumds[index];
+			tmp2 = tmp2 + membraneCoordinates[index].y * sumds[index];
 		}
 		contourCenter[0].x = (1/(2*circumference)) * tmp1;
 		contourCenter[0].y = (1/(2*circumference)) * tmp2;
-		
-		//~ printf("circumference: %f\n",circumference);
-		//~ printf("tmp1: %f\n",tmp1);
-		//~ printf("tmp2: %f\n",tmp2);
-		//~ printf("contourCenter[xInd].x: %f\n",contourCenter[xInd].x);
-		//~ printf("contourCenter[xInd].y: %f\n",contourCenter[xInd].y);
 	}
-
 }
 
 __kernel void cart2pol(__global double* membraneCoordinatesX,
