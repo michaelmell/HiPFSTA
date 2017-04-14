@@ -346,8 +346,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 								   __local double* localMembranePositionsX,
 								   __local double* localMembranePositionsY,
 								   __global double2* membraneCoordinates,
-								   __global double* membraneNormalVectorsX,
-								   __global double* membraneNormalVectorsY,
+								   __global double2* membraneNormalVectors,
 								   __global double* fitInclines,
 								   const int coordinateStartingIndex,
 								   const double inclineTolerance
@@ -373,9 +372,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	
 	__private double lineIntensities[400];
 	
-	__private double2 membraneNormalVector;
-	membraneNormalVector.x = membraneNormalVectorsX[coordinateIndex];
-	membraneNormalVector.y = membraneNormalVectorsY[coordinateIndex];
+	__private double2 membraneNormalVector = membraneNormalVectors[coordinateIndex];
 	
 	// matrix multiplication with linear array of sequential 2x2 rotation matrices
 	rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x = localRotationMatrices[4*xIndLoc+0] * membraneNormalVector.x
@@ -549,8 +546,8 @@ __kernel void findMembranePosition(sampler_t sampler,
 			xMembraneNormalTmp = xMembraneNormalTmp/membraneNormalNorm;
 			yMembraneNormalTmp = yMembraneNormalTmp/membraneNormalNorm;
 			
-			membraneNormalVectorsX[coordinateIndex] = xMembraneNormalTmp;
-			membraneNormalVectorsY[coordinateIndex] = yMembraneNormalTmp;
+			membraneNormalVectors[coordinateIndex].x = xMembraneNormalTmp;
+			membraneNormalVectors[coordinateIndex].y = yMembraneNormalTmp;
 	}
 }
 
