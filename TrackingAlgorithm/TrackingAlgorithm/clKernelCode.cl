@@ -331,33 +331,29 @@ __kernel void sortCoordinates(__global double* membranePolarRadius,
 
 //~ #pragma OPENCL EXTENSION cl_amd_printf : enable
 __kernel void findMembranePosition(sampler_t sampler, 
-									   __read_only image2d_t Img,
-									   const int imgSizeX,
-									   const int imgSizeY,
-									   __constant double* localRotationMatrices, // this should be local or constant
-									   __constant double* linFitSearchRangeXvalues, // this should be local or constant
-									   const int linFitParameter,
-									   __local double* fitIntercept,
-									   __local double* fitIncline,
-									   __local double2* rotatedUnitVector2,
-									   //~ __global double* fitIntercept,
-									   //~ __global double* fitIncline,
-									   const int meanParameter,
-									   __constant double* meanRangeXvalues, // this should be local or constant
-									   const double meanRangePositionOffset,
-									   __local double* localMembranePositionsX,
-									   __local double* localMembranePositionsY,
-									   //~ __global double* localMembranePositionsX,
-									   //~ __global double* localMembranePositionsY,
-									   __global double* membraneCoordinatesX,
-									   __global double* membraneCoordinatesY,
-									   __global double* membraneNormalVectorsX,
-									   __global double* membraneNormalVectorsY,
-									   __global double* fitInclines,
-									   const int coordinateStartingIndex,
-									   const double inclineTolerance)
+								   __read_only image2d_t Img,
+								   const int imgSizeX,
+								   const int imgSizeY,
+								   __constant double* localRotationMatrices, // this should be local or constant
+								   __constant double* linFitSearchRangeXvalues, // this should be local or constant
+								   const int linFitParameter,
+								   __local double* fitIntercept,
+								   __local double* fitIncline,
+								   __local double2* rotatedUnitVector2,
+								   const int meanParameter,
+								   __constant double* meanRangeXvalues, // this should be local or constant
+								   const double meanRangePositionOffset,
+								   __local double* localMembranePositionsX,
+								   __local double* localMembranePositionsY,
+								   __global double* membraneCoordinatesX,
+								   __global double* membraneCoordinatesY,
+								   __global double* membraneNormalVectorsX,
+								   __global double* membraneNormalVectorsY,
+								   __global double* fitInclines,
+								   const int coordinateStartingIndex,
+								   const double inclineTolerance
+								   )
 {
-	// self.trackingWorkGroupSize, self.trackingGlobalSize
 	const int xInd = get_global_id(1);
 	const int yInd = get_global_id(0);
 	const int xSize = get_global_size(1);
@@ -374,26 +370,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	// Notes:
 	// 1) xInd = xGroupSize*xSizeLoc+xIndLoc
 	
-	//~ if(xInd==0 && yInd==0){
-		//~ printf("xSize: %d\n",xSize);
-		//~ printf("ySize: %d\n",ySize);
-		//~ printf("xSizeLoc: %d\n",xSizeLoc);
-		//~ printf("ySizeLoc: %d\n",ySizeLoc);
-		//~ printf("xGroupId: %d\n",xGroupId);
-		//~ printf("yGroupId: %d\n",yGroupId);
-		//~ printf("coordinateStartingIndex: %d\n",coordinateStartingIndex);
-	//~ }
-	
-	//~ const int coordinateIndex = coordinateStartingIndex;
 	const int coordinateIndex = coordinateStartingIndex + yGroupId*ySizeLoc + yIndLoc;
-	
-	//~ if(xInd==10){
-		//~ printf("yIndLoc: %d\n",yIndLoc);
-		//~ printf("xIndLoc: %d\n",xIndLoc);
-		//~ printf("yGroupId: %d\n",yGroupId);
-		//~ printf("ySizeLoc: %d\n",ySizeLoc);
-		//~ printf("coordinateIndex: %d\n",coordinateIndex);
-	//~ }
 	
 	__private double lineIntensities[400];
 	
@@ -402,27 +379,11 @@ __kernel void findMembranePosition(sampler_t sampler,
 	membraneNormalVector.y = membraneNormalVectorsY[coordinateIndex];
 	
 	// matrix multiplication with linear array of sequential 2x2 rotation matrices
-	//~ __private double2 rotatedUnitVector;
-	//~ rotatedUnitVector.x = localRotationMatrices[4*xIndLoc+0] * membraneNormalVector.x
-	                     //~ + localRotationMatrices[4*xIndLoc+1] * membraneNormalVector.y;
-	//~ rotatedUnitVector.y = localRotationMatrices[4*xIndLoc+2] * membraneNormalVector.x
-	                     //~ + localRotationMatrices[4*xIndLoc+3] * membraneNormalVector.y;
 	rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x = localRotationMatrices[4*xIndLoc+0] * membraneNormalVector.x
 												   + localRotationMatrices[4*xIndLoc+1] * membraneNormalVector.y;
 	rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y = localRotationMatrices[4*xIndLoc+2] * membraneNormalVector.x
 												   + localRotationMatrices[4*xIndLoc+3] * membraneNormalVector.y;
-	
-	//if(xInd==10 && yInd==10){
-		//printf("localRotationMatrices[4*xIndLoc+0]: %f\n",localRotationMatrices[4*xIndLoc+0]);
-		//printf("localRotationMatrices[4*xIndLoc+1]: %f\n",localRotationMatrices[4*xIndLoc+1]);
-		//printf("localRotationMatrices[4*xIndLoc+2]: %f\n",localRotationMatrices[4*xIndLoc+2]);
-		//printf("localRotationMatrices[4*xIndLoc+3]: %f\n",localRotationMatrices[4*xIndLoc+3]);
-		////~ printf("localRotationMatrices[4*xInd+0]: %f\n",localRotationMatrices[4*xInd+0]);
-		////~ printf("localRotationMatrices[4*xInd+1]: %f\n",localRotationMatrices[4*xInd+1]);
-		////~ printf("localRotationMatrices[4*xInd+2]: %f\n",localRotationMatrices[4*xInd+2]);
-		////~ printf("localRotationMatrices[4*xInd+3]: %f\n",localRotationMatrices[4*xInd+3]);
-	//}
-	
+
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -436,30 +397,12 @@ __kernel void findMembranePosition(sampler_t sampler,
 	__private const int2 dims = get_image_dim(Img);
 	
 	__private double2 basePoint = {membraneCoordinatesX[coordinateIndex],membraneCoordinatesY[coordinateIndex]};
-
-	//~ if(xInd==0 && yInd==0){
-		//~ printf("basePoint.x: %f\n",basePoint.x);
-		//~ printf("basePoint.y: %f\n",basePoint.y);
-	//~ }
-	
-	//if(xInd==0 && yInd==0){
-		//printf("yIndLoc: %d\n",yIndLoc);
-		//printf("xIndLoc: %d\n",xIndLoc);
-		//printf("yGroupId: %d\n",yGroupId);
-		//printf("ySizeLoc: %d\n",ySizeLoc);
-		//printf("coordinateIndex: %d\n",coordinateIndex);
-		//printf("membraneNormalVector.x: %f\n",membraneNormalVector.x);
-		//printf("membraneNormalVector.y: %f\n",membraneNormalVector.y);
-		//printf("basePoint.x: %f\n",basePoint.x);
-		//printf("basePoint.y: %f\n",basePoint.y);
-	//}
 	
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	for(int index=0;index<imgSizeY;index++){
-		//~ Coords.x = basePoint.x + rotatedUnitVector.x * linFitSearchRangeXvalues[index];
-		//~ Coords.y = basePoint.y + rotatedUnitVector.y * linFitSearchRangeXvalues[index];
+	for(int index=0;index<imgSizeY;index++)
+	{
 		Coords.x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * linFitSearchRangeXvalues[index];
 		Coords.y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * linFitSearchRangeXvalues[index];
 		
@@ -470,26 +413,17 @@ __kernel void findMembranePosition(sampler_t sampler,
 		fNormCoords.y = (float)NormCoords.y;
 		
 		lineIntensities[index] = read_imagef(Img, sampler, fNormCoords).x;
-		//~ interpolatedIntensities[xInd+index*imgSizeX] = read_imagef(Img, sampler, NormCoords).x;
 		
 		maxIndex = select(maxIndex,index,(maxValue < lineIntensities[index]));
 		maxValue = select(maxValue,lineIntensities[index],(long)(maxValue < lineIntensities[index]));
-		//~ if(maxValue < lineIntensities[index]){
-			//~ maxIndex = index;
-			//~ maxValue = lineIntensities[index];
-		//~ }
+
 		minIndex = select(minIndex,index,(minValue > lineIntensities[index]));
 		minValue = select(minValue,lineIntensities[index],(long)(minValue > lineIntensities[index]));
-		//~ if(minValue > lineIntensities[index]){
-			//~ minIndex = index;
-			//~ minValue = lineIntensities[index];
-		//~ }
 	}
 	
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	//~ __private int gradientCenterIndex, tmp;
 	__private int gradientCenterIndex;
 	__private double gradientCenterValue = minValue+(maxValue-minValue)/2.0;
 	__private double minValue2 = 20000;
@@ -500,8 +434,10 @@ __kernel void findMembranePosition(sampler_t sampler,
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	if(minIndex<maxIndex){
-		for(int index=minIndex;index<maxIndex;index++){
+	if(minIndex<maxIndex)
+	{
+		for(int index=minIndex;index<maxIndex;index++)
+		{
 			refValue = fabs(lineIntensities[index]-gradientCenterValue);
 			gradientCenterIndex = select(gradientCenterIndex,index,(minValue2 > refValue));
 			minValue2 = select(minValue2,refValue,(long)(minValue2 > refValue));
@@ -510,14 +446,11 @@ __kernel void findMembranePosition(sampler_t sampler,
 		// reference: http://stackoverflow.com/questions/7635706/opencl-built-in-function-select
 		
 		linearFit(linFitSearchRangeXvalues, lineIntensities, gradientCenterIndex, linFitParameter, &a, &b, &siga, &sigb, &chi2);
-		//~ fitIntercept[xIndLoc] = a;
 		fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = a;
-		//~ fitIncline[xIndLoc] = b;
 		fitIncline[xIndLoc+yIndLoc*xSizeLoc] = b;
 	}
-	else{
-	// ToDo:
-	// else:
+	else
+	{
 		fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = 0; // so that later they are not counted in the weighted sum (see below...)
 		fitIncline[xIndLoc+yIndLoc*xSizeLoc] = 0;
 	}
@@ -526,9 +459,8 @@ __kernel void findMembranePosition(sampler_t sampler,
 	barrier(CLK_LOCAL_MEM_FENCE);
 	
 	__private double meanIntensity = 0.0;
-	for(int index=0;index<meanParameter;index++){
-		//~ Coords.x = basePoint.x + rotatedUnitVector.x * ( meanRangeXvalues[index] + meanRangePositionOffset );
-		//~ Coords.y = basePoint.y + rotatedUnitVector.y * ( meanRangeXvalues[index] + meanRangePositionOffset );
+	for(int index=0;index<meanParameter;index++)
+	{
 		Coords.x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * ( meanRangeXvalues[index] + meanRangePositionOffset );
 		Coords.y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * ( meanRangeXvalues[index] + meanRangePositionOffset );
 		
@@ -546,97 +478,41 @@ __kernel void findMembranePosition(sampler_t sampler,
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	__private double relativeMembranePositionLocalCoordSys;
-	//~ __private double membranePositionsX, membranePositionsY;
-	//~ relativeMembranePositionLocalCoordSys = (meanIntensity-fitIntercept[xIndLoc])/fitIncline[xIndLoc];
-	if(fitIncline[xIndLoc+yIndLoc*xSizeLoc] != 0){
+
+	if(fitIncline[xIndLoc+yIndLoc*xSizeLoc] != 0)
+	{
 		relativeMembranePositionLocalCoordSys = (meanIntensity-fitIntercept[xIndLoc+yIndLoc*xSizeLoc])/fitIncline[xIndLoc+yIndLoc*xSizeLoc];
 	}
-	else{
+	else
+	{
 		relativeMembranePositionLocalCoordSys = 0;
 	}
-	
-	//~ if(fitIncline[xIndLoc+yIndLoc*xSizeLoc]  == 0){
-		//~ printf("A fitIncline at coordinateIndex %d is 0.\n",coordinateIndex);
-	//~ }
-	//~ 
-	//~ if(coordinateIndex  == 2029){
-		//~ printf("fitIncline at coordinateIndex %d: %f\n",coordinateIndex,fitIncline[xIndLoc+yIndLoc*xSizeLoc]);
-	//~ }
-	
-	//~ localMembranePositionsX[xIndLoc] = basePoint.x + rotatedUnitVector.x * relativeMembranePositionLocalCoordSys;
-	//~ localMembranePositionsY[xIndLoc] = basePoint.y + rotatedUnitVector.y * relativeMembranePositionLocalCoordSys;
-	//~ localMembranePositionsX[xIndLoc+yIndLoc*xSizeLoc] = basePoint.x + rotatedUnitVector.x * relativeMembranePositionLocalCoordSys;
-	//~ localMembranePositionsY[xIndLoc+yIndLoc*xSizeLoc] = basePoint.y + rotatedUnitVector.y * relativeMembranePositionLocalCoordSys;
+
 	localMembranePositionsX[xIndLoc+yIndLoc*xSizeLoc] = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * relativeMembranePositionLocalCoordSys;
 	localMembranePositionsY[xIndLoc+yIndLoc*xSizeLoc] = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * relativeMembranePositionLocalCoordSys;
-	
-	//~ if(xInd==0 && yIndLoc*xSizeLoc<64){
-		//~ printf("localMembranePositionsX[xInd]: %f\n",localMembranePositionsX[xIndLoc+yIndLoc*xSizeLoc]);
-		//~ printf("localMembranePositionsY[xInd]: %f\n",localMembranePositionsY[xIndLoc+yIndLoc*xSizeLoc]);
-	//~ }
-	//~ if(xInd==0 && coordinateIndex==200){
-		//~ printf("localMembranePositionsX[xInd]: %f\n",localMembranePositionsX[xInd]);
-		//~ printf("localMembranePositionsY[xInd]: %f\n",localMembranePositionsY[xInd]);
-	//~ }
 	
 	write_mem_fence(CLK_LOCAL_MEM_FENCE);
 
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
-	
-	
-	//if(xIndLoc==10 && yInd==1){
-		//printf("basePoint.x: %f\n",basePoint.x);
-		//printf("basePoint.y: %f\n",basePoint.y);
-		//printf("localMembranePositionsX[0]: %f\n",localMembranePositionsX[0]);
-		//printf("localMembranePositionsX[1]: %f\n",localMembranePositionsX[1]);
-		//printf("localMembranePositionsX[2]: %f\n",localMembranePositionsX[2]);
-		//printf("localMembranePositionsX[3]: %f\n",localMembranePositionsX[3]);
-	//}
-	
-	//~ if(xInd==0 && yInd==0){
-		//~ printf("xSize: %d\n",xSize);
-		//~ printf("ySize: %d\n",ySize);
-		//~ printf("xSizeLoc: %d\n",xSizeLoc);
-		//~ printf("ySizeLoc: %d\n",ySizeLoc);
-		//~ printf("xGroupId: %d\n",xGroupId);
-		//~ printf("yGroupId: %d\n",yGroupId);
-		//~ printf("coordinateStartingIndex: %d\n",coordinateStartingIndex);
-	//~ }
-	
+
 	/* *****************************************************************
 	 * Find largest inclination value in workgroup and save to maxFitIncline
 	 * ****************************************************************/
 	__local double maxFitIncline;
-	//~ __local double minIncline;
-	//~ if(coordinateIndex==829&xIndLoc==0){
-	if(xIndLoc==0&yIndLoc==0){
+
+	if(xIndLoc==0 & yIndLoc==0)
+	{
 		maxFitIncline = 0.0;
-		//~ minIncline = 100.0; // TODO: this is only for debugging; remove once done
-		for(int index=0;index<xSizeLoc*ySizeLoc;index++){
-			if(fitIncline[index]>maxFitIncline){
+		for(int index=0;index<xSizeLoc*ySizeLoc;index++)
+		{
+			if(fitIncline[index]>maxFitIncline)
+			{
 				maxFitIncline = fitIncline[index];
 			}
-			//~ if(fitIncline[index]<minIncline){ // TODO: this is only for debugging; remove once done
-				//~ minIncline = fitIncline[index];
-			//~ }
 		}
 	}
 
-	//~ __private double inclineTolerance = 0.7; // TODO: this should be made an algorithm parameter in the settings file
-	//~ __private double inclineTolerance = -0.9; // TODO: this should be made an algorithm parameter in the settings file
-
-	//if(xIndLoc==0&coordinateIndex>1850&coordinateIndex<1855){
-		////~ printf("xSize: %d\n",xSize);
-		////~ printf("ySize: %d\n",ySize);
-		////~ printf("xSizeLoc: %d\n",xSizeLoc);
-		////~ printf("ySizeLoc: %d\n",ySizeLoc);
-		//printf("maxFitIncline: %f\n",maxFitIncline);
-		//printf("minIncline: %f\n",minIncline);
-		//printf("inclineTolerance*maxFitIncline: %f\n",inclineTolerance*maxFitIncline);
-		//printf("inclineTolerance: %f\n",inclineTolerance);
-	//}
-	
 	write_mem_fence(CLK_LOCAL_MEM_FENCE);
 
 	barrier(CLK_GLOBAL_MEM_FENCE);
@@ -644,35 +520,22 @@ __kernel void findMembranePosition(sampler_t sampler,
 
 	
 	__private double xTmp = 0.0, yTmp = 0.0, inclineSum = 0.0;
-	//~ __private double xMembraneNormalTmp = 0.0, yMembraneNormalTmp = 0.0, membraneNormalNorm, membraneNormalNormNew, membraneNormalNorm2;
 	__private double xMembraneNormalTmp = 0.0, yMembraneNormalTmp = 0.0, membraneNormalNorm;
-	//~ [xIndLoc+yIndLoc*xSizeLoc]
 	
-	if(xIndLoc==0){
-		//~ for(int yIndLoc=get_local_id(0);yIndLoc++;yIndLoc<ySizeLoc){
-			//~ for(int index=get_local_id(1);index<xSize;index++){
-			for(int index=0;index<xSize;index++){
-				if(fitIncline[index+yIndLoc*xSizeLoc]>inclineTolerance*maxFitIncline){
-					//~ xTmp += fitIncline[index] * localMembranePositionsX[index];
-					//~ yTmp += fitIncline[index] * localMembranePositionsY[index];
+	if(xIndLoc==0)
+	{
+			for(int index=0;index<xSize;index++)
+			{
+				if(fitIncline[index+yIndLoc*xSizeLoc]>inclineTolerance*maxFitIncline)
+				{
 					xTmp += fitIncline[index+yIndLoc*xSizeLoc] * localMembranePositionsX[index+yIndLoc*xSizeLoc];
 					yTmp += fitIncline[index+yIndLoc*xSizeLoc] * localMembranePositionsY[index+yIndLoc*xSizeLoc];
 					
 					xMembraneNormalTmp += fitIncline[index+yIndLoc*xSizeLoc] * rotatedUnitVector2[index+yIndLoc*xSizeLoc].x;
 					yMembraneNormalTmp += fitIncline[index+yIndLoc*xSizeLoc] * rotatedUnitVector2[index+yIndLoc*xSizeLoc].y;
 					
-					//~ inclineSum += fitIncline[index];
 					inclineSum += fitIncline[index+yIndLoc*xSizeLoc];
 				}
-				//~ if(coordinateIndex==829){
-					//~ printf("fitIncline: %f\n",fitIncline[index+yIndLoc*xSizeLoc]);
-				//~ }
-				
-
-			//~ if(coordinateIndex==2000){
-				//~ printf("fitIncline: %f\n",fitIncline[index+yIndLoc*xSizeLoc]);
-			//~ }
-			
 			}
 			membraneCoordinatesX[coordinateIndex] = xTmp/inclineSum;
 			membraneCoordinatesY[coordinateIndex] = yTmp/inclineSum;
@@ -681,63 +544,14 @@ __kernel void findMembranePosition(sampler_t sampler,
 			xMembraneNormalTmp = xMembraneNormalTmp/inclineSum;
 			yMembraneNormalTmp = yMembraneNormalTmp/inclineSum;
 
-			//~ if(coordinateIndex==2000){
-				//~ printf("inclineSum: %f\n",inclineSum);
-			//~ }
-			
 			membraneNormalNorm = sqrt( pow(xMembraneNormalTmp,2) + pow(yMembraneNormalTmp,2) );
 			
-			//~ if(coordinateIndex==2000){
-				//~ printf("membraneNormalNorm: %f\n",membraneNormalNorm);
-			//~ }
-
 			xMembraneNormalTmp = xMembraneNormalTmp/membraneNormalNorm;
 			yMembraneNormalTmp = yMembraneNormalTmp/membraneNormalNorm;
 			
 			membraneNormalVectorsX[coordinateIndex] = xMembraneNormalTmp;
 			membraneNormalVectorsY[coordinateIndex] = yMembraneNormalTmp;
-
-			//~ if(membraneCoordinatesX[coordinateIndex]>300 ||
-			   //~ membraneCoordinatesX[coordinateIndex]<0 ||
-			   //~ membraneCoordinatesY[coordinateIndex]>300 ||
-			   //~ membraneCoordinatesY[coordinateIndex]<0 ){
-			   //~ printf("xInd: %f\n",xInd);
-			//~ }
-
-			//~ if(coordinateIndex==2000){
-				//~ printf("xMembraneNormalTmp: %f\n",xMembraneNormalTmp);
-				//~ printf("yMembraneNormalTmp: %f\n",yMembraneNormalTmp);
-			//~ }
-
-			
-			//~ membraneNormalNormNew = sqrt( pow(xMembraneNormalTmp,2) + pow(yMembraneNormalTmp,2) );
-			
-			//~ membraneNormalNorm2 = sqrt( pow(membraneNormalVectorsX[coordinateIndex],2) + pow(membraneNormalVectorsY[coordinateIndex],2) );
-			
-			//~ if(yIndLoc==0 && coordinateIndex == 1024){
-				//~ printf("membraneNormalVectorsX[coordinateIndex]: %f\n",membraneNormalVectorsX[coordinateIndex]);
-				//~ printf("membraneNormalVectorsY[coordinateIndex]: %f\n",membraneNormalVectorsY[coordinateIndex]);
-				//~ printf("membraneNormalNorm2: %f\n",membraneNormalNorm2);
-				//~ printf("xMembraneNormalTmp: %f\n",xMembraneNormalTmp);
-				//~ printf("yMembraneNormalTmp: %f\n",yMembraneNormalTmp);
-				//~ printf("membraneNormalNorm: %f\n",membraneNormalNorm);
-				//~ printf("membraneNormalNormNew: %f\n",membraneNormalNormNew);
-			//~ }
-			
-			//~ printf("coordinateIndex: %d\n",coordinateIndex);
-			//~ printf("membraneCoordinatesX[coordinateIndex]: %f\n",membraneCoordinatesX[coordinateIndex]);
-
-		//~ }
 	}
-	
-	//~ if(xInd==0 && yIndLoc==0){
-		//~ for(int index=0;index<xSize;index++){
-			//~ printf("localMembranePositionsX[xInd]: %f\n",localMembranePositionsX[index]);
-			//~ printf("localMembranePositionsY[xInd]: %f\n",localMembranePositionsY[index]);
-		//~ }
-		//~ printf("xSize: %d\n",xSize);
-		//~ printf("xSizeLoc: %d\n",xSizeLoc);
-	//~ }
 }
 
 __kernel void filterNanValues(__global double* membraneCoordinatesX,
