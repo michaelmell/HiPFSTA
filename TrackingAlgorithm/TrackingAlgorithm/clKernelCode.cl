@@ -877,8 +877,7 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 											  __global double* membranePolarTheta,
 											  __global double2* radialVectors,
 											  __global double2* contourCenter,
-											  __global double* membraneCoordinatesX,
-											  __global double* membraneCoordinatesY,
+											  __global double2* membraneCoordinates,
 											  __global double* interpolatedMembraneCoordinatesX,
 											  __global double* interpolatedMembraneCoordinatesY,
 											  __global double* interpolationAngles,
@@ -939,19 +938,19 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 		//~ if( interpolationAngles[xInd] == lowerAngle && interpolationAngles[xInd] == upperAngle )
 		if( interpolationAngle == lowerAngle && interpolationAngle == upperAngle )
 		{
-			radialVector.x = membraneCoordinatesX[lowerIndex] - radialLineBasePoint.x;
-			radialVector.y = membraneCoordinatesY[lowerIndex] - radialLineBasePoint.y;
+			radialVector.x = membraneCoordinates[lowerIndex].x - radialLineBasePoint.x;
+			radialVector.y = membraneCoordinates[lowerIndex].y - radialLineBasePoint.y;
 			if(length(radialVector)<distanceFromCenter){
 				distanceFromCenter = length(radialVector);
-				interpolatedMembranePoint.x = membraneCoordinatesX[lowerIndex];
-				interpolatedMembranePoint.y = membraneCoordinatesY[lowerIndex];
+				interpolatedMembranePoint.x = membraneCoordinates[lowerIndex].x;
+				interpolatedMembranePoint.y = membraneCoordinates[lowerIndex].y;
 			}
-			radialVector.x = membraneCoordinatesX[upperIndex] - radialLineBasePoint.x;
-			radialVector.y = membraneCoordinatesY[upperIndex] - radialLineBasePoint.y;
+			radialVector.x = membraneCoordinates[upperIndex].x - radialLineBasePoint.x;
+			radialVector.y = membraneCoordinates[upperIndex].y - radialLineBasePoint.y;
 			if(length(radialVector)<distanceFromCenter){
 				distanceFromCenter = length(radialVector);
-				interpolatedMembranePoint.x = membraneCoordinatesX[upperIndex];
-				interpolatedMembranePoint.y = membraneCoordinatesY[upperIndex];
+				interpolatedMembranePoint.x = membraneCoordinates[upperIndex].x;
+				interpolatedMembranePoint.y = membraneCoordinates[upperIndex].y;
 			}
 			break;
 		}
@@ -965,12 +964,12 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 			__private double2 lineSegmentBasePoint;
 			
 			// calculate paramaters of the straight, that passes through contour-segment
-			lineSegmentDirectionVector.x = membraneCoordinatesX[upperIndex] - membraneCoordinatesX[lowerIndex];
-			lineSegmentDirectionVector.y = membraneCoordinatesY[upperIndex] - membraneCoordinatesY[lowerIndex];
+			lineSegmentDirectionVector.x = membraneCoordinates[upperIndex].x - membraneCoordinates[lowerIndex].x;
+			lineSegmentDirectionVector.y = membraneCoordinates[upperIndex].y - membraneCoordinates[lowerIndex].y;
 			lineSegmentDirectionVector = normalize(lineSegmentDirectionVector);
 						
-			lineSegmentBasePoint.x = membraneCoordinatesX[lowerIndex];
-			lineSegmentBasePoint.y = membraneCoordinatesY[lowerIndex];
+			lineSegmentBasePoint.x = membraneCoordinates[lowerIndex].x;
+			lineSegmentBasePoint.y = membraneCoordinates[lowerIndex].y;
 			
 			// check if contour line-segment is parallel to the radial line
 			
@@ -992,7 +991,6 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 			radialVector.y = interpolatedMembranePointTMP.y - radialLineBasePoint.y;
 			if(length(radialVector)<distanceFromCenter){
 				distanceFromCenter = length(radialVector);
-				//~ interpolatedMembranePoint = {membraneCoordinatesX[lowerIndex],membraneCoordinatesY[lowerIndex]};
 				interpolatedMembranePoint = interpolatedMembranePointTMP;
 			}
 			break;
