@@ -873,8 +873,7 @@ __kernel void filterIncorrectCoordinates(__global double2* previousContourCenter
 	}
 }
 
-__kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRadius,
-											  __global double* membranePolarTheta,
+__kernel void interpolatePolarCoordinatesLinear(__global double2* membranePolarCoordinates,
 											  __global double2* radialVectors,
 											  __global double2* contourCenter,
 											  __global double2* membraneCoordinates,
@@ -923,8 +922,8 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 			upperIndex = upperIndex - xSize;
 		}
 		
-		lowerAngle = membranePolarTheta[lowerIndex];
-		upperAngle = membranePolarTheta[upperIndex];
+		lowerAngle = membranePolarCoordinates[lowerIndex][0];
+		upperAngle = membranePolarCoordinates[upperIndex][0];
 		interpolationAngle = interpolationAngles[xInd];
 		
 		if(lowerAngle>upperAngle){
