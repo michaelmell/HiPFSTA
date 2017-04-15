@@ -784,8 +784,7 @@ __kernel void filterJumpedCoordinates(
 											__local int* closestLowerCorrectIndexLoc,
 											__local int* closestUpperCorrectIndexLoc,
 											__local int* listOfGoodCoordinates,
-											const double maxCoordinateShift,
-											__global int* dbg_listOfGoodCoordinates
+											const double maxCoordinateShift
 											)
 {
 	const int xInd = get_global_id(0);
@@ -816,8 +815,6 @@ __kernel void filterJumpedCoordinates(
 							  &distToLowerIndex,
 							  &distToUpperIndex);
 							  
-	dbg_listOfGoodCoordinates[xInd] = listOfGoodCoordinates[xInd];
-	
 	interpolateIncorrectCoordinates(xInd,
 									xSize,
 									previousContourCenter,

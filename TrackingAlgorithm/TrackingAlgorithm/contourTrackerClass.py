@@ -514,8 +514,7 @@ class contourTracker( object ):
 										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), \
 											cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
 											cl.LocalMemory(self.listOfGoodCoordinates_memSize), \
-											self.maxCoordinateShift, \
-											self.dev_listOfGoodCoordinates.data \
+											self.maxCoordinateShift \
 											)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -537,8 +536,6 @@ class contourTracker( object ):
 										    self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
 										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
 										    self.maxInterCoordinateAngle \
-										    #~ self.dev_dbgOut.data, \
-										    #~ self.dev_dbgOut2.data \
 										    )
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
