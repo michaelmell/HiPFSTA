@@ -881,12 +881,8 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 											  __global double* membraneCoordinatesY,
 											  __global double* interpolatedMembraneCoordinatesX,
 											  __global double* interpolatedMembraneCoordinatesY,
-											  //~ __local double* membranePolarRadiusLoc,
-											  //~ __local double* membranePolarThetaLoc,
 											  __global double* membranePolarRadiusLoc,
 											  __global double* membranePolarThetaLoc,
-											  //~ __local double* interpolationMembranePolarRadius,
-											  //~ __local double* interpolationMembranePolarTheta,
 											  __global double* interpolationMembranePolarRadius,
 											  __global double* interpolationMembranePolarTheta,
 											  __global double* interpolationMembranePolarRadiusTesting,
@@ -1021,7 +1017,4 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 	}
 	interpolatedMembraneCoordinatesX[xInd] = interpolatedMembranePoint.x;
 	interpolatedMembraneCoordinatesY[xInd] = interpolatedMembranePoint.y;
-	//barrier(CLK_LOCAL_MEM_FENCE);
-	//barrier(CLK_GLOBAL_MEM_FENCE);
-
 }
