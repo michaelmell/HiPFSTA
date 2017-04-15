@@ -658,44 +658,45 @@ __kernel void calculateInterCoordinateAngles(__global double* interCoordinateAng
 	}
 }
 
-//~ int spline(const int n, int end1, int end2, double slope1,__global double c[], __global double d[]){
-	void findClosestGoodCoordinates(const int xInd,
-									const int xSize,
-									__local int* closestLowerCorrectIndexLoc,
-									__local int* closestUpperCorrectIndexLoc,
-									__local int* listOfGoodCoordinates,
-									int* distToLowerIndex,
-									int* distToUpperIndex
-									)
-	{
-	//~ __private double distToLowerIndex = 0;
-	//~ __private double distToUpperIndex = 0;
+void findClosestGoodCoordinates(const int xInd,
+								const int xSize,
+								__local int* closestLowerCorrectIndexLoc,
+								__local int* closestUpperCorrectIndexLoc,
+								__local int* listOfGoodCoordinates,
+								int* distToLowerIndex,
+								int* distToUpperIndex
+								)
+{
 	__private bool incorrectValueLeft;
 
-	do{
+	do
+	{
 		incorrectValueLeft = false;
-		//~ if(isnan(membraneCoordinatesX[closestLowerCorrectIndexLoc[xInd]])){
-		if(listOfGoodCoordinates[closestLowerCorrectIndexLoc[xInd]] == 0){
+
+		if(listOfGoodCoordinates[closestLowerCorrectIndexLoc[xInd]] == 0)
+		{
 			closestLowerCorrectIndexLoc[xInd] -= 1;
 			(*distToLowerIndex)++;
 			incorrectValueLeft = true;
 		}
 		
-		//~ if(isnan(membraneCoordinatesX[closestUpperCorrectIndexLoc[xInd]])){
-		if(listOfGoodCoordinates[closestUpperCorrectIndexLoc[xInd]] == 0){
+		if(listOfGoodCoordinates[closestUpperCorrectIndexLoc[xInd]] == 0)
+		{
 			closestUpperCorrectIndexLoc[xInd] += 1;
 			(*distToUpperIndex)++;
 			incorrectValueLeft = true;
 		}
-		//~ id = getGlobalId();
-		//~ output[id] = input[id] * input[id];
-		if(closestLowerCorrectIndexLoc[xInd]<0){ // avoid that we round out array bounds by using periodic boundaries
+
+		if(closestLowerCorrectIndexLoc[xInd]<0) // avoid that we round out array bounds by using periodic boundaries
+		{
 			closestLowerCorrectIndexLoc[xInd] = closestLowerCorrectIndexLoc[xInd]+xSize;
 		}
-		if(closestUpperCorrectIndexLoc[xInd]>xSize-1){ // avoid that we round out array bounds by using periodic boundaries
+		if(closestUpperCorrectIndexLoc[xInd]>xSize-1) // avoid that we round out array bounds by using periodic boundaries
+		{
 			closestUpperCorrectIndexLoc[xInd] = closestUpperCorrectIndexLoc[xInd]-xSize;
 		}
-	}while(incorrectValueLeft);
+	}
+	while(incorrectValueLeft);
 }
 
 void interpolateIncorrectCoordinates(const int xInd,
