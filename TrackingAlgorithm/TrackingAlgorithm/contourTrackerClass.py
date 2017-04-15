@@ -476,6 +476,7 @@ class contourTracker( object ):
 		
 		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
 		self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
+		self.dev_previousInterpolatedMembraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinatesX,self.dev_previousInterpolatedMembraneCoordinatesY)
 
 		for strideNr in range(self.nrOfStrides):
 			# set the starting index of the coordinate array for each kernel instance
@@ -505,15 +506,11 @@ class contourTracker( object ):
 								 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
-
 		self.prg.filterJumpedCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
 											self.dev_membraneCoordinates.data, \
-											self.dev_membraneNormalVectorsX.data, \
-											self.dev_membraneNormalVectorsY.data, \
-										    self.dev_previousInterpolatedMembraneCoordinatesX.data, \
-											self.dev_previousInterpolatedMembraneCoordinatesY.data, \
+											self.dev_membraneNormalVectors.data, \
+										    self.dev_previousInterpolatedMembraneCoordinates.data, \
 										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), \
 											cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
 											cl.LocalMemory(self.listOfGoodCoordinates_memSize), \
@@ -523,6 +520,8 @@ class contourTracker( object ):
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
+		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
+		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
 
 		self.prg.calculateInterCoordinateAngles(self.queue, self.gradientGlobalSize, None, \
 												self.dev_interCoordinateAngles.data, \

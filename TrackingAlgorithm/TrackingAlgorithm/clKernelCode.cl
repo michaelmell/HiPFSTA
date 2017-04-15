@@ -750,8 +750,7 @@ void interpolateIncorrectCoordinates(const int xInd,
 									const int xSize,
 									__global double2 previousContourCenter[],
 									__global double2 membraneCoordinates[],
-									__global double membraneNormalVectorsX[],
-									__global double membraneNormalVectorsY[],
+									__global double2 membraneNormalVectors[],
 									__local int* closestLowerCorrectIndexLoc,
 									__local int* closestUpperCorrectIndexLoc,
 									int* distToLowerIndex,
@@ -766,24 +765,22 @@ void interpolateIncorrectCoordinates(const int xInd,
 									+ (double)*distToUpperIndex * membraneCoordinates[closestUpperCorrectIndexLoc[xInd]].y)
 									/(double)(*distToLowerIndex+*distToUpperIndex);
 		
-		membraneNormalVectorsX[xInd] = membraneCoordinates[xInd].x - previousContourCenter[0].x;
-		membraneNormalVectorsY[xInd] = membraneCoordinates[xInd].y - previousContourCenter[0].y;
+		membraneNormalVectors[xInd].x = membraneCoordinates[xInd].x - previousContourCenter[0].x;
+		membraneNormalVectors[xInd].y = membraneCoordinates[xInd].y - previousContourCenter[0].y;
 
 		double membraneNormalNorm;
-		membraneNormalNorm = sqrt( pow(membraneNormalVectorsX[xInd],2) + pow(membraneNormalVectorsY[xInd],2) );
+		membraneNormalNorm = sqrt( pow(membraneNormalVectors[xInd].x,2) + pow(membraneNormalVectors[xInd].y,2) );
 		
-		membraneNormalVectorsX[xInd] = membraneNormalVectorsX[xInd]/membraneNormalNorm;
-		membraneNormalVectorsY[xInd] = membraneNormalVectorsY[xInd]/membraneNormalNorm;
+		membraneNormalVectors[xInd].x = membraneNormalVectors[xInd].x/membraneNormalNorm;
+		membraneNormalVectors[xInd].y = membraneNormalVectors[xInd].y/membraneNormalNorm;
 	}	
 }
 
 __kernel void filterJumpedCoordinates(
 											__global double2* previousContourCenter,
 											__global double2* membraneCoordinates,
-											__global double* membraneNormalVectorsX,
-											__global double* membraneNormalVectorsY,
-											__global double* previousInterpolatedMembraneCoordinatesX,
-											__global double* previousInterpolatedMembraneCoordinatesY,
+											__global double2* membraneNormalVectors,
+											__global double2* previousInterpolatedMembraneCoordinates,
 											__local int* closestLowerCorrectIndexLoc,
 											__local int* closestUpperCorrectIndexLoc,
 											__local int* listOfGoodCoordinates,
@@ -799,8 +796,8 @@ __kernel void filterJumpedCoordinates(
 	closestUpperCorrectIndexLoc[xInd] = xInd;
 	__private double distance;
 	
-	distance =  sqrt(  pow((membraneCoordinates[xInd].x - previousInterpolatedMembraneCoordinatesX[xInd]),2)
-					 + pow((membraneCoordinates[xInd].y - previousInterpolatedMembraneCoordinatesY[xInd]),2)
+	distance =  sqrt(  pow((membraneCoordinates[xInd].x - previousInterpolatedMembraneCoordinates[xInd].x),2)
+					 + pow((membraneCoordinates[xInd].y - previousInterpolatedMembraneCoordinates[xInd].y),2)
 					 );
 
 	if(distance>maxCoordinateShift)
@@ -825,8 +822,7 @@ __kernel void filterJumpedCoordinates(
 									xSize,
 									previousContourCenter,
 									membraneCoordinates,
-									membraneNormalVectorsX,
-									membraneNormalVectorsY,
+									membraneNormalVectors,
 									closestLowerCorrectIndexLoc,
 									closestUpperCorrectIndexLoc,
 									&distToLowerIndex,
