@@ -204,6 +204,11 @@ __kernel void setIterationFinished(__global int* iterationFinished) // will set 
 	//~ printf("iterationFinished: %d\n",iterationFinished[0]);
 }
 
+/* 
+ * This function will set trackingFinished to 0 (FALSE),
+ * if the euclidian distance between any coordinate of the
+ * interpolated contours is >coordinateTolerance
+ */
 __kernel void checkIfTrackingFinished(
 									__global double* interpolatedMembraneCoordinatesX,
 									__global double* interpolatedMembraneCoordinatesY,
@@ -211,9 +216,8 @@ __kernel void checkIfTrackingFinished(
 									__global double* previousInterpolatedMembraneCoordinatesY,
 									__global int* trackingFinished,
 									const double coordinateTolerance
-									) // will set self.dev_iterationFinished to true, when called
+									)
 {
-	// this function will set trackingFinished to 0 (FALSE), if the euclidian distance between any coordinate of the interpolated contours is >coordinateTolerance
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
 	
@@ -222,19 +226,10 @@ __kernel void checkIfTrackingFinished(
 					 + pow((interpolatedMembraneCoordinatesY[xInd] - previousInterpolatedMembraneCoordinatesY[xInd]),2)
 					 );
 	
-	//~ if(xInd==100){
-		//~ printf("coordinateTolerance: %f\n",coordinateTolerance);
-		//~ printf("distance: %f\n",distance);
-	//~ }
-	
-	if(distance>coordinateTolerance){
+	if(distance>coordinateTolerance)
+	{
 		trackingFinished[0] = 0;
-		//~ printf("xInd: %d\n",xInd);
-		//~ printf("distance: %f\n",distance);
 	}
-	
-	//~ printf("iterationFinished before setting to true: %d\n",iterationFinished[0]);
-	//~ printf("iterationFinished: %d\n",iterationFinished[0]);
 }
 
 __kernel void sortCoordinates(__global double2* membranePolarCoordinates,
