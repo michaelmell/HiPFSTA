@@ -581,40 +581,30 @@ __kernel void filterNanValues(__global double2* membraneCoordinates,
 	}
 }
 
+/* This function will set trackingFinished to 0 (FALSE),
+ * if the individual distances between the X *and* Y and coordinate of the
+ * contourCenter is >centerTolerance.
+ */
 __kernel void checkIfCenterConverged(
 									__global double2* contourCenter,
 									__global double2* previousContourCenter,
 									__global int* trackingFinished,
 									const double centerTolerance
-									) // will set self.dev_iterationFinished to true, when called
+									)
 {
-	// this function will set trackingFinished to 0 (FALSE), if the euclidian distance between any coordinate of the interpolated contours is >coordinateTolerance
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
 	
-	//~ __private double distance;
 	__private double xDistance, yDistance;
-	if(xInd==0){
-		//~ distance =  sqrt(  pow((contourCenter[xInd].x - previousContourCenter[xInd].x),2)
-						 //~ + pow((contourCenter[xInd].y - previousContourCenter[xInd].y),2)
-						 //~ );
+	if(xInd==0)
+	{
 		xDistance = fabs(contourCenter[xInd].x - previousContourCenter[xInd].x);
 		yDistance = fabs(contourCenter[xInd].y - previousContourCenter[xInd].y);
-		
-		//~ if(xInd==100){
-			//~ printf("coordinateTolerance: %f\n",coordinateTolerance);
-			//~ printf("distance: %f\n",distance);
-		//~ }
-		
-		//~ if(distance>centerTolerance){
-			//~ trackingFinished[0] = 0;
-		//~ }
+
 		if((xDistance>centerTolerance)||(yDistance>centerTolerance)){
 			trackingFinished[0] = 0;
 		}
 	}
-	//~ printf("iterationFinished before setting to true: %d\n",iterationFinished[0]);
-	//~ printf("iterationFinished: %d\n",iterationFinished[0]);
 }
 
 __kernel void calculateInterCoordinateAngles(__global double* interCoordinateAngles,
