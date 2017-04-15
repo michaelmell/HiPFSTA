@@ -568,13 +568,15 @@ __kernel void filterNanValues(__global double2* membraneCoordinates,
 	do
 	{
 		NanValueLeft = false;
-		if(isnan(membraneCoordinates[closestLowerNoneNanIndexLoc[xInd]].x)){
+		if(isnan(membraneCoordinates[closestLowerNoneNanIndexLoc[xInd]].x)) // TODO: Why do we not check the y-coordinate for NaN values?! - Michael 2017-04-15
+		{
 			closestLowerNoneNanIndexLoc[xInd] -= 1;
 			distToLowerIndex++;
 			NanValueLeft = true;
 		}
 
-		if(isnan(membraneCoordinates[closestUpperNoneNanIndexLoc[xInd]].x)){
+		if(isnan(membraneCoordinates[closestUpperNoneNanIndexLoc[xInd]].x)) // TODO: Why do we not check the y-coordinate for NaN values?! - Michael 2017-04-15
+		{
 			closestUpperNoneNanIndexLoc[xInd] += 1;
 			distToUpperIndex++;
 			NanValueLeft = true;

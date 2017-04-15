@@ -1,0 +1,3 @@
+ToDos:
+	1. In kernel 'filterNanValues', which replace NaN values, we only check the x-coordinates for NaN values (e.g.: for if(isnan(membraneCoordinates[closestLowerNoneNanIndexLoc[xInd]].x)) ), where we should likely also check the y-coordinates. Commit-Reference: b72a77fa73cf8d4d1b4d5424bcd81e29945c01bc
+	
