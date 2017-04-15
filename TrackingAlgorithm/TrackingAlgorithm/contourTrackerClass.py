@@ -477,6 +477,8 @@ class contourTracker( object ):
 		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
 		self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
 		self.dev_previousInterpolatedMembraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinatesX,self.dev_previousInterpolatedMembraneCoordinatesY)
+		self.dev_membranePolarCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membranePolarTheta,self.dev_membranePolarRadius)
+
 
 		for strideNr in range(self.nrOfStrides):
 			# set the starting index of the coordinate array for each kernel instance
@@ -536,28 +538,28 @@ class contourTracker( object ):
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
-		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
-		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
-
 		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
 
 		########################################################################
 		### Calculate contour center
 		########################################################################
-		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
 		self.calculateContourCenter()
-		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
 
 		########################################################################
 		### Convert cartesian coordinates to polar coordinates
 		########################################################################
 		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
-						  self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-						  self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
+						  self.dev_membraneCoordinates.data, \
+						  #self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
+						  self.dev_membranePolarCoordinates.data, \
 						  self.dev_contourCenter.data)
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
+		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
+		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
+		self.dev_membranePolarTheta, self.dev_membranePolarRadius = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membranePolarCoordinates)
 
 		########################################################################
 		### Interpolate polar coordinates

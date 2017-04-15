@@ -144,10 +144,8 @@ __kernel void calculateContourCenter(__global double2* membraneCoordinates,
 	}
 }
 
-__kernel void cart2pol(__global double* membraneCoordinatesX,
-					   __global double* membraneCoordinatesY,
-					   __global double* membranePolarRadius,
-					   __global double* membranePolarTheta,
+__kernel void cart2pol(__global double2* membraneCoordinates,
+					   __global double2* membranePolarCoordinates,
 					   __global double2* contourCenter
 					  )
 {
@@ -157,11 +155,11 @@ __kernel void cart2pol(__global double* membraneCoordinatesX,
 	double2 contourCenterLoc;
 	contourCenterLoc = contourCenter[0];
 	
-	membranePolarTheta[xInd] =  atan2( membraneCoordinatesY[xInd] - contourCenterLoc.y,
-									   membraneCoordinatesX[xInd] - contourCenterLoc.x);
-	membranePolarRadius[xInd] =  sqrt( pow((membraneCoordinatesY[xInd] - contourCenterLoc.y),2)
-									 + pow((membraneCoordinatesX[xInd] - contourCenterLoc.x),2) 
-									 );
+	membranePolarCoordinates[xInd][0] =  atan2( membraneCoordinates[xInd].y - contourCenterLoc.y,
+												membraneCoordinates[xInd].x - contourCenterLoc.x);
+	membranePolarCoordinates[xInd][1] =  sqrt( pow((membraneCoordinates[xInd].y - contourCenterLoc.y),2)
+											 + pow((membraneCoordinates[xInd].x - contourCenterLoc.x),2) 
+											 );
 }
 
 __kernel void pol2cart(__global double* membraneCoordinatesX,
