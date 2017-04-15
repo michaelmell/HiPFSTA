@@ -777,15 +777,15 @@ void interpolateIncorrectCoordinates(const int xInd,
 }
 
 __kernel void filterJumpedCoordinates(
-											__global double2* previousContourCenter,
-											__global double2* membraneCoordinates,
-											__global double2* membraneNormalVectors,
-											__global double2* previousInterpolatedMembraneCoordinates,
-											__local int* closestLowerCorrectIndexLoc,
-											__local int* closestUpperCorrectIndexLoc,
-											__local int* listOfGoodCoordinates,
-											const double maxCoordinateShift
-											)
+										__global double2* previousContourCenter,
+										__global double2* membraneCoordinates,
+										__global double2* membraneNormalVectors,
+										__global double2* previousInterpolatedMembraneCoordinates,
+										__local int* closestLowerCorrectIndexLoc,
+										__local int* closestUpperCorrectIndexLoc,
+										__local int* listOfGoodCoordinates,
+										const double maxCoordinateShift
+										)
 {
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
