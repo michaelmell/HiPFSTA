@@ -581,18 +581,8 @@ class contourTracker( object ):
 													self.dev_membraneCoordinatesY.data, \
 													self.dev_interpolatedMembraneCoordinatesX.data, \
 													self.dev_interpolatedMembraneCoordinatesY.data, \
-													self.dev_membranePolarRadiusTMP.data, \
-													self.dev_membranePolarThetaTMP.data, \
-													self.dev_membranePolarRadiusInterpolation.data, \
-													self.dev_membranePolarThetaInterpolation.data, \
-													self.dev_membranePolarRadiusInterpolationTesting.data, \
-													self.dev_membranePolarThetaInterpolationTesting.data, \
 													self.dev_interpolationAngles.data, \
-													self.nrOfInterpolationPoints, \
-													np.int32(self.nrOfDetectionAngleSteps), \
-													self.nrOfAnglesToCompare, \
-													self.dev_dbgOut.data, \
-													self.dev_dbgOut2.data, \
+													self.nrOfAnglesToCompare \
 													)
 		
 		barrierEvent = cl.enqueue_barrier(self.queue)

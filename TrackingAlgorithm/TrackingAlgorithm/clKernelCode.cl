@@ -881,25 +881,12 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 											  __global double* membraneCoordinatesY,
 											  __global double* interpolatedMembraneCoordinatesX,
 											  __global double* interpolatedMembraneCoordinatesY,
-											  __global double* membranePolarRadiusLoc,
-											  __global double* membranePolarThetaLoc,
-											  __global double* interpolationMembranePolarRadius,
-											  __global double* interpolationMembranePolarTheta,
-											  __global double* interpolationMembranePolarRadiusTesting,
-											  __global double* interpolationMembranePolarThetaTesting,
 											  __global double* interpolationAngles,
-											  const int nrOfInterpolationPoints,
-											  const int nrOfContourPoints,
-											  const int nrOfAnglesToCompare,
-											  __global double* dbgOut,
-											  __global double* dbgOut2
+											  const int nrOfAnglesToCompare
 											 )
 {
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
-	
-	dbgOut[xInd] = 0;
-	dbgOut2[xInd] = 0;
 	
 	__private int index;
 	__private int lowerIndex;
@@ -972,9 +959,6 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 		//~ if( membranePolarTheta[xInd] >= interpolationAngles[lowerIndex] && membranePolarTheta[xInd] < interpolationAngles[upperIndex] )
 		if( interpolationAngle >= lowerAngle && interpolationAngle < upperAngle )
 		{
-			dbgOut[xInd] = lowerAngle;
-			dbgOut2[xInd] = upperAngle;
-
 			// lineSegmentDirectionVector <-> e
 			// lineSegmentBasePoint <-> f
 			__private double2 lineSegmentDirectionVector;
