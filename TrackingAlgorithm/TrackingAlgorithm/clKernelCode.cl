@@ -710,7 +710,8 @@ void interpolateIncorrectCoordinates(const int xInd,
 									int* distToUpperIndex
 									)
 {
-	if(*distToLowerIndex!=0 & *distToUpperIndex!=0){
+	if(*distToLowerIndex!=0 & *distToUpperIndex!=0)
+	{
 		membraneCoordinates[xInd].x = ((double)*distToLowerIndex * membraneCoordinates[closestLowerCorrectIndexLoc[xInd]].x 
 									+ (double)*distToUpperIndex * membraneCoordinates[closestUpperCorrectIndexLoc[xInd]].x)
 									/(double)(*distToLowerIndex+*distToUpperIndex);
