@@ -505,13 +505,11 @@ class contourTracker( object ):
 								 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
 		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
 
 		self.prg.filterJumpedCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
-											self.dev_membraneCoordinatesX.data, \
-											self.dev_membraneCoordinatesY.data, \
+											self.dev_membraneCoordinates.data, \
 											self.dev_membraneNormalVectorsX.data, \
 											self.dev_membraneNormalVectorsY.data, \
 										    self.dev_previousInterpolatedMembraneCoordinatesX.data, \
@@ -522,8 +520,9 @@ class contourTracker( object ):
 											self.maxCoordinateShift, \
 											self.dev_listOfGoodCoordinates.data \
 											)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
 
 		self.prg.calculateInterCoordinateAngles(self.queue, self.gradientGlobalSize, None, \
 												self.dev_interCoordinateAngles.data, \

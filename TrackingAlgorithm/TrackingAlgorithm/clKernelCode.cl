@@ -749,8 +749,7 @@ __kernel void calculateInterCoordinateAngles(__global double* interCoordinateAng
 void interpolateIncorrectCoordinates(const int xInd,
 									const int xSize,
 									__global double2 previousContourCenter[],
-									__global double membraneCoordinatesX[],
-									__global double membraneCoordinatesY[],
+									__global double2 membraneCoordinates[],
 									__global double membraneNormalVectorsX[],
 									__global double membraneNormalVectorsY[],
 									__local int* closestLowerCorrectIndexLoc,
@@ -760,41 +759,27 @@ void interpolateIncorrectCoordinates(const int xInd,
 									)
 {
 	if(*distToLowerIndex!=0 & *distToUpperIndex!=0){
-		membraneCoordinatesX[xInd] = ((double)*distToLowerIndex * membraneCoordinatesX[closestLowerCorrectIndexLoc[xInd]] 
-									+ (double)*distToUpperIndex * membraneCoordinatesX[closestUpperCorrectIndexLoc[xInd]])
+		membraneCoordinates[xInd].x = ((double)*distToLowerIndex * membraneCoordinates[closestLowerCorrectIndexLoc[xInd]].x 
+									+ (double)*distToUpperIndex * membraneCoordinates[closestUpperCorrectIndexLoc[xInd]].x)
 									/(double)(*distToLowerIndex+*distToUpperIndex);
-		membraneCoordinatesY[xInd] = ((double)*distToLowerIndex * membraneCoordinatesY[closestLowerCorrectIndexLoc[xInd]] 
-									+ (double)*distToUpperIndex * membraneCoordinatesY[closestUpperCorrectIndexLoc[xInd]])
+		membraneCoordinates[xInd].y = ((double)*distToLowerIndex * membraneCoordinates[closestLowerCorrectIndexLoc[xInd]].y 
+									+ (double)*distToUpperIndex * membraneCoordinates[closestUpperCorrectIndexLoc[xInd]].y)
 									/(double)(*distToLowerIndex+*distToUpperIndex);
 		
-		//~ membraneNormalVectorsX[xInd] = (*distToLowerIndex * membraneNormalVectorsX[closestLowerCorrectIndexLoc[xInd]] 
-									  //~ + *distToUpperIndex * membraneNormalVectorsX[closestUpperCorrectIndexLoc[xInd]])
-									  //~ /(*distToLowerIndex+*distToUpperIndex);
-//~ 
-		//~ membraneNormalVectorsY[xInd] = (*distToLowerIndex * membraneNormalVectorsY[closestLowerCorrectIndexLoc[xInd]] 
-									  //~ + *distToUpperIndex * membraneNormalVectorsY[closestUpperCorrectIndexLoc[xInd]])
-									  //~ /(*distToLowerIndex+*distToUpperIndex);
-
-		membraneNormalVectorsX[xInd] = membraneCoordinatesX[xInd] - previousContourCenter[0].x;
-		membraneNormalVectorsY[xInd] = membraneCoordinatesY[xInd] - previousContourCenter[0].y;
+		membraneNormalVectorsX[xInd] = membraneCoordinates[xInd].x - previousContourCenter[0].x;
+		membraneNormalVectorsY[xInd] = membraneCoordinates[xInd].y - previousContourCenter[0].y;
 
 		double membraneNormalNorm;
 		membraneNormalNorm = sqrt( pow(membraneNormalVectorsX[xInd],2) + pow(membraneNormalVectorsY[xInd],2) );
 		
 		membraneNormalVectorsX[xInd] = membraneNormalVectorsX[xInd]/membraneNormalNorm;
 		membraneNormalVectorsY[xInd] = membraneNormalVectorsY[xInd]/membraneNormalNorm;
-		
-		//~ dbgOut[xInd] = distToLowerIndex;
-		//~ dbgOut2[xInd] = distToUpperIndex;
 	}	
-	
 }
 
-//~ self.listOfGoodCoordinates_memSize
 __kernel void filterJumpedCoordinates(
 											__global double2* previousContourCenter,
-											__global double* membraneCoordinatesX,
-											__global double* membraneCoordinatesY,
+											__global double2* membraneCoordinates,
 											__global double* membraneNormalVectorsX,
 											__global double* membraneNormalVectorsY,
 											__global double* previousInterpolatedMembraneCoordinatesX,
@@ -804,9 +789,8 @@ __kernel void filterJumpedCoordinates(
 											__local int* listOfGoodCoordinates,
 											const double maxCoordinateShift,
 											__global int* dbg_listOfGoodCoordinates
-											) // will set self.dev_iterationFinished to true, when called
+											)
 {
-	// this function will set trackingFinished to 0 (FALSE), if the euclidian distance between any coordinate of the interpolated contours is >coordinateTolerance
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
 	
@@ -815,25 +799,12 @@ __kernel void filterJumpedCoordinates(
 	closestUpperCorrectIndexLoc[xInd] = xInd;
 	__private double distance;
 	
-	distance =  sqrt(  pow((membraneCoordinatesX[xInd] - previousInterpolatedMembraneCoordinatesX[xInd]),2)
-					 + pow((membraneCoordinatesY[xInd] - previousInterpolatedMembraneCoordinatesY[xInd]),2)
+	distance =  sqrt(  pow((membraneCoordinates[xInd].x - previousInterpolatedMembraneCoordinatesX[xInd]),2)
+					 + pow((membraneCoordinates[xInd].y - previousInterpolatedMembraneCoordinatesY[xInd]),2)
 					 );
-	
-	//~ if(xInd==100){
-		//~ printf("coordinateTolerance: %f\n",coordinateTolerance);
-		//~ printf("distance: %f\n",distance);
-	//~ }
-	
-	//~ if(distance>coordinateTolerance){
-		//~ trackingFinished[0] = 0;
-		//~ printf("xInd: %d\n",xInd);
-		//~ printf("distance: %f\n",distance);
-	//~ }
-	
-	//~ printf("iterationFinished before setting to true: %d\n",iterationFinished[0]);
-	//~ printf("iterationFinished: %d\n",iterationFinished[0]);
-	
-	if(distance>maxCoordinateShift){
+
+	if(distance>maxCoordinateShift)
+	{
 		listOfGoodCoordinates[xInd] = 0;
 	}
 	
@@ -853,8 +824,7 @@ __kernel void filterJumpedCoordinates(
 	interpolateIncorrectCoordinates(xInd,
 									xSize,
 									previousContourCenter,
-									membraneCoordinatesX,
-									membraneCoordinatesY,
+									membraneCoordinates,
 									membraneNormalVectorsX,
 									membraneNormalVectorsY,
 									closestLowerCorrectIndexLoc,
@@ -873,90 +843,68 @@ __kernel void filterIncorrectCoordinates(__global double2* previousContourCenter
 										 __local int* closestLowerCorrectIndexLoc,
 										 __local int* closestUpperCorrectIndexLoc,
 										 const double maxInterCoordinateAngle
-										 //~ __global double* dbgOut,
-										 //~ __global double* dbgOut2
 										 )
 {
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
 	
 	__private bool incorrectValueLeft;
-	//~ __local int closestLowerCorrectIndexLoc[2048];
-	//~ __local int closestUpperCorrectIndexLoc[2048];
-	
-	//~ closestLowerCorrectIndexLoc[xInd] = closestLowerCorrectIndex[xInd];
-	//~ closestUpperCorrectIndexLoc[xInd] = closestUpperCorrectIndex[xInd];
-	
+
 	closestLowerCorrectIndexLoc[xInd] = xInd;
 	closestUpperCorrectIndexLoc[xInd] = xInd;
 	
-	//~ if(xInd>1998&xInd<2002){
-		//~ printf("closestLowerCorrectIndex[xInd], before: %d\n",closestLowerCorrectIndexLoc[xInd]);
-		//~ printf("closestUpperCorrectIndex[xInd], before: %d\n",closestUpperCorrectIndexLoc[xInd]);
-	//~ }
-	
 	__private int distToLowerIndex = 0;
 	__private int distToUpperIndex = 0;
-	do{
+	do
+	{
 		incorrectValueLeft = false;
-		//~ if(isnan(membraneCoordinatesX[closestLowerCorrectIndexLoc[xInd]])){
-		if(interCoordinateAngles[closestLowerCorrectIndexLoc[xInd]] > maxInterCoordinateAngle){
+		if(interCoordinateAngles[closestLowerCorrectIndexLoc[xInd]] > maxInterCoordinateAngle)
+		{
 			closestLowerCorrectIndexLoc[xInd] -= 1;
 			distToLowerIndex++;
 			incorrectValueLeft = true;
 		}
 		
-		//~ if(isnan(membraneCoordinatesX[closestUpperCorrectIndexLoc[xInd]])){
-		if(interCoordinateAngles[closestUpperCorrectIndexLoc[xInd]] > maxInterCoordinateAngle){
+		if(interCoordinateAngles[closestUpperCorrectIndexLoc[xInd]] > maxInterCoordinateAngle)
+		{
 			closestUpperCorrectIndexLoc[xInd] += 1;
 			distToUpperIndex++;
 			incorrectValueLeft = true;
 		}
-		//~ id = getGlobalId();
-		//~ output[id] = input[id] * input[id];
-		if(closestLowerCorrectIndexLoc[xInd]<0){ // avoid that we round out array bounds by using periodic boundaries
+
+		if(closestLowerCorrectIndexLoc[xInd]<0) // avoid that we round out array bounds by using periodic boundaries
+		{
 			closestLowerCorrectIndexLoc[xInd] = closestLowerCorrectIndexLoc[xInd]+xSize;
 		}
-		if(closestUpperCorrectIndexLoc[xInd]>xSize-1){ // avoid that we round out array bounds by using periodic boundaries
+		if(closestUpperCorrectIndexLoc[xInd]>xSize-1) // avoid that we round out array bounds by using periodic boundaries
+		{
 			closestUpperCorrectIndexLoc[xInd] = closestUpperCorrectIndexLoc[xInd]-xSize;
 		}
-	}while(incorrectValueLeft);
+	}
+	while(incorrectValueLeft);
 	
 	/* *****************************************************************
 	 * interpolate locations that are NaN 
 	 * ****************************************************************/
 	
-	if(distToLowerIndex!=0 & distToUpperIndex!=0){
+	if(distToLowerIndex!=0 & distToUpperIndex!=0)
+	{
 		membraneCoordinatesX[xInd] = ((double)distToLowerIndex * membraneCoordinatesX[closestLowerCorrectIndexLoc[xInd]] 
 									+ (double)distToUpperIndex * membraneCoordinatesX[closestUpperCorrectIndexLoc[xInd]])
 									/(double)(distToLowerIndex+distToUpperIndex);
 		membraneCoordinatesY[xInd] = ((double)distToLowerIndex * membraneCoordinatesY[closestLowerCorrectIndexLoc[xInd]] 
 									+ (double)distToUpperIndex * membraneCoordinatesY[closestUpperCorrectIndexLoc[xInd]])
 									/(double)(distToLowerIndex+distToUpperIndex);
-		
-		//~ membraneNormalVectorsX[xInd] = (distToLowerIndex * membraneNormalVectorsX[closestLowerCorrectIndexLoc[xInd]] 
-									  //~ + distToUpperIndex * membraneNormalVectorsX[closestUpperCorrectIndexLoc[xInd]])
-									  //~ /(distToLowerIndex+distToUpperIndex);
-		//~ membraneNormalVectorsY[xInd] = (distToLowerIndex * membraneNormalVectorsY[closestLowerCorrectIndexLoc[xInd]] 
-									  //~ + distToUpperIndex * membraneNormalVectorsY[closestUpperCorrectIndexLoc[xInd]])
-									  //~ /(distToLowerIndex+distToUpperIndex);
 
 		membraneNormalVectorsX[xInd] = membraneCoordinatesX[xInd] - previousContourCenter[0].x;
 		membraneNormalVectorsY[xInd] = membraneCoordinatesY[xInd] - previousContourCenter[0].y;
 		
 		double membraneNormalNorm;
 		membraneNormalNorm = sqrt( pow(membraneNormalVectorsX[xInd],2) + pow(membraneNormalVectorsY[xInd],2) );
-		//~ membraneNormalNorm = sqrt( pow(membraneNormalVectorsXpriv,2) + pow(membraneNormalVectorsYpriv,2) );
-		
+
 		membraneNormalVectorsX[xInd] = membraneNormalVectorsX[xInd]/membraneNormalNorm;
 		membraneNormalVectorsY[xInd] = membraneNormalVectorsY[xInd]/membraneNormalNorm;
-		//~ membraneNormalVectorsX[xInd] = membraneNormalVectorsXpriv/membraneNormalNorm;
-		//~ membraneNormalVectorsY[xInd] = membraneNormalVectorsYpriv/membraneNormalNorm;
-		
-		//~ dbgOut[xInd] = distToLowerIndex;
-		//~ dbgOut2[xInd] = distToUpperIndex;
 	}
-
 }
 
 __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRadius,
