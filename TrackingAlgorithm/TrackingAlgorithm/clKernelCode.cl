@@ -549,14 +549,10 @@ __kernel void findMembranePosition(sampler_t sampler,
 	}
 }
 
-__kernel void filterNanValues(__global double* membraneCoordinatesX,
-							  __global double* membraneCoordinatesY,
-							  __global double* membraneNormalVectorsX,
-							  __global double* membraneNormalVectorsY,
+__kernel void filterNanValues(__global double2* membraneCoordinates,
+							  __global double2* membraneNormalVectors,
 							  __local int* closestLowerNoneNanIndexLoc,
 							  __local int* closestUpperNoneNanIndexLoc
-							  //~ __global double* dbgOut,
-							  //~ __global double* dbgOut2
 							 )
 {
 	const int xInd = get_global_id(0);
@@ -572,13 +568,13 @@ __kernel void filterNanValues(__global double* membraneCoordinatesX,
 	do
 	{
 		NanValueLeft = false;
-		if(isnan(membraneCoordinatesX[closestLowerNoneNanIndexLoc[xInd]])){
+		if(isnan(membraneCoordinates[closestLowerNoneNanIndexLoc[xInd]].x)){
 			closestLowerNoneNanIndexLoc[xInd] -= 1;
 			distToLowerIndex++;
 			NanValueLeft = true;
 		}
 
-		if(isnan(membraneCoordinatesX[closestUpperNoneNanIndexLoc[xInd]])){
+		if(isnan(membraneCoordinates[closestUpperNoneNanIndexLoc[xInd]].x)){
 			closestUpperNoneNanIndexLoc[xInd] += 1;
 			distToUpperIndex++;
 			NanValueLeft = true;
@@ -599,26 +595,26 @@ __kernel void filterNanValues(__global double* membraneCoordinatesX,
 	 * ****************************************************************/
 	if(distToLowerIndex!=0 & distToUpperIndex!=0)
 	{
-		membraneCoordinatesX[xInd] = ((double)distToLowerIndex * membraneCoordinatesX[closestLowerNoneNanIndexLoc[xInd]] 
-									+ (double)distToUpperIndex * membraneCoordinatesX[closestUpperNoneNanIndexLoc[xInd]])
+		membraneCoordinates[xInd].x = ((double)distToLowerIndex * membraneCoordinates[closestLowerNoneNanIndexLoc[xInd]].x
+									+ (double)distToUpperIndex * membraneCoordinates[closestUpperNoneNanIndexLoc[xInd]].x)
 									/(double)(distToLowerIndex+distToUpperIndex);
-		membraneCoordinatesY[xInd] = (distToLowerIndex * membraneCoordinatesY[closestLowerNoneNanIndexLoc[xInd]] 
-									+ distToUpperIndex * membraneCoordinatesY[closestUpperNoneNanIndexLoc[xInd]])
+		membraneCoordinates[xInd].y = (distToLowerIndex * membraneCoordinates[closestLowerNoneNanIndexLoc[xInd]].y 
+									+ distToUpperIndex * membraneCoordinates[closestUpperNoneNanIndexLoc[xInd]].y)
 									/(distToLowerIndex+distToUpperIndex);
 		
-		membraneNormalVectorsX[xInd] = ((double)distToLowerIndex * membraneNormalVectorsX[closestLowerNoneNanIndexLoc[xInd]] 
-									  + (double)distToUpperIndex * membraneNormalVectorsX[closestUpperNoneNanIndexLoc[xInd]])
+		membraneNormalVectors[xInd].x = ((double)distToLowerIndex * membraneNormalVectors[closestLowerNoneNanIndexLoc[xInd]].x 
+									  + (double)distToUpperIndex * membraneNormalVectors[closestUpperNoneNanIndexLoc[xInd]].x)
 									  /(double)(distToLowerIndex+distToUpperIndex);
 
-		membraneNormalVectorsY[xInd] = ((double)distToLowerIndex * membraneNormalVectorsY[closestLowerNoneNanIndexLoc[xInd]] 
-									  + (double)distToUpperIndex * membraneNormalVectorsY[closestUpperNoneNanIndexLoc[xInd]])
+		membraneNormalVectors[xInd].y = ((double)distToLowerIndex * membraneNormalVectors[closestLowerNoneNanIndexLoc[xInd]].y 
+									  + (double)distToUpperIndex * membraneNormalVectors[closestUpperNoneNanIndexLoc[xInd]].y)
 									  /(double)(distToLowerIndex+distToUpperIndex);
 
 		double membraneNormalNorm;
-		membraneNormalNorm = sqrt( pow(membraneNormalVectorsX[xInd],2) + pow(membraneNormalVectorsY[xInd],2) );
+		membraneNormalNorm = sqrt( pow(membraneNormalVectors[xInd].x,2) + pow(membraneNormalVectors[xInd].y,2) );
 		
-		membraneNormalVectorsX[xInd] = membraneNormalVectorsX[xInd]/membraneNormalNorm;
-		membraneNormalVectorsY[xInd] = membraneNormalVectorsY[xInd]/membraneNormalNorm;
+		membraneNormalVectors[xInd].x = membraneNormalVectors[xInd].x/membraneNormalNorm;
+		membraneNormalVectors[xInd].y = membraneNormalVectors[xInd].y/membraneNormalNorm;
 	}
 }
 
