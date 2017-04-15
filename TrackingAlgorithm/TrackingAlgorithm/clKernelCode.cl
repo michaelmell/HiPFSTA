@@ -193,15 +193,13 @@ __kernel void emptyKernel(__global double* membraneCoordinatesX, __global double
 	membraneCoordinatesY[xInd] = membraneCoordinatesY[xInd];
 }
 
-
-__kernel void setIterationFinished(__global int* iterationFinished) // will set self.dev_iterationFinished to true, when called
+/* Sets self.dev_iterationFinished to true, when called */
+__kernel void setIterationFinished(__global int* iterationFinished)
 {
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
-	
-	//~ printf("iterationFinished before setting to true: %d\n",iterationFinished[0]);
+
 	iterationFinished[0] = 1;
-	//~ printf("iterationFinished: %d\n",iterationFinished[0]);
 }
 
 /* 
