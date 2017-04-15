@@ -657,8 +657,7 @@ __kernel void checkIfCenterConverged(
 }
 
 __kernel void calculateInterCoordinateAngles(__global double* interCoordinateAngles,
-											 __global double* membraneCoordinatesX,
-											 __global double* membraneCoordinatesY
+											 __global double2* membraneCoordinates
 											 )
 {
 /* This uses the equation
@@ -672,27 +671,27 @@ __kernel void calculateInterCoordinateAngles(__global double* interCoordinateAng
 	
 	if(xInd>0 && xInd<xSize-1) // calculate interior gradients
 	{
-		dsVector1.x = membraneCoordinatesX[xInd] - membraneCoordinatesX[xInd-1];
-		dsVector1.y = membraneCoordinatesY[xInd] - membraneCoordinatesY[xInd-1];
+		dsVector1.x = membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x;
+		dsVector1.y = membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y;
 		
-		dsVector2.x = membraneCoordinatesX[xInd+1] - membraneCoordinatesX[xInd];
-		dsVector2.y = membraneCoordinatesY[xInd+1] - membraneCoordinatesY[xInd];
+		dsVector2.x = membraneCoordinates[xInd+1].x - membraneCoordinates[xInd].x;
+		dsVector2.y = membraneCoordinates[xInd+1].y - membraneCoordinates[xInd].y;
 	}
 	else if(xInd==0) // calculate edge gradient
 	{
-		dsVector1.x = membraneCoordinatesX[xInd] - membraneCoordinatesX[xSize-1];
-		dsVector1.y = membraneCoordinatesY[xInd] - membraneCoordinatesY[xSize-1];
+		dsVector1.x = membraneCoordinates[xInd].x - membraneCoordinates[xSize-1].x;
+		dsVector1.y = membraneCoordinates[xInd].y - membraneCoordinates[xSize-1].y;
 		
-		dsVector2.x = membraneCoordinatesX[xInd+1] - membraneCoordinatesX[xInd];
-		dsVector2.y = membraneCoordinatesY[xInd+1] - membraneCoordinatesY[xInd];
+		dsVector2.x = membraneCoordinates[xInd+1].x - membraneCoordinates[xInd].x;
+		dsVector2.y = membraneCoordinates[xInd+1].y - membraneCoordinates[xInd].y;
 	}
 	else if(xInd==xSize-1) // calculate edge gradient
 	{
-		dsVector1.x = membraneCoordinatesX[xInd] - membraneCoordinatesX[xInd-1];
-		dsVector1.y = membraneCoordinatesY[xInd] - membraneCoordinatesY[xInd-1];
+		dsVector1.x = membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x;
+		dsVector1.y = membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y;
 		
-		dsVector2.x = membraneCoordinatesX[0] - membraneCoordinatesX[xInd];
-		dsVector2.y = membraneCoordinatesY[0] - membraneCoordinatesY[xInd];
+		dsVector2.x = membraneCoordinates[0].x - membraneCoordinates[xInd].x;
+		dsVector2.y = membraneCoordinates[0].y - membraneCoordinates[xInd].y;
 	}
 
 	dsVector1 = normalize(dsVector1);

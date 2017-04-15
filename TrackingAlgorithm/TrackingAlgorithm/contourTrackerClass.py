@@ -518,16 +518,16 @@ class contourTracker( object ):
 											)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
-		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
-		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
-
 		self.prg.calculateInterCoordinateAngles(self.queue, self.gradientGlobalSize, None, \
 												self.dev_interCoordinateAngles.data, \
-												self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data \
+												self.dev_membraneCoordinates.data \
 											   )
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
+		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
+		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
 
 		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
