@@ -1,3 +1,5 @@
 ToDos:
 	1. In kernel 'filterNanValues', which replace NaN values, we only check the x-coordinates for NaN values (e.g.: for if(isnan(membraneCoordinates[closestLowerNoneNanIndexLoc[xInd]].x)) ), where we should likely also check the y-coordinates. Commit-Reference: b72a77fa73cf8d4d1b4d5424bcd81e29945c01bc
-	
+	2. In kernel 'findMembranePosition' there is a bug on line:
+	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
+	Reference commit: a444cace346c01169448a95c9509d8f5b195834f
