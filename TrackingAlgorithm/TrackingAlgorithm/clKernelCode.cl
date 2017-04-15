@@ -210,10 +210,8 @@ __kernel void setIterationFinished(__global int* iterationFinished) // will set 
  * interpolated contours is >coordinateTolerance
  */
 __kernel void checkIfTrackingFinished(
-									__global double* interpolatedMembraneCoordinatesX,
-									__global double* interpolatedMembraneCoordinatesY,
-									__global double* previousInterpolatedMembraneCoordinatesX,
-									__global double* previousInterpolatedMembraneCoordinatesY,
+									__global double2* interpolatedMembraneCoordinates,
+									__global double2* previousInterpolatedMembraneCoordinates,
 									__global int* trackingFinished,
 									const double coordinateTolerance
 									)
@@ -222,8 +220,8 @@ __kernel void checkIfTrackingFinished(
 	const int xSize = get_global_size(0);
 	
 	__private double distance;
-	distance =  sqrt(  pow((interpolatedMembraneCoordinatesX[xInd] - previousInterpolatedMembraneCoordinatesX[xInd]),2)
-					 + pow((interpolatedMembraneCoordinatesY[xInd] - previousInterpolatedMembraneCoordinatesY[xInd]),2)
+	distance =  sqrt(  pow((interpolatedMembraneCoordinates[xInd].x - previousInterpolatedMembraneCoordinates[xInd].x),2)
+					 + pow((interpolatedMembraneCoordinates[xInd].y - previousInterpolatedMembraneCoordinates[xInd].y),2)
 					 );
 	
 	if(distance>coordinateTolerance)

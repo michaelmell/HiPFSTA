@@ -580,24 +580,22 @@ class contourTracker( object ):
 		
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
+		########################################################################
+		### Convert polar coordinates to cartesian coordinates
+		########################################################################
+		self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
+										 self.dev_interpolatedMembraneCoordinates.data, \
+										 self.dev_previousInterpolatedMembraneCoordinates.data, \
+										 self.dev_trackingFinished.data, \
+										 self.coordinateTolerance)
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
 		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
 		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
 		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
 		self.dev_membranePolarTheta, self.dev_membranePolarRadius = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membranePolarCoordinates)
 		self.dev_interpolatedMembraneCoordinatesX, self.dev_interpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_interpolatedMembraneCoordinates)
-
-		########################################################################
-		### Convert polar coordinates to cartesian coordinates
-		########################################################################
-		self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
-										 self.dev_interpolatedMembraneCoordinatesX.data, \
-										 self.dev_interpolatedMembraneCoordinatesY.data, \
-										 self.dev_previousInterpolatedMembraneCoordinatesX.data, \
-										 self.dev_previousInterpolatedMembraneCoordinatesY.data, \
-										 self.dev_trackingFinished.data, \
-										 self.coordinateTolerance)
-
-		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.prg.checkIfCenterConverged(self.queue, (1,1), None, \
 										self.dev_contourCenter.data, \
