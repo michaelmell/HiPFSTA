@@ -223,11 +223,6 @@ __kernel void checkIfTrackingFinished(
 	}
 }
 
-__kernel void sortCoordinates(__global double2* membranePolarCoordinates,
-							  __global double2* membraneCoordinates,
-							  __global double2* membraneNormalVectors,
-							  const int nrOfContourPoints
-							  )
 /**********************************************************************
  * This function sorts the coordinates according the angle corresponding 
  * to each entry of the other arrays ()
@@ -249,6 +244,11 @@ __kernel void sortCoordinates(__global double2* membranePolarCoordinates,
  *	end procedure
  * 
  * ********************************************************************/
+__kernel void sortCoordinates(__global double2* membranePolarCoordinates,
+							  __global double2* membraneCoordinates,
+							  __global double2* membraneNormalVectors,
+							  const int nrOfContourPoints
+							  )
 {
 	const int xInd = get_global_id(1);
 	const int yInd = get_global_id(0);
