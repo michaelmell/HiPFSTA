@@ -474,12 +474,12 @@ class contourTracker( object ):
 		self.iterationFinished = np.array(0,dtype=np.int32) # True
 		self.dev_iterationFinished = cl_array.to_device(self.queue, self.iterationFinished)
 		
+		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
+		self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
+
 		for strideNr in range(self.nrOfStrides):
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
-
-			self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
-			self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
 
 			self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
 											 self.dev_Img, self.imgSizeX, self.imgSizeY, \
@@ -498,8 +498,8 @@ class contourTracker( object ):
 											 self.inclineTolerance)
 			barrierEvent = cl.enqueue_barrier(self.queue)
 
-			self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
-			self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
+		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
+		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
 
 		self.prg.filterNanValues(self.queue, self.gradientGlobalSize, None, \
 								 self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \

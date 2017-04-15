@@ -563,23 +563,14 @@ __kernel void filterNanValues(__global double* membraneCoordinatesX,
 	const int xSize = get_global_size(0);
 
 	__private bool NanValueLeft;
-	//~ __local int closestLowerNoneNanIndexLoc[2048];
-	//~ __local int closestUpperNoneNanIndexLoc[2048];
-	
-	//~ closestLowerNoneNanIndexLoc[xInd] = closestLowerNoneNanIndex[xInd];
-	//~ closestUpperNoneNanIndexLoc[xInd] = closestUpperNoneNanIndex[xInd];
-	
+
 	closestLowerNoneNanIndexLoc[xInd] = xInd;
 	closestUpperNoneNanIndexLoc[xInd] = xInd;
 
-	//~ if(xInd>1998&xInd<2002){
-		//~ printf("closestLowerNoneNanIndex[xInd], before: %d\n",closestLowerNoneNanIndexLoc[xInd]);
-		//~ printf("closestUpperNoneNanIndex[xInd], before: %d\n",closestUpperNoneNanIndexLoc[xInd]);
-	//~ }
-	
 	__private int distToLowerIndex = 0;
 	__private int distToUpperIndex = 0;
-	do{
+	do
+	{
 		NanValueLeft = false;
 		if(isnan(membraneCoordinatesX[closestLowerNoneNanIndexLoc[xInd]])){
 			closestLowerNoneNanIndexLoc[xInd] -= 1;
@@ -592,75 +583,43 @@ __kernel void filterNanValues(__global double* membraneCoordinatesX,
 			distToUpperIndex++;
 			NanValueLeft = true;
 		}
-		//~ id = getGlobalId();
-		//~ output[id] = input[id] * input[id];
-		if(closestLowerNoneNanIndexLoc[xInd]<0){ // avoid that we round out array bounds by using periodic boundaries
+		if(closestLowerNoneNanIndexLoc[xInd]<0) // avoid that we round out array bounds by using periodic boundaries
+		{
 			closestLowerNoneNanIndexLoc[xInd] = closestLowerNoneNanIndexLoc[xInd]+xSize;
 		}
-		if(closestUpperNoneNanIndexLoc[xInd]>xSize-1){ // avoid that we round out array bounds by using periodic boundaries
+		if(closestUpperNoneNanIndexLoc[xInd]>xSize-1) // avoid that we round out array bounds by using periodic boundaries
+		{
 			closestUpperNoneNanIndexLoc[xInd] = closestUpperNoneNanIndexLoc[xInd]-xSize;
 		}
-	}while(NanValueLeft);
-	
-	//~ if(xInd>1998&xInd<2002){
-		//~ printf("closestLowerNoneNanIndex[xInd], after: %d\n",closestLowerNoneNanIndexLoc[xInd]);
-		//~ printf("closestUpperNoneNanIndex[xInd], after: %d\n",closestUpperNoneNanIndexLoc[xInd]);
-	//~ }
+	}
+	while(NanValueLeft);
 
 	/* *****************************************************************
 	 * interpolate locations that are NaN 
 	 * ****************************************************************/
-	//double distToLowerIndex = 0;
-	//if(closestLowerNoneNanIndexLoc[xInd]>=0){
-		//distToLowerIndex = convert_float( xInd - closestLowerNoneNanIndexLoc[xInd] );
-	//}
-	//else{ // wrap around
-		//distToLowerIndex = convert_float( xInd + (xSize - closestLowerNoneNanIndexLoc[xInd]) );
-	//}
-	
-	//double distToUpperIndex = 0;
-	//if(closestUpperNoneNanIndexLoc[xInd]<xSize){
-		//distToUpperIndex = convert_float( closestUpperNoneNanIndexLoc[xInd] - xInd );
-	//}
-	//else{ // wrap around
-		//distToUpperIndex = convert_float( xInd + (closestUpperNoneNanIndexLoc[xInd] - xSize) );
-	//}
-	
-	if(distToLowerIndex!=0 & distToUpperIndex!=0){
-		//~ membraneCoordinatesX[xInd] = (distToLowerIndex * membraneCoordinatesX[closestLowerNoneNanIndexLoc[xInd]] + membraneCoordinatesX[closestUpperNoneNanIndexLoc[xInd]])/2;
+	if(distToLowerIndex!=0 & distToUpperIndex!=0)
+	{
 		membraneCoordinatesX[xInd] = ((double)distToLowerIndex * membraneCoordinatesX[closestLowerNoneNanIndexLoc[xInd]] 
 									+ (double)distToUpperIndex * membraneCoordinatesX[closestUpperNoneNanIndexLoc[xInd]])
 									/(double)(distToLowerIndex+distToUpperIndex);
-		//~ membraneCoordinatesY[xInd] = (membraneCoordinatesY[closestLowerNoneNanIndexLoc[xInd]] + membraneCoordinatesY[closestUpperNoneNanIndexLoc[xInd]])/2;
 		membraneCoordinatesY[xInd] = (distToLowerIndex * membraneCoordinatesY[closestLowerNoneNanIndexLoc[xInd]] 
 									+ distToUpperIndex * membraneCoordinatesY[closestUpperNoneNanIndexLoc[xInd]])
 									/(distToLowerIndex+distToUpperIndex);
 		
-		//~ membraneNormalVectorsX[xInd] = (membraneNormalVectorsX[closestLowerNoneNanIndexLoc[xInd]] + membraneNormalVectorsX[closestUpperNoneNanIndexLoc[xInd]])/2;
 		membraneNormalVectorsX[xInd] = ((double)distToLowerIndex * membraneNormalVectorsX[closestLowerNoneNanIndexLoc[xInd]] 
 									  + (double)distToUpperIndex * membraneNormalVectorsX[closestUpperNoneNanIndexLoc[xInd]])
 									  /(double)(distToLowerIndex+distToUpperIndex);
 
-		//~ membraneNormalVectorsY[xInd] = (membraneNormalVectorsY[closestLowerNoneNanIndexLoc[xInd]] + membraneNormalVectorsY[closestUpperNoneNanIndexLoc[xInd]])/2;
 		membraneNormalVectorsY[xInd] = ((double)distToLowerIndex * membraneNormalVectorsY[closestLowerNoneNanIndexLoc[xInd]] 
 									  + (double)distToUpperIndex * membraneNormalVectorsY[closestUpperNoneNanIndexLoc[xInd]])
 									  /(double)(distToLowerIndex+distToUpperIndex);
 
-		//~ membraneNormalNorm = sqrt( pow(xMembraneNormalTmp,2) + pow(yMembraneNormalTmp,2) );
-		
 		double membraneNormalNorm;
 		membraneNormalNorm = sqrt( pow(membraneNormalVectorsX[xInd],2) + pow(membraneNormalVectorsY[xInd],2) );
-		//~ membraneNormalNorm = sqrt( pow(membraneNormalVectorsXpriv,2) + pow(membraneNormalVectorsYpriv,2) );
 		
 		membraneNormalVectorsX[xInd] = membraneNormalVectorsX[xInd]/membraneNormalNorm;
 		membraneNormalVectorsY[xInd] = membraneNormalVectorsY[xInd]/membraneNormalNorm;
-		//~ membraneNormalVectorsX[xInd] = membraneNormalVectorsXpriv/membraneNormalNorm;
-		//~ membraneNormalVectorsY[xInd] = membraneNormalVectorsYpriv/membraneNormalNorm;
-		
-		//~ dbgOut[xInd] = distToLowerIndex;
-		//~ dbgOut2[xInd] = distToUpperIndex;
 	}
-
 }
 
 __kernel void checkIfCenterConverged(
