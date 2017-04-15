@@ -938,19 +938,15 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 		//~ if( interpolationAngles[xInd] == lowerAngle && interpolationAngles[xInd] == upperAngle )
 		if( interpolationAngle == lowerAngle && interpolationAngle == upperAngle )
 		{
-			radialVector.x = membraneCoordinates[lowerIndex].x - radialLineBasePoint.x;
-			radialVector.y = membraneCoordinates[lowerIndex].y - radialLineBasePoint.y;
+			radialVector = membraneCoordinates[lowerIndex] - radialLineBasePoint;
 			if(length(radialVector)<distanceFromCenter){
 				distanceFromCenter = length(radialVector);
-				interpolatedMembranePoint.x = membraneCoordinates[lowerIndex].x;
-				interpolatedMembranePoint.y = membraneCoordinates[lowerIndex].y;
+				interpolatedMembranePoint = membraneCoordinates[lowerIndex];
 			}
-			radialVector.x = membraneCoordinates[upperIndex].x - radialLineBasePoint.x;
-			radialVector.y = membraneCoordinates[upperIndex].y - radialLineBasePoint.y;
+			radialVector = membraneCoordinates[upperIndex] - radialLineBasePoint;
 			if(length(radialVector)<distanceFromCenter){
 				distanceFromCenter = length(radialVector);
-				interpolatedMembranePoint.x = membraneCoordinates[upperIndex].x;
-				interpolatedMembranePoint.y = membraneCoordinates[upperIndex].y;
+				interpolatedMembranePoint = membraneCoordinates[upperIndex];
 			}
 			break;
 		}
@@ -964,12 +960,10 @@ __kernel void interpolatePolarCoordinatesLinear(__global double* membranePolarRa
 			__private double2 lineSegmentBasePoint;
 			
 			// calculate paramaters of the straight, that passes through contour-segment
-			lineSegmentDirectionVector.x = membraneCoordinates[upperIndex].x - membraneCoordinates[lowerIndex].x;
-			lineSegmentDirectionVector.y = membraneCoordinates[upperIndex].y - membraneCoordinates[lowerIndex].y;
+			lineSegmentDirectionVector = membraneCoordinates[upperIndex] - membraneCoordinates[lowerIndex];
 			lineSegmentDirectionVector = normalize(lineSegmentDirectionVector);
 						
-			lineSegmentBasePoint.x = membraneCoordinates[lowerIndex].x;
-			lineSegmentBasePoint.y = membraneCoordinates[lowerIndex].y;
+			lineSegmentBasePoint = membraneCoordinates[lowerIndex];
 			
 			// check if contour line-segment is parallel to the radial line
 			
