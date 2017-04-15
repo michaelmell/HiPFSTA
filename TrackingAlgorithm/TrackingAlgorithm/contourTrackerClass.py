@@ -556,22 +556,22 @@ class contourTracker( object ):
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
-		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
-		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
-		self.dev_membranePolarTheta, self.dev_membranePolarRadius = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membranePolarCoordinates)
-
 		########################################################################
 		### Interpolate polar coordinates
 		########################################################################
 		self.prg.sortCoordinates(self.queue, (1,1), None, \
-								self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
-								self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-								self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
+								self.dev_membranePolarCoordinates.data, \
+								self.dev_membraneCoordinates.data, \
+								self.dev_membraneNormalVectors.data, \
 								np.int32(self.nrOfDetectionAngleSteps) \
 								)
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
+		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
+		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
+		self.dev_membranePolarTheta, self.dev_membranePolarRadius = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membranePolarCoordinates)
 
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \

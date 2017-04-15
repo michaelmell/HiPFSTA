@@ -237,18 +237,11 @@ __kernel void checkIfTrackingFinished(
 	//~ printf("iterationFinished: %d\n",iterationFinished[0]);
 }
 
-__kernel void sortCoordinates(__global double* membranePolarRadius,
-							  __global double* membranePolarTheta,
-							  __global double* membraneCoordinatesX,
-							  __global double* membraneCoordinatesY,
-							  __global double* membraneNormalVectorsX,
-							  __global double* membraneNormalVectorsY,
-							  //~ __local double* membranePolarRadiusLoc,
-							  //~ __local double* membranePolarThetaLoc,
-							  //~ __local double* membranePolarRadiusLoc,
-							  //~ __local double* membranePolarThetaLoc,
+__kernel void sortCoordinates(__global double2* membranePolarCoordinates,
+							  __global double2* membraneCoordinates,
+							  __global double2* membraneNormalVectors,
 							  const int nrOfContourPoints
-								  )
+							  )
 /**********************************************************************
  * This function sorts the coordinates according the angle corresponding 
  * to each entry of the other arrays ()
@@ -287,31 +280,31 @@ __kernel void sortCoordinates(__global double* membranePolarRadius,
 		   //~ for i = 1 to n-1 inclusive do
 		   for(int i=1;i<=n-1;i++){
 			  //~ if A[i-1] > A[i] then
-				if(membranePolarTheta[i-1]>membranePolarTheta[i]){
+				if(membranePolarCoordinates[i-1][0]>membranePolarCoordinates[i][0]){
 				 //~ swap(A[i-1], A[i])
-					__private double thetaTmp = membranePolarTheta[i-1];
-					membranePolarTheta[i-1] = membranePolarTheta[i];
-					membranePolarTheta[i] = thetaTmp;
+					__private double thetaTmp = membranePolarCoordinates[i-1][0];
+					membranePolarCoordinates[i-1][0] = membranePolarCoordinates[i][0];
+					membranePolarCoordinates[i][0] = thetaTmp;
 					
-					__private double radiusTmp = membranePolarRadius[i-1];
-					membranePolarRadius[i-1] = membranePolarRadius[i];
-					membranePolarRadius[i] = radiusTmp;
+					__private double radiusTmp = membranePolarCoordinates[i-1][1];
+					membranePolarCoordinates[i-1][1] = membranePolarCoordinates[i][1];
+					membranePolarCoordinates[i][1] = radiusTmp;
 					
-					__private double xCoordTmp = membraneCoordinatesX[i-1];
-					membraneCoordinatesX[i-1] = membraneCoordinatesX[i];
-					membraneCoordinatesX[i] = xCoordTmp;
+					__private double xCoordTmp = membraneCoordinates[i-1].x;
+					membraneCoordinates[i-1].x = membraneCoordinates[i].x;
+					membraneCoordinates[i].x = xCoordTmp;
 
-					__private double yCoordTmp = membraneCoordinatesY[i-1];
-					membraneCoordinatesY[i-1] = membraneCoordinatesY[i];
-					membraneCoordinatesY[i] = yCoordTmp;
+					__private double yCoordTmp = membraneCoordinates[i-1].y;
+					membraneCoordinates[i-1].y = membraneCoordinates[i].y;
+					membraneCoordinates[i].y = yCoordTmp;
 
-					__private double xNormalTmp = membraneNormalVectorsX[i-1];
-					membraneNormalVectorsX[i-1] = membraneNormalVectorsX[i];
-					membraneNormalVectorsX[i] = xNormalTmp;
+					__private double xNormalTmp = membraneNormalVectors[i-1].x;
+					membraneNormalVectors[i-1].x = membraneNormalVectors[i].x;
+					membraneNormalVectors[i].x = xNormalTmp;
 
-					__private double yNormalTmp = membraneNormalVectorsY[i-1];
-					membraneNormalVectorsY[i-1] = membraneNormalVectorsY[i];
-					membraneNormalVectorsY[i] = yNormalTmp;
+					__private double yNormalTmp = membraneNormalVectors[i-1].y;
+					membraneNormalVectors[i-1].y = membraneNormalVectors[i].y;
+					membraneNormalVectors[i].y = yNormalTmp;
 				 //~ newn = i
 				 newn = i;
 			  //~ end if
