@@ -269,19 +269,16 @@ __kernel void sortCoordinates(__global double2* membranePolarCoordinates,
 	const int xSize = get_global_size(1);
 	const int ySize = get_global_size(0);
 
-	if(xInd==0 && yInd==0){
-	//~ procedure bubbleSort( A : list of sortable items )
-		//~ n = length(A)
+	if(xInd==0 && yInd==0)
+	{
 		int n = nrOfContourPoints;
-		//~ repeat
-		while(n!=0){
-		   //~ newn = 0
+		while(n!=0)
+		{
 		   int newn = 0;
-		   //~ for i = 1 to n-1 inclusive do
-		   for(int i=1;i<=n-1;i++){
-			  //~ if A[i-1] > A[i] then
-				if(membranePolarCoordinates[i-1][0]>membranePolarCoordinates[i][0]){
-				 //~ swap(A[i-1], A[i])
+		   for(int i=1;i<=n-1;i++)
+		   {
+				if(membranePolarCoordinates[i-1][0]>membranePolarCoordinates[i][0])
+				{
 					__private double2 tmp;
 					
 					tmp = membranePolarCoordinates[i-1];
@@ -295,19 +292,12 @@ __kernel void sortCoordinates(__global double2* membranePolarCoordinates,
 					tmp = membraneNormalVectors[i-1];
 					membraneNormalVectors[i-1] = membraneNormalVectors[i];
 					membraneNormalVectors[i] = tmp;
-				 //~ newn = i
-				 newn = i;
-			  //~ end if
+					newn = i;
 				}
-		   //~ end for
 		   }
-		   //~ n = newn
 		   n = newn;
 	   }
-		//~ until n = 0
-	//~ end procedure
 	}
-
 }
 
 //~ #pragma OPENCL EXTENSION cl_amd_printf : enable
