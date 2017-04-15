@@ -282,29 +282,19 @@ __kernel void sortCoordinates(__global double2* membranePolarCoordinates,
 			  //~ if A[i-1] > A[i] then
 				if(membranePolarCoordinates[i-1][0]>membranePolarCoordinates[i][0]){
 				 //~ swap(A[i-1], A[i])
-					__private double thetaTmp = membranePolarCoordinates[i-1][0];
-					membranePolarCoordinates[i-1][0] = membranePolarCoordinates[i][0];
-					membranePolarCoordinates[i][0] = thetaTmp;
+					__private double2 tmp;
 					
-					__private double radiusTmp = membranePolarCoordinates[i-1][1];
-					membranePolarCoordinates[i-1][1] = membranePolarCoordinates[i][1];
-					membranePolarCoordinates[i][1] = radiusTmp;
+					tmp = membranePolarCoordinates[i-1];
+					membranePolarCoordinates[i-1] = membranePolarCoordinates[i];
+					membranePolarCoordinates[i] = tmp;
 					
-					__private double xCoordTmp = membraneCoordinates[i-1].x;
-					membraneCoordinates[i-1].x = membraneCoordinates[i].x;
-					membraneCoordinates[i].x = xCoordTmp;
+					tmp = membraneCoordinates[i-1];
+					membraneCoordinates[i-1] = membraneCoordinates[i];
+					membraneCoordinates[i] = tmp;
 
-					__private double yCoordTmp = membraneCoordinates[i-1].y;
-					membraneCoordinates[i-1].y = membraneCoordinates[i].y;
-					membraneCoordinates[i].y = yCoordTmp;
-
-					__private double xNormalTmp = membraneNormalVectors[i-1].x;
-					membraneNormalVectors[i-1].x = membraneNormalVectors[i].x;
-					membraneNormalVectors[i].x = xNormalTmp;
-
-					__private double yNormalTmp = membraneNormalVectors[i-1].y;
-					membraneNormalVectors[i-1].y = membraneNormalVectors[i].y;
-					membraneNormalVectors[i].y = yNormalTmp;
+					tmp = membraneNormalVectors[i-1];
+					membraneNormalVectors[i-1] = membraneNormalVectors[i];
+					membraneNormalVectors[i] = tmp;
 				 //~ newn = i
 				 newn = i;
 			  //~ end if
