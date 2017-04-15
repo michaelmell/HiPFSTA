@@ -979,8 +979,7 @@ __kernel void interpolatePolarCoordinatesLinear(__global double2* membranePolarC
 			__private double2 interpolatedMembranePointTMP;
 			interpolatedMembranePointTMP = m * radialLineDirectionVector + radialLineBasePoint;
 			
-			radialVector.x = interpolatedMembranePointTMP.x - radialLineBasePoint.x;
-			radialVector.y = interpolatedMembranePointTMP.y - radialLineBasePoint.y;
+			radialVector = interpolatedMembranePointTMP - radialLineBasePoint;
 			if(length(radialVector)<distanceFromCenter){
 				distanceFromCenter = length(radialVector);
 				interpolatedMembranePoint = interpolatedMembranePointTMP;
