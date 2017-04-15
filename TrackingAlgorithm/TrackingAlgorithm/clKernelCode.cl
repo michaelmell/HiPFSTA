@@ -219,10 +219,7 @@ __kernel void checkIfTrackingFinished(
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
 	
-	__private double distance;
-	distance =  sqrt(  pow((interpolatedMembraneCoordinates[xInd].x - previousInterpolatedMembraneCoordinates[xInd].x),2)
-					 + pow((interpolatedMembraneCoordinates[xInd].y - previousInterpolatedMembraneCoordinates[xInd].y),2)
-					 );
+	__private double distance =  length(interpolatedMembraneCoordinates[xInd] - previousInterpolatedMembraneCoordinates[xInd]);
 	
 	if(distance>coordinateTolerance)
 	{
