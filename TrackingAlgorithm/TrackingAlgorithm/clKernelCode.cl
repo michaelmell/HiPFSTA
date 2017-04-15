@@ -834,10 +834,8 @@ __kernel void filterJumpedCoordinates(
 
 __kernel void filterIncorrectCoordinates(__global double2* previousContourCenter,
 										 __global double* interCoordinateAngles,
-										 __global double* membraneCoordinatesX,
-										 __global double* membraneCoordinatesY,
-										 __global double* membraneNormalVectorsX,
-										 __global double* membraneNormalVectorsY,
+										 __global double2* membraneCoordinates,
+										 __global double2* membraneNormalVectors,
 										 __local int* closestLowerCorrectIndexLoc,
 										 __local int* closestUpperCorrectIndexLoc,
 										 const double maxInterCoordinateAngle
@@ -884,24 +882,23 @@ __kernel void filterIncorrectCoordinates(__global double2* previousContourCenter
 	/* *****************************************************************
 	 * interpolate locations that are NaN 
 	 * ****************************************************************/
-	
 	if(distToLowerIndex!=0 & distToUpperIndex!=0)
 	{
-		membraneCoordinatesX[xInd] = ((double)distToLowerIndex * membraneCoordinatesX[closestLowerCorrectIndexLoc[xInd]] 
-									+ (double)distToUpperIndex * membraneCoordinatesX[closestUpperCorrectIndexLoc[xInd]])
+		membraneCoordinates[xInd].x = ((double)distToLowerIndex * membraneCoordinates[closestLowerCorrectIndexLoc[xInd]].x 
+									+ (double)distToUpperIndex * membraneCoordinates[closestUpperCorrectIndexLoc[xInd]].x)
 									/(double)(distToLowerIndex+distToUpperIndex);
-		membraneCoordinatesY[xInd] = ((double)distToLowerIndex * membraneCoordinatesY[closestLowerCorrectIndexLoc[xInd]] 
-									+ (double)distToUpperIndex * membraneCoordinatesY[closestUpperCorrectIndexLoc[xInd]])
+		membraneCoordinates[xInd].y = ((double)distToLowerIndex * membraneCoordinates[closestLowerCorrectIndexLoc[xInd]].y 
+									+ (double)distToUpperIndex * membraneCoordinates[closestUpperCorrectIndexLoc[xInd]].y)
 									/(double)(distToLowerIndex+distToUpperIndex);
 
-		membraneNormalVectorsX[xInd] = membraneCoordinatesX[xInd] - previousContourCenter[0].x;
-		membraneNormalVectorsY[xInd] = membraneCoordinatesY[xInd] - previousContourCenter[0].y;
+		membraneNormalVectors[xInd].x = membraneCoordinates[xInd].x - previousContourCenter[0].x;
+		membraneNormalVectors[xInd].y = membraneCoordinates[xInd].y - previousContourCenter[0].y;
 		
 		double membraneNormalNorm;
-		membraneNormalNorm = sqrt( pow(membraneNormalVectorsX[xInd],2) + pow(membraneNormalVectorsY[xInd],2) );
+		membraneNormalNorm = sqrt( pow(membraneNormalVectors[xInd].x,2) + pow(membraneNormalVectors[xInd].y,2) );
 
-		membraneNormalVectorsX[xInd] = membraneNormalVectorsX[xInd]/membraneNormalNorm;
-		membraneNormalVectorsY[xInd] = membraneNormalVectorsY[xInd]/membraneNormalNorm;
+		membraneNormalVectors[xInd].x = membraneNormalVectors[xInd].x/membraneNormalNorm;
+		membraneNormalVectors[xInd].y = membraneNormalVectors[xInd].y/membraneNormalNorm;
 	}
 }
 
