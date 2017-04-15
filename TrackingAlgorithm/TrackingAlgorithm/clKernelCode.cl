@@ -659,32 +659,35 @@ __kernel void checkIfCenterConverged(
 __kernel void calculateInterCoordinateAngles(__global double* interCoordinateAngles,
 											 __global double* membraneCoordinatesX,
 											 __global double* membraneCoordinatesY
-											 //~ __global double* dbgOut,
-											 //~ __global double* dbgOut2
 											 )
 {
-	//~ A · B = A B cos θ = |A||B| cos θ
-
+/* This uses the equation
+ * A · B = A B cos θ = |A||B| cos θ
+ * to calculate the angles between adjacent coordinates.
+ */
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
-	//~ __private double2 basePoint = {membraneCoordinatesX[coordinateIndex],membraneCoordinatesY[coordinateIndex]};
+
 	__private double2 dsVector1, dsVector2;
 	
-	if(xInd>0 && xInd<xSize-1){ // calculate interior gradients
+	if(xInd>0 && xInd<xSize-1) // calculate interior gradients
+	{
 		dsVector1.x = membraneCoordinatesX[xInd] - membraneCoordinatesX[xInd-1];
 		dsVector1.y = membraneCoordinatesY[xInd] - membraneCoordinatesY[xInd-1];
 		
 		dsVector2.x = membraneCoordinatesX[xInd+1] - membraneCoordinatesX[xInd];
 		dsVector2.y = membraneCoordinatesY[xInd+1] - membraneCoordinatesY[xInd];
 	}
-	else if(xInd==0){ // calculate edge gradient
+	else if(xInd==0) // calculate edge gradient
+	{
 		dsVector1.x = membraneCoordinatesX[xInd] - membraneCoordinatesX[xSize-1];
 		dsVector1.y = membraneCoordinatesY[xInd] - membraneCoordinatesY[xSize-1];
 		
 		dsVector2.x = membraneCoordinatesX[xInd+1] - membraneCoordinatesX[xInd];
 		dsVector2.y = membraneCoordinatesY[xInd+1] - membraneCoordinatesY[xInd];
 	}
-	else if(xInd==xSize-1){ // calculate edge gradient
+	else if(xInd==xSize-1) // calculate edge gradient
+	{
 		dsVector1.x = membraneCoordinatesX[xInd] - membraneCoordinatesX[xInd-1];
 		dsVector1.y = membraneCoordinatesY[xInd] - membraneCoordinatesY[xInd-1];
 		
@@ -694,14 +697,17 @@ __kernel void calculateInterCoordinateAngles(__global double* interCoordinateAng
 
 	dsVector1 = normalize(dsVector1);
 	dsVector2 = normalize(dsVector2);
+	
 	//~ double dotProduct = dsVector1.x*dsVector2.x+dsVector1.y*dsVector2.y;
 	double dotProduct = dot(dsVector1,dsVector2);
 	interCoordinateAngles[xInd] = acos(dotProduct);
 	
-	if(dotProduct>=1){
+	if(dotProduct>=1)
+	{
 		interCoordinateAngles[xInd] = 0;
 	}
-	if(dotProduct<=-1){
+	if(dotProduct<=-1)
+	{
 		interCoordinateAngles[xInd] = M_PI;
 	}
 }
