@@ -582,8 +582,8 @@ __kernel void filterNanValues(__global double2* membraneCoordinates,
 }
 
 /* This function will set trackingFinished to 0 (FALSE),
- * if the individual distances between the X *and* Y and coordinate of the
- * contourCenter is >centerTolerance.
+ * if the euclidian distances between contourCenter and previousContourCenter
+ * is >centerTolerance.
  */
 __kernel void checkIfCenterConverged(
 									__global double2* contourCenter,
@@ -598,10 +598,10 @@ __kernel void checkIfCenterConverged(
 	__private double xDistance, yDistance;
 	if(xInd==0)
 	{
-		xDistance = fabs(contourCenter[xInd].x - previousContourCenter[xInd].x);
-		yDistance = fabs(contourCenter[xInd].y - previousContourCenter[xInd].y);
-
-		if((xDistance>centerTolerance)||(yDistance>centerTolerance)){
+		__private double distance =  length(contourCenter[xInd] - previousContourCenter[xInd]);
+		
+		if(distance>centerTolerance)
+		{
 			trackingFinished[0] = 0;
 		}
 	}
