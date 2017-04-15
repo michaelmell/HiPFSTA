@@ -478,7 +478,7 @@ class contourTracker( object ):
 		self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
 		self.dev_previousInterpolatedMembraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinatesX,self.dev_previousInterpolatedMembraneCoordinatesY)
 		self.dev_membranePolarCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membranePolarTheta,self.dev_membranePolarRadius)
-
+		self.dev_interpolatedMembraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_interpolatedMembraneCoordinatesX,self.dev_interpolatedMembraneCoordinatesY)
 
 		for strideNr in range(self.nrOfStrides):
 			# set the starting index of the coordinate array for each kernel instance
@@ -573,8 +573,7 @@ class contourTracker( object ):
 													self.dev_radialVectors.data, \
 													self.dev_contourCenter.data, \
 													self.dev_membraneCoordinates.data, \
-													self.dev_interpolatedMembraneCoordinatesX.data, \
-													self.dev_interpolatedMembraneCoordinatesY.data, \
+													self.dev_interpolatedMembraneCoordinates.data, \
 													self.dev_interpolationAngles.data, \
 													self.nrOfAnglesToCompare \
 													)
@@ -585,6 +584,7 @@ class contourTracker( object ):
 		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
 		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
 		self.dev_membranePolarTheta, self.dev_membranePolarRadius = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membranePolarCoordinates)
+		self.dev_interpolatedMembraneCoordinatesX, self.dev_interpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_interpolatedMembraneCoordinates)
 
 		########################################################################
 		### Convert polar coordinates to cartesian coordinates

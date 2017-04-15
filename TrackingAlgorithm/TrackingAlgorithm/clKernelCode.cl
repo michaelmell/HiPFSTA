@@ -877,8 +877,7 @@ __kernel void interpolatePolarCoordinatesLinear(__global double2* membranePolarC
 											  __global double2* radialVectors,
 											  __global double2* contourCenter,
 											  __global double2* membraneCoordinates,
-											  __global double* interpolatedMembraneCoordinatesX,
-											  __global double* interpolatedMembraneCoordinatesY,
+											  __global double2* interpolatedMembraneCoordinates,
 											  __global double* interpolationAngles,
 											  const int nrOfAnglesToCompare
 											 )
@@ -990,6 +989,5 @@ __kernel void interpolatePolarCoordinatesLinear(__global double2* membranePolarC
 		}
 
 	}
-	interpolatedMembraneCoordinatesX[xInd] = interpolatedMembranePoint.x;
-	interpolatedMembraneCoordinatesY[xInd] = interpolatedMembranePoint.y;
+	interpolatedMembraneCoordinates[xInd] = interpolatedMembranePoint;
 }
