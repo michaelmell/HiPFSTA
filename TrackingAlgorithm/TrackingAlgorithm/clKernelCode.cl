@@ -162,10 +162,8 @@ __kernel void cart2pol(__global double2* membraneCoordinates,
 											 );
 }
 
-__kernel void pol2cart(__global double* membraneCoordinatesX,
-					   __global double* membraneCoordinatesY,
-					   __global double* membranePolarRadius,
-					   __global double* membranePolarTheta,
+__kernel void pol2cart(__global double2* membraneCoordinates,
+					   __global double2* membranePolarCoordinates,
 					   __global double2* contourCenter
 					  )
 {
@@ -175,8 +173,8 @@ __kernel void pol2cart(__global double* membraneCoordinatesX,
 	double2 contourCenterLoc;
 	contourCenterLoc = contourCenter[0];
 	
-	membraneCoordinatesX[xInd] = contourCenterLoc.x + membranePolarRadius[xInd] * cos(membranePolarTheta[xInd]);
-	membraneCoordinatesY[xInd] = contourCenterLoc.y + membranePolarRadius[xInd] * sin(membranePolarTheta[xInd]);
+	membraneCoordinates[xInd].x = contourCenterLoc.x + membranePolarCoordinates[xInd][1] * cos(membranePolarCoordinates[xInd][0]);
+	membraneCoordinates[xInd].y = contourCenterLoc.y + membranePolarCoordinates[xInd][1] * sin(membranePolarCoordinates[xInd][0]);
 }
 
 __kernel void emptyKernel(__global double* membraneCoordinatesX, __global double* membraneCoordinatesY)
