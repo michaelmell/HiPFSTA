@@ -14,6 +14,8 @@ class configReader(object):
 		self.runConfigChecks()
 
 	def loadContourTrackerConfig(self):
+		self.positioningMethod  = json.loads(self.config.get("TrackingParameters","positioningMethod"))
+
 		self.startingCoordinate = self.scalingFactor * np.array(json.loads(self.config.get("TrackingParameters","startingCoordinate")))
 		self.rotationCenterCoordinate = self.scalingFactor * np.array(json.loads(self.config.get("TrackingParameters","rotationCenterCoordinate")))
 		
