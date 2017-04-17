@@ -412,13 +412,11 @@ class contourTracker( object ):
 												 self.linFitParameter, \
 												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
 												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 #~ self.dev_fitIntercept.data, self.dev_fitIncline.data, \
 												 self.meanParameter, \
 												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
-												 #~ self.dev_localMembranePositionsX.data, self.dev_localMembranePositionsY.data, \
-												 self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-												 self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
+												 cl.LocalMemory(self.localMembranePositions_memSize), \
+												 self.dev_membraneCoordinates.data, \
+												 self.dev_membraneNormalVectors.data, \
 												 self.dev_fitInclines.data, \
 												 coordinateIndex, \
 												 self.inclineTolerance, \
@@ -534,13 +532,11 @@ class contourTracker( object ):
 												 self.linFitParameter, \
 												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
 												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 #~ self.dev_fitIntercept.data, self.dev_fitIncline.data, \
 												 self.meanParameter, \
 												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), cl.LocalMemory(self.localMembranePositions_memSize), \
-												 #~ self.dev_localMembranePositionsX.data, self.dev_localMembranePositionsY.data, \
-												 self.dev_membraneCoordinatesX.data, self.dev_membraneCoordinatesY.data, \
-												 self.dev_membraneNormalVectorsX.data, self.dev_membraneNormalVectorsY.data, \
+												 cl.LocalMemory(self.localMembranePositions_memSize), \
+												 self.dev_membraneCoordinates.data, \
+												 self.dev_membraneNormalVectors.data, \
 												 self.dev_fitInclines.data, \
 												 kernelCoordinateStartingIndex, \
 												 self.inclineTolerance, \

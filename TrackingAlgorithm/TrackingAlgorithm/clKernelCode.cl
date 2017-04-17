@@ -519,12 +519,9 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 									   const int meanParameter,
 									   __constant double* meanRangeXvalues, // this should be local or constant
 									   const double meanRangePositionOffset,
-									   __local double* localMembranePositionsX,
-									   __local double* localMembranePositionsY,
-									   __global double* membraneCoordinatesX,
-									   __global double* membraneCoordinatesY,
-									   __global double* membraneNormalVectorsX,
-									   __global double* membraneNormalVectorsY,
+									   __local double2* localMembranePositions,
+									   __global double2* membraneCoordinates,
+									   __global double2* membraneNormalVectors,
 									   __global double* fitInclines,
 									   const int coordinateStartingIndex,
 									   const double inclineTolerance,
@@ -548,8 +545,8 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 	__private double lineIntensities[400];
 	
 	__private double2 membraneNormalVector;
-	membraneNormalVector.x = membraneNormalVectorsX[coordinateIndex];
-	membraneNormalVector.y = membraneNormalVectorsY[coordinateIndex];
+	membraneNormalVector.x = membraneNormalVectors[coordinateIndex].x;
+	membraneNormalVector.y = membraneNormalVectors[coordinateIndex].y;
 	
 	rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x = localRotationMatrices[4*xIndLoc+0] * membraneNormalVector.x
 												   + localRotationMatrices[4*xIndLoc+1] * membraneNormalVector.y;
@@ -568,7 +565,7 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 	__private double2 NormCoords;
 	__private const int2 dims = get_image_dim(Img);
 	
-	__private double2 basePoint = {membraneCoordinatesX[coordinateIndex],membraneCoordinatesY[coordinateIndex]};
+	__private double2 basePoint = {membraneCoordinates[coordinateIndex].x,membraneCoordinates[coordinateIndex].y};
 
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -642,8 +639,8 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 		relativeMembranePositionLocalCoordSys = 0;
 	}
 
-	localMembranePositionsX[xIndLoc+yIndLoc*xSizeLoc] = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * relativeMembranePositionLocalCoordSys;
-	localMembranePositionsY[xIndLoc+yIndLoc*xSizeLoc] = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * relativeMembranePositionLocalCoordSys;
+	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc].x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * relativeMembranePositionLocalCoordSys;
+	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc].y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * relativeMembranePositionLocalCoordSys;
 	
 	write_mem_fence(CLK_LOCAL_MEM_FENCE);
 
@@ -675,8 +672,8 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 	if(xIndLoc==0){
 			for(int index=0;index<xSize;index++){
 				if(fabs(fitIncline[index+yIndLoc*xSizeLoc])>inclineTolerance*fabs(maxFitIncline)){
-					xTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositionsX[index+yIndLoc*xSizeLoc];
-					yTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositionsY[index+yIndLoc*xSizeLoc];
+					xTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc].x;
+					yTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc].y;
 					
 					xMembraneNormalTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * rotatedUnitVector2[index+yIndLoc*xSizeLoc].x;
 					yMembraneNormalTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * rotatedUnitVector2[index+yIndLoc*xSizeLoc].y;
@@ -684,8 +681,8 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 					inclineSum += fabs(fitIncline[index+yIndLoc*xSizeLoc]);
 				}
 			}
-			membraneCoordinatesX[coordinateIndex] = xTmp/inclineSum;
-			membraneCoordinatesY[coordinateIndex] = yTmp/inclineSum;
+			membraneCoordinates[coordinateIndex].x = xTmp/inclineSum;
+			membraneCoordinates[coordinateIndex].y = yTmp/inclineSum;
 			fitInclines[coordinateIndex] = maxFitIncline;
 			
 			xMembraneNormalTmp = xMembraneNormalTmp/inclineSum;
@@ -696,8 +693,8 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 			xMembraneNormalTmp = xMembraneNormalTmp/membraneNormalNorm;
 			yMembraneNormalTmp = yMembraneNormalTmp/membraneNormalNorm;
 			
-			membraneNormalVectorsX[coordinateIndex] = xMembraneNormalTmp;
-			membraneNormalVectorsY[coordinateIndex] = yMembraneNormalTmp;
+			membraneNormalVectors[coordinateIndex].x = xMembraneNormalTmp;
+			membraneNormalVectors[coordinateIndex].y = yMembraneNormalTmp;
 	}
 }
 
