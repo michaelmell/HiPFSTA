@@ -603,7 +603,7 @@ __kernel void findMembranePositionNew2(sampler_t sampler,
 	/** Determine max gradient without perform maximum and minimum intensity search **/
 	
 	for(int index=imgSizeY/2-inclineRefinementRange;index<imgSizeY/2+inclineRefinementRange;index++){
-		fit(linFitSearchRangeXvalues, lineIntensities, index, linFitParameter, &a, &b, &siga, &sigb, &chi2);
+		linearFit(linFitSearchRangeXvalues, lineIntensities, index, linFitParameter, &a, &b, &siga, &sigb, &chi2);
 		__private double bTmp2 = bTmp;
 		bTmp = select(bTmp,b,(long)(fabs(b) > bTmp2));
 		aTmp = select(aTmp,a,(long)(fabs(b) > bTmp2));
