@@ -48,6 +48,7 @@
     <Content Include="clKernelCode.cl" />
     <Content Include="TrackingConfigs\TrackingConfig_001.conf" />
     <Content Include="TrackingConfigs\TrackingConfig_000.conf" />
+    <Content Include="TrackingConfigs\TrackingConfig_002.conf" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="TrackingConfigs\" />
