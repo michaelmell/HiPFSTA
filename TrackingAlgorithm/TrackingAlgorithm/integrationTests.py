@@ -44,5 +44,18 @@ class Test_integrationTests(unittest.TestCase):
 		self.assertTrue(np.all(prg.contourCoordinatesX == contourCoordinatesXref))
 		self.assertTrue(np.all(prg.contourCoordinatesY == contourCoordinatesYref))
 
+	def test_CompleteProgramRun_Tracking_Continuation_001(self):
+		prg = contourTrackerMain("TrackingConfigs/TrackingConfig_003.conf",runInteractive=False)
+		prg.startTracking()
+
+		dataAnalysisDirectoryReferencePath = "C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/IntegrationTests/CompleteProgramRun_001"
+		tmp=io.loadmat(dataAnalysisDirectoryReferencePath+'/contourCoordinatesX.mat')
+		contourCoordinatesXref = tmp['contourCoordinatesX']
+		tmp=io.loadmat(dataAnalysisDirectoryReferencePath+'/contourCoordinatesY.mat')
+		contourCoordinatesYref = tmp['contourCoordinatesY']
+		
+		self.assertTrue(np.all(prg.contourCoordinatesX == contourCoordinatesXref))
+		self.assertTrue(np.all(prg.contourCoordinatesY == contourCoordinatesYref))
+
 if __name__ == '__main__':
 	unittest.main()
