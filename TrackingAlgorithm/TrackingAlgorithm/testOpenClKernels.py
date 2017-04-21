@@ -12,62 +12,44 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.setupClContext()
 		self.loadClKernels()
 		self.setupClQueue(self.ctx)
-		path='C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/'
+
+		inputPath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/input'
+		referencePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/output'
+		referenceVariableName = 'dev_interpolatedMembraneCoordinates'
+
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
 		self.nrOfStrides = 1
 		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
-		self.loadHostVariable('gradientGlobalSize',path)
-		self.loadHostVariable('nrOfInterpolationPoints',path)
-		self.loadHostVariable('nrOfDetectionAngleSteps',path)
-		#self.loadHostVariable('nrOfAnglesToCompare',path)
-		self.nrOfAnglesToCompare = np.int32(100)
-		self.loadDeviceVariable('dev_membranePolarRadius',path)
-		self.loadDeviceVariable('dev_membranePolarTheta',path)
-		self.loadDeviceVariable('dev_radialVectors',path)
-		self.loadDeviceVariable('dev_contourCenter',path)
-		self.loadDeviceVariable('dev_membraneCoordinatesX',path)
-		self.loadDeviceVariable('dev_membraneCoordinatesY',path)
-		self.loadDeviceVariable('dev_interpolatedMembraneCoordinatesX',path)
-		self.loadDeviceVariable('dev_interpolatedMembraneCoordinatesY',path)
-		self.loadDeviceVariable('dev_membranePolarRadiusTMP',path)
-		self.loadDeviceVariable('dev_membranePolarThetaTMP',path)
-		self.loadDeviceVariable('dev_membranePolarRadiusInterpolation',path)
-		self.loadDeviceVariable('dev_membranePolarThetaInterpolation',path)
-		self.loadDeviceVariable('dev_membranePolarRadiusInterpolationTesting',path)
-		self.loadDeviceVariable('dev_membranePolarThetaInterpolationTesting',path)
-		self.loadDeviceVariable('dev_interpolationAngles',path)
-		self.loadDeviceVariable("dev_dbgOut",path)
-		self.loadDeviceVariable("dev_dbgOut2",path)
+
+		self.loadHostVariable('gradientGlobalSize',inputPath)
+		self.loadHostVariable('nrOfAnglesToCompare',inputPath)
+		self.loadDeviceVariable('dev_membranePolarCoordinates',inputPath)
+		self.loadDeviceVariable('dev_radialVectors',inputPath)
+		self.loadDeviceVariable('dev_contourCenter',inputPath)
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_interpolatedMembraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_interpolationAngles',inputPath)
 		self.setWorkGroupSizes()
-		#self.plotCurrentMembraneCoordinates()
-		plt.show()
 
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
-													self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
+													self.dev_membranePolarCoordinates.data, \
 													self.dev_radialVectors.data, \
 													self.dev_contourCenter.data, \
-													self.dev_membraneCoordinatesX.data, \
-													self.dev_membraneCoordinatesY.data, \
-													self.dev_interpolatedMembraneCoordinatesX.data, \
-													self.dev_interpolatedMembraneCoordinatesY.data, \
-													self.dev_membranePolarRadiusTMP.data, \
-													self.dev_membranePolarThetaTMP.data, \
-													self.dev_membranePolarRadiusInterpolation.data, \
-													self.dev_membranePolarThetaInterpolation.data, \
-													self.dev_membranePolarRadiusInterpolationTesting.data, \
-													self.dev_membranePolarThetaInterpolationTesting.data, \
+													self.dev_membraneCoordinates.data, \
+													self.dev_interpolatedMembraneCoordinates.data, \
 													self.dev_interpolationAngles.data, \
-													self.nrOfInterpolationPoints, \
-													np.int32(self.nrOfDetectionAngleSteps), \
-													self.nrOfAnglesToCompare, \
-													self.dev_dbgOut.data, \
-													self.dev_dbgOut2.data, \
+													self.nrOfAnglesToCompare \
 													)
-
-		self.plotCurrentInterpolatedMembraneCoordinates()
-		plt.show()
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		self.assertResultEquals(self.dev_interpolatedMembraneCoordinates,referencePath+'/'+referenceVariableName+'.npy')
 		pass
+
+	def assertResultEquals(self,variable,referencePath):
+		outputValue = variable.get(self.queue)
+		referenceValue = np.load(referencePath)
+		self.assertTrue(np.all(outputValue['x'] == referenceValue['x']))
+		self.assertTrue(np.all(outputValue['y'] == referenceValue['y']))
 
 	def loadHostVariable(self,variableName,path):
 		host_tmp = np.load(path+'/'+variableName+'.npy')
@@ -140,9 +122,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		plt.plot(host_membraneCoordinatesX,host_membraneCoordinatesY)
 
 	def plotCurrentInterpolatedMembraneCoordinates(self):
-		host_interpolatedMembraneCoordinatesX = self.dev_interpolatedMembraneCoordinatesX.get()
-		host_interpolatedMembraneCoordinatesY = self.dev_interpolatedMembraneCoordinatesY.get()
-		plt.plot(host_interpolatedMembraneCoordinatesX,host_interpolatedMembraneCoordinatesY)
+		host_membranePolarCoordinates = self.dev_interpolatedMembraneCoordinates.get()
+		plt.plot(host_membranePolarCoordinates['x'],host_membranePolarCoordinates['y'])
+
+	#def 
+	#	self.assertTrue(np.all(outputValue['x'] == referenceValue['x']))
+	#	self.assertTrue(np.all(outputValue['y'] == referenceValue['y']))
+
 
 if __name__ == '__main__':
 	unittest.main()

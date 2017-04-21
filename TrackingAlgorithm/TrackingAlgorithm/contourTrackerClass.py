@@ -611,6 +611,16 @@ class contourTracker( object ):
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
+		#path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/input'
+		#self.saveHostVariable('gradientGlobalSize',path)
+		#self.saveDeviceVariable('dev_membranePolarCoordinates',path)
+		#self.saveDeviceVariable('dev_radialVectors',path)
+		#self.saveDeviceVariable('dev_contourCenter',path)
+		#self.saveDeviceVariable('dev_membraneCoordinates',path)
+		#self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
+		#self.saveDeviceVariable('dev_interpolationAngles',path)
+		#self.saveHostVariable('nrOfAnglesToCompare',path)
+		
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarCoordinates.data, \
 													self.dev_radialVectors.data, \
@@ -620,9 +630,12 @@ class contourTracker( object ):
 													self.dev_interpolationAngles.data, \
 													self.nrOfAnglesToCompare \
 													)
-		
+
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
+		#path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/output'
+		#self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
+		
 		########################################################################
 		### Convert polar coordinates to cartesian coordinates
 		########################################################################
