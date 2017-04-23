@@ -506,26 +506,26 @@ __kernel void findMembranePosition(sampler_t sampler,
 	}
 }
 
-__kernel void findMembranePositionNew2(sampler_t sampler, 
-									   __read_only image2d_t Img,
-									   const int imgSizeX,
-									   const int imgSizeY,
-									   __constant double* localRotationMatrices, // this should be local or constant
-									   __constant double* linFitSearchRangeXvalues, // this should be local or constant
-									   const int linFitParameter,
-									   __local double* fitIntercept,
-									   __local double* fitIncline,
-									   __local double2* rotatedUnitVector2,
-									   const int meanParameter,
-									   __constant double* meanRangeXvalues, // this should be local or constant
-									   const double meanRangePositionOffset,
-									   __local double2* localMembranePositions,
-									   __global double2* membraneCoordinates,
-									   __global double2* membraneNormalVectors,
-									   __global double* fitInclines,
-									   const int coordinateStartingIndex,
-									   const double inclineTolerance,
-									   const int inclineRefinementRange)
+__kernel void findMembranePositionUsingMaxIncline(sampler_t sampler, 
+												  __read_only image2d_t Img,
+												  const int imgSizeX,
+												  const int imgSizeY,
+												  __constant double* localRotationMatrices, // this should be local or constant
+												  __constant double* linFitSearchRangeXvalues, // this should be local or constant
+											      const int linFitParameter,
+											      __local double* fitIntercept,
+												  __local double* fitIncline,
+												  __local double2* rotatedUnitVector2,
+												  const int meanParameter,
+												  __constant double* meanRangeXvalues, // this should be local or constant
+												  const double meanRangePositionOffset,
+											 	  __local double2* localMembranePositions,
+										 		  __global double2* membraneCoordinates,
+												  __global double2* membraneNormalVectors,
+												  __global double* fitInclines,
+												  const int coordinateStartingIndex,
+												  const double inclineTolerance,
+												  const int inclineRefinementRange)
 {
 	const int xInd = get_global_id(1);
 	const int yInd = get_global_id(0);
