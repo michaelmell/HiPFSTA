@@ -121,12 +121,12 @@ class contourTracker( object ):
 
 		localAngles = np.linspace(startAngle,endAngle,self.nrOfLocalAngleSteps)
 
-		localRotationMatrices = np.empty((localAngles.shape[0],2,2),np.dtype(np.float64))
+		self.localRotationMatrices = np.empty((localAngles.shape[0],2,2),np.dtype(np.float64))
 		for index in range(localAngles.shape[0]):
 			localAngle = localAngles[index]
-			localRotationMatrices[index,:,:] = np.array([[np.cos(localAngle),-np.sin(localAngle)],[np.sin(localAngle),np.cos(localAngle)]])
+			self.localRotationMatrices[index,:,:] = np.array([[np.cos(localAngle),-np.sin(localAngle)],[np.sin(localAngle),np.cos(localAngle)]])
 
-		self.buf_localRotationMatrices = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=localRotationMatrices)
+		self.buf_localRotationMatrices = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.localRotationMatrices)
 
 		### setup local rotation matrices
 		initialNormalVector = self.startingCoordinate - self.rotationCenterCoordinate
@@ -503,6 +503,29 @@ class contourTracker( object ):
 		self.dev_membranePolarCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membranePolarTheta,self.dev_membranePolarRadius)
 		self.dev_interpolatedMembraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_interpolatedMembraneCoordinatesX,self.dev_interpolatedMembraneCoordinatesY)
 
+		path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePosition_000/input'
+		self.saveHostVariable('trackingGlobalSize',path)
+		self.saveHostVariable('trackingWorkGroupSize',path)
+		self.saveHostVariable('host_Img',path)
+		self.saveHostVariable('imgSizeX',path)
+		self.saveHostVariable('imgSizeY',path)
+		#self.saveDeviceVariable('buf_localRotationMatrices',path)
+		self.saveHostVariable('localRotationMatrices',path)
+		#self.saveDeviceVariable('buf_linFitSearchRangeXvalues',path)
+		self.saveHostVariable('linFitSearchRangeXvalues',path)
+		self.saveHostVariable('linFitParameter',path)
+		self.saveHostVariable('fitIntercept_memSize',path)
+		self.saveHostVariable('rotatedUnitVector_memSize',path)
+		self.saveHostVariable('meanParameter',path)
+		#self.saveDeviceVariable('buf_meanRangeXvalues',path)
+		self.saveHostVariable('meanRangeXvalues',path)
+		self.saveHostVariable('meanRangePositionOffset',path)
+		self.saveHostVariable('localMembranePositions_memSize',path)
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_membraneNormalVectors',path)
+		self.saveDeviceVariable('dev_fitInclines',path)
+		self.saveHostVariable('inclineTolerance',path)
+		
 		for strideNr in range(self.nrOfStrides):
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
@@ -544,6 +567,11 @@ class contourTracker( object ):
 											 
 			barrierEvent = cl.enqueue_barrier(self.queue)
 
+		path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePosition_000/output'
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_membraneNormalVectors',path)
+		self.saveDeviceVariable('dev_fitInclines',path)
+		
 		self.prg.filterNanValues(self.queue, self.gradientGlobalSize, None, \
 								 self.dev_membraneCoordinates.data, \
 								 self.dev_membraneNormalVectors.data, \
@@ -611,16 +639,6 @@ class contourTracker( object ):
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		#path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/input'
-		#self.saveHostVariable('gradientGlobalSize',path)
-		#self.saveDeviceVariable('dev_membranePolarCoordinates',path)
-		#self.saveDeviceVariable('dev_radialVectors',path)
-		#self.saveDeviceVariable('dev_contourCenter',path)
-		#self.saveDeviceVariable('dev_membraneCoordinates',path)
-		#self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
-		#self.saveDeviceVariable('dev_interpolationAngles',path)
-		#self.saveHostVariable('nrOfAnglesToCompare',path)
-		
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarCoordinates.data, \
 													self.dev_radialVectors.data, \
@@ -633,9 +651,6 @@ class contourTracker( object ):
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		#path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/output'
-		#self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
-		
 		########################################################################
 		### Convert polar coordinates to cartesian coordinates
 		########################################################################
