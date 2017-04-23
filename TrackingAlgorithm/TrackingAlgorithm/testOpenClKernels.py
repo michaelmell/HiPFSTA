@@ -6,6 +6,82 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Test_testOpenClKernels(unittest.TestCase):
+	def test_findMembranePositionUsingMaxIncline(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+
+		inputPath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePositionUsingMaxIncline_000/input'
+		referencePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePositionUsingMaxIncline_000/output'
+		referenceVariableName1 = 'dev_membraneCoordinates'
+		referenceVariableName2 = 'dev_membraneNormalVectors'
+		referenceVariableName3 = 'dev_fitInclines'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+		self.sampler = cl.Sampler(self.ctx,True,cl.addressing_mode.REPEAT,cl.filter_mode.LINEAR)
+
+		self.loadHostVariable('trackingGlobalSize',inputPath)
+		self.loadHostVariable('trackingWorkGroupSize',inputPath)
+		self.loadHostVariable('host_Img',inputPath)
+		self.dev_Img = cl.image_from_array(self.ctx, ary=self.host_Img, mode="r", norm_int=False, num_channels=1)
+		self.loadHostVariable('imgSizeX',inputPath)
+		self.loadHostVariable('imgSizeY',inputPath)
+		#self.saveDeviceVariable('buf_localRotationMatrices',inputPath)
+		self.loadHostVariable('localRotationMatrices',inputPath)
+		self.buf_localRotationMatrices = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.localRotationMatrices)
+		#self.saveDeviceVariable('buf_linFitSearchRangeXvalues',inputPath)
+		self.loadHostVariable('linFitSearchRangeXvalues',inputPath)
+		self.buf_linFitSearchRangeXvalues = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.linFitSearchRangeXvalues)
+		self.loadHostVariable('linFitParameter',inputPath)
+		self.loadHostVariable('fitIntercept_memSize',inputPath)
+		self.fitIncline_memSize = self.fitIntercept_memSize
+		self.loadHostVariable('rotatedUnitVector_memSize',inputPath)
+		self.loadHostVariable('meanParameter',inputPath)
+		#self.saveDeviceVariable('buf_meanRangeXvalues',inputPath)
+		self.loadHostVariable('meanRangeXvalues',inputPath)
+		self.buf_meanRangeXvalues = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.meanRangeXvalues)
+		self.loadHostVariable('meanRangePositionOffset',inputPath)
+		self.loadHostVariable('localMembranePositions_memSize',inputPath)
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_membraneNormalVectors',inputPath)
+		self.loadDeviceVariable('dev_fitInclines',inputPath)
+		self.loadHostVariable('inclineTolerance',inputPath)
+		self.inclineRefinementRange = np.int32(2)
+		self.setWorkGroupSizes()
+
+		for strideNr in range(self.nrOfStrides):
+			# set the starting index of the coordinate array for each kernel instance
+			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
+
+			self.prg.findMembranePositionUsingMaxIncline(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
+												self.dev_Img, self.imgSizeX, self.imgSizeY, \
+												self.buf_localRotationMatrices, \
+												self.buf_linFitSearchRangeXvalues, \
+												self.linFitParameter, \
+												cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+												cl.LocalMemory(self.rotatedUnitVector_memSize), \
+												self.meanParameter, \
+												self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+												cl.LocalMemory(self.localMembranePositions_memSize), \
+												self.dev_membraneCoordinates.data, \
+												self.dev_membraneNormalVectors.data, \
+												self.dev_fitInclines.data, \
+												kernelCoordinateStartingIndex, \
+												self.inclineTolerance, \
+												self.inclineRefinementRange )
+
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVector2EqualsExpectedResult(self.dev_membraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_membraneNormalVectors,referencePath+'/'+referenceVariableName2+'.npy')
+		self.assertVectorEqualsExpectedResult(self.dev_fitInclines,referencePath+'/'+referenceVariableName3+'.npy')
+		pass
+
 	def test_findMembranePosition(self):
 		self.clPlatform = "intel"
 		self.computeDeviceId = 0
