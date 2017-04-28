@@ -32,9 +32,6 @@ __kernel void findMembranePosition(sampler_t sampler,
 	const int xSizeLoc = get_local_size(1);
 	const int ySizeLoc = get_local_size(0);
 	
-	// Notes:
-	// 1) xInd = xGroupSize*xSizeLoc+xIndLoc
-	
 	const int coordinateIndex = coordinateStartingIndex + yGroupId*ySizeLoc + yIndLoc;
 	
 	__private double lineIntensities[400];
@@ -169,7 +166,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 		maxFitIncline = 0.0;
 		for(int index=0;index<xSizeLoc*ySizeLoc;index++)
 		{
-			if(fitIncline[index]>maxFitIncline)
+			if(fabs(fitIncline[index])>fabs(maxFitIncline))
 			{
 				maxFitIncline = fitIncline[index];
 			}
@@ -189,15 +186,15 @@ __kernel void findMembranePosition(sampler_t sampler,
 	{
 			for(int index=0;index<xSize;index++)
 			{
-				if(fitIncline[index+yIndLoc*xSizeLoc]>inclineTolerance*maxFitIncline)
+				if(fabs(fitIncline[index+yIndLoc*xSizeLoc])>inclineTolerance*fabs(maxFitIncline))
 				{
-					xTmp += fitIncline[index+yIndLoc*xSizeLoc] * localMembranePositions[index+yIndLoc*xSizeLoc].x;
-					yTmp += fitIncline[index+yIndLoc*xSizeLoc] * localMembranePositions[index+yIndLoc*xSizeLoc].y;
+					xTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc].x;
+					yTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc].y;
 					
-					xMembraneNormalTmp += fitIncline[index+yIndLoc*xSizeLoc] * rotatedUnitVector2[index+yIndLoc*xSizeLoc].x;
-					yMembraneNormalTmp += fitIncline[index+yIndLoc*xSizeLoc] * rotatedUnitVector2[index+yIndLoc*xSizeLoc].y;
+					xMembraneNormalTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * rotatedUnitVector2[index+yIndLoc*xSizeLoc].x;
+					yMembraneNormalTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * rotatedUnitVector2[index+yIndLoc*xSizeLoc].y;
 					
-					inclineSum += fitIncline[index+yIndLoc*xSizeLoc];
+					inclineSum += fabs(fitIncline[index+yIndLoc*xSizeLoc]);
 				}
 			}
 			membraneCoordinates[coordinateIndex].x = xTmp/inclineSum;

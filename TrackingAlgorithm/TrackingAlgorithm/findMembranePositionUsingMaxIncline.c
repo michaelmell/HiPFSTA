@@ -36,15 +36,14 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	
 	__private double lineIntensities[400];
 	
-	__private double2 membraneNormalVector;
-	membraneNormalVector.x = membraneNormalVectors[coordinateIndex].x;
-	membraneNormalVector.y = membraneNormalVectors[coordinateIndex].y;
+	__private double2 membraneNormalVector = membraneNormalVectors[coordinateIndex];
 	
+	// matrix multiplication with linear array of sequential 2x2 rotation matrices
 	rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x = localRotationMatrices[4*xIndLoc+0] * membraneNormalVector.x
 												   + localRotationMatrices[4*xIndLoc+1] * membraneNormalVector.y;
 	rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y = localRotationMatrices[4*xIndLoc+2] * membraneNormalVector.x
 												   + localRotationMatrices[4*xIndLoc+3] * membraneNormalVector.y;
-	
+
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -57,12 +56,13 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	__private double2 NormCoords;
 	__private const int2 dims = get_image_dim(Img);
 	
-	__private double2 basePoint = {membraneCoordinates[coordinateIndex].x,membraneCoordinates[coordinateIndex].y};
-
+	__private double2 basePoint = membraneCoordinates[coordinateIndex];
+	
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	for(int index=0;index<imgSizeY;index++){
+	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
+	{
 		Coords.x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * linFitSearchRangeXvalues[index];
 		Coords.y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * linFitSearchRangeXvalues[index];
 		
@@ -105,7 +105,8 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	barrier(CLK_LOCAL_MEM_FENCE);
 	
 	__private double meanIntensity = 0.0;
-	for(int index=0;index<meanParameter;index++){
+	for(int index=0;index<meanParameter;index++)
+	{
 		Coords.x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * ( meanRangeXvalues[index] + meanRangePositionOffset );
 		Coords.y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * ( meanRangeXvalues[index] + meanRangePositionOffset );
 		
@@ -124,10 +125,12 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 
 	__private double relativeMembranePositionLocalCoordSys;
 
-	if(fitIncline[xIndLoc+yIndLoc*xSizeLoc] != 0){
+	if(fitIncline[xIndLoc+yIndLoc*xSizeLoc] != 0)
+	{
 		relativeMembranePositionLocalCoordSys = (meanIntensity-fitIntercept[xIndLoc+yIndLoc*xSizeLoc])/fitIncline[xIndLoc+yIndLoc*xSizeLoc];
 	}
-	else{
+	else
+	{
 		relativeMembranePositionLocalCoordSys = 0;
 	}
 
@@ -143,10 +146,14 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	 * Find largest inclination value in workgroup and save to maxFitIncline
 	 * ****************************************************************/
 	__local double maxFitIncline;
-	if(xIndLoc==0&yIndLoc==0){
+
+	if(xIndLoc==0 & yIndLoc==0)
+	{
 		maxFitIncline = 0.0;
-		for(int index=0;index<xSizeLoc*ySizeLoc;index++){
-			if(fabs(fitIncline[index])>fabs(maxFitIncline)){
+		for(int index=0;index<xSizeLoc*ySizeLoc;index++)
+		{
+			if(fabs(fitIncline[index])>fabs(maxFitIncline))
+			{
 				maxFitIncline = fitIncline[index];
 			}
 		}
@@ -161,9 +168,12 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	__private double xTmp = 0.0, yTmp = 0.0, inclineSum = 0.0;
 	__private double xMembraneNormalTmp = 0.0, yMembraneNormalTmp = 0.0, membraneNormalNorm;
 	
-	if(xIndLoc==0){
-			for(int index=0;index<xSize;index++){
-				if(fabs(fitIncline[index+yIndLoc*xSizeLoc])>inclineTolerance*fabs(maxFitIncline)){
+	if(xIndLoc==0)
+	{
+			for(int index=0;index<xSize;index++)
+			{
+				if(fabs(fitIncline[index+yIndLoc*xSizeLoc])>inclineTolerance*fabs(maxFitIncline))
+				{
 					xTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc].x;
 					yTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc].y;
 					
