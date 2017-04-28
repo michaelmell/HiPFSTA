@@ -27,6 +27,9 @@
     </Compile>
     <Compile Include="contourTrackerClass.py" />
     <Compile Include="contourTrackerMainClass.py" />
+    <Compile Include="helpers.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="imagePreprocessor.py">
       <SubType>Code</SubType>
     </Compile>
@@ -34,6 +37,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Main.py" />
+    <Compile Include="testHelpers.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="testOpenClKernels.py">
       <SubType>Code</SubType>
     </Compile>
@@ -42,6 +48,8 @@
     <Content Include="clKernelCode.cl" />
     <Content Include="TrackingConfigs\TrackingConfig_001.conf" />
     <Content Include="TrackingConfigs\TrackingConfig_000.conf" />
+    <Content Include="TrackingConfigs\TrackingConfig_003.conf" />
+    <Content Include="TrackingConfigs\TrackingConfig_002.conf" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="TrackingConfigs\" />
