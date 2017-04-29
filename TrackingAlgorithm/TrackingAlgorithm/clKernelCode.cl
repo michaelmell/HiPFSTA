@@ -303,6 +303,19 @@ double2 calculateLocalMembranePositions(double fitIncline, double fitIntercept, 
 	
 }
 
+double getImageIntensitiesAtCoordinate(const image2d_t Img, const sampler_t sampler, const double2 Coords)
+{
+	__private double2 NormCoords;
+	__private const int2 dims = get_image_dim(Img);
+
+	NormCoords = Coords/convert_double2(dims);
+		
+	float2 fNormCoords;
+	fNormCoords = convert_float2(NormCoords);
+	
+	return read_imagef(Img, sampler, fNormCoords)[0];
+}
+
 //~ #pragma OPENCL EXTENSION cl_amd_printf : enable
 __kernel void findMembranePosition(sampler_t sampler, 
 								   __read_only image2d_t Img,
@@ -359,8 +372,6 @@ __kernel void findMembranePosition(sampler_t sampler,
 	__private double maxValue = 0; // initialize value with first value of array
 	
 	__private double2 Coords;
-	__private double2 NormCoords;
-	__private const int2 dims = get_image_dim(Img);
 	
 	__private double2 basePoint = membraneCoordinates[coordinateIndex];
 	
@@ -370,13 +381,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
 	{
 		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * linFitSearchRangeXvalues[index];
-		
-		NormCoords = Coords/convert_double2(dims);
-		
-		float2 fNormCoords;
-		fNormCoords = convert_float2(NormCoords);
-		
-		lineIntensities[index] = read_imagef(Img, sampler, fNormCoords)[0];
+		lineIntensities[index] = getImageIntensitiesAtCoordinate(Img, sampler, Coords);
 	}
 	
 	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
@@ -429,13 +434,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	for(int index=0;index<meanParameter;index++)
 	{
 		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * ( meanRangeXvalues[index] + meanRangePositionOffset );
-		
-		NormCoords = Coords/convert_double2(dims);
-		
-		float2 fNormCoords;
-		fNormCoords = convert_float2(NormCoords);
-
-		meanIntensity = meanIntensity + read_imagef(Img, sampler, fNormCoords)[0];
+		meanIntensity += getImageIntensitiesAtCoordinate(Img, sampler, Coords);
 	}
 	meanIntensity = meanIntensity/convert_float(meanParameter);
 	
@@ -558,8 +557,6 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	__private double maxValue = 0; // initialize value with first value of array
 	
 	__private double2 Coords;
-	__private double2 NormCoords;
-	__private const int2 dims = get_image_dim(Img);
 	
 	__private double2 basePoint = membraneCoordinates[coordinateIndex];
 	
@@ -569,13 +566,7 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
 	{
 		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * linFitSearchRangeXvalues[index];
-		
-		NormCoords = Coords/convert_double2(dims);
-		
-		float2 fNormCoords;
-		fNormCoords = convert_float2(NormCoords);
-		
-		lineIntensities[index] = read_imagef(Img, sampler, fNormCoords)[0];
+		lineIntensities[index] = getImageIntensitiesAtCoordinate(Img, sampler, Coords);
 	}
 	
 	barrier(CLK_GLOBAL_MEM_FENCE);
@@ -611,13 +602,7 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	for(int index=0;index<meanParameter;index++)
 	{
 		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * ( meanRangeXvalues[index] + meanRangePositionOffset );
-		
-		NormCoords = Coords/convert_double2(dims);
-		
-		float2 fNormCoords;
-		fNormCoords = convert_float2(NormCoords);
-
-		meanIntensity = meanIntensity + read_imagef(Img, sampler, fNormCoords)[0];
+		meanIntensity += getImageIntensitiesAtCoordinate(Img, sampler, Coords);
 	}
 	meanIntensity = meanIntensity/convert_float(meanParameter);
 	
