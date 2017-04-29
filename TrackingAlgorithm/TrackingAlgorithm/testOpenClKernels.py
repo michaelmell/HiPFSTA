@@ -6,6 +6,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 class Test_testOpenClKernels(unittest.TestCase):
+	_equalityTolerance=1e-16
+	
 	def test_findMembranePositionUsingMaxIncline(self):
 		self.clPlatform = "intel"
 		self.computeDeviceId = 0
@@ -198,13 +200,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)
-		self.assertTrue(np.all(outputValue == referenceValue))
+		self.assertTrue(np.allclose(outputValue, referenceValue,self._equalityTolerance, equal_nan=False))
 
 	def assertVector2EqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)
-		self.assertTrue(np.all(outputValue['x'] == referenceValue['x']))
-		self.assertTrue(np.all(outputValue['y'] == referenceValue['y']))
+		self.assertTrue(np.allclose(outputValue['x'], referenceValue['x'],self._equalityTolerance, equal_nan=False))
+		self.assertTrue(np.allclose(outputValue['y'], referenceValue['y'],self._equalityTolerance, equal_nan=False))
 
 	def loadHostVariable(self,variableName,path):
 		host_tmp = np.load(path+'/'+variableName+'.npy')
