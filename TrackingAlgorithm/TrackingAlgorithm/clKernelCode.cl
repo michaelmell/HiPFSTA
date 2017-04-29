@@ -522,36 +522,17 @@ __kernel void findMembranePosition(sampler_t sampler,
 
 struct linearFitResultStruct determineFitUsingInclineSearch(double lineIntensities[], int imgSizeY, const int linFitParameter, __constant double linFitSearchRangeXvalues[], const int inclineRefinementRange)
 {
-	barrier(CLK_GLOBAL_MEM_FENCE);
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	__private int maxIndex;
-	__private int minIndex;
-	__private double minValue = 32000; // initialize value with first value of array
-	__private double maxValue = 0; // initialize value with first value of array
-	
-	__private int gradientCenterIndex;
-	__private double gradientCenterValue = minValue+(maxValue-minValue)/2.0;
-	__private double minValue2 = 20000;
-	__private double refValue;
-	
 	__private double a=0.0, b=0.0, siga=0.0, sigb=0.0, chi2=0.0;
-	__private double aTmp=0.0, bTmp=0.0;
+	__private double aTmp=0.0, bTmp=0.0, bTmp2;
 		
-	barrier(CLK_GLOBAL_MEM_FENCE);
-	barrier(CLK_LOCAL_MEM_FENCE);
-	
-	/** Determine max gradient without perform maximum and minimum intensity search **/
-	
 	for(int index=imgSizeY/2-inclineRefinementRange;index<imgSizeY/2+inclineRefinementRange;index++){
 		linearFit(linFitSearchRangeXvalues, lineIntensities, index, linFitParameter, &a, &b, &siga, &sigb, &chi2);
-		__private double bTmp2 = bTmp;
+		bTmp2 = bTmp;
 		bTmp = select(bTmp,b,(long)(fabs(b) > bTmp2));
 		aTmp = select(aTmp,a,(long)(fabs(b) > bTmp2));
 	}
 
 	__private struct linearFitResultStruct linearFitResult;
-
 	linearFitResult.fitIntercept = aTmp;
 	linearFitResult.fitIncline = bTmp;
 	return linearFitResult;
