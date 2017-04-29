@@ -1,4 +1,4 @@
-__kernel void findMembranePosition(sampler_t sampler, 
+_kernel void findMembranePosition(sampler_t sampler, 
 								   __read_only image2d_t Img,
 								   const int imgSizeX,
 								   const int imgSizeY,
@@ -47,11 +47,6 @@ __kernel void findMembranePosition(sampler_t sampler,
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	__private int maxIndex;
-	__private int minIndex;
-	__private double minValue = 32000; // initialize value with first value of array
-	__private double maxValue = 0; // initialize value with first value of array
-	
 	__private double2 Coords;
 	
 	__private double2 basePoint = membraneCoordinates[coordinateIndex];
@@ -64,49 +59,10 @@ __kernel void findMembranePosition(sampler_t sampler,
 		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * linFitSearchRangeXvalues[index];
 		lineIntensities[index] = getImageIntensitiesAtCoordinate(Img, sampler, Coords);
 	}
-	
-	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
-	{
-		maxIndex = select(maxIndex,index,(maxValue < lineIntensities[index]));
-		maxValue = select(maxValue,lineIntensities[index],(long)(maxValue < lineIntensities[index]));
-
-		minIndex = select(minIndex,index,(minValue > lineIntensities[index]));
-		minValue = select(minValue,lineIntensities[index],(long)(minValue > lineIntensities[index]));
-	}
-
-	barrier(CLK_GLOBAL_MEM_FENCE);
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	__private int gradientCenterIndex;
-	__private double gradientCenterValue = minValue+(maxValue-minValue)/2.0;
-	__private double minValue2 = 20000;
-	__private double refValue;
-	
-	__private double a=0.0, b=0.0, siga=0.0, sigb=0.0, chi2=0.0;
 		
-	barrier(CLK_GLOBAL_MEM_FENCE);
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	if(minIndex<maxIndex)
-	{
-		for(int index=minIndex;index<maxIndex;index++)
-		{
-			refValue = fabs(lineIntensities[index]-gradientCenterValue);
-			gradientCenterIndex = select(gradientCenterIndex,index,(minValue2 > refValue));
-			minValue2 = select(minValue2,refValue,(long)(minValue2 > refValue));
-		}
-		// "r = a > b ? a : b" corresponds to: "r = select(b, a, a > b)", corresponds to "if(a>b){r=a}; else{r=b}"
-		// reference: http://stackoverflow.com/questions/7635706/opencl-built-in-function-select
-		
-		linearFit(linFitSearchRangeXvalues, lineIntensities, gradientCenterIndex, linFitParameter, &a, &b, &siga, &sigb, &chi2);
-		fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = a;
-		fitIncline[xIndLoc+yIndLoc*xSizeLoc] = b;
-	}
-	else
-	{
-		fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = 0; // so that later they are not counted in the weighted sum (see below...)
-		fitIncline[xIndLoc+yIndLoc*xSizeLoc] = 0;
-	}
+	__private struct linearFitResultStruct fitResult = determineFitUsingMinMaxIntensitySearch(lineIntensities, imgSizeY, linFitParameter, linFitSearchRangeXvalues);
+	fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIntercept;
+	fitIncline[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIncline;
 	
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
