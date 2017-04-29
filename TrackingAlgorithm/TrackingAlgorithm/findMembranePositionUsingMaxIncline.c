@@ -47,11 +47,6 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	__private int maxIndex;
-	__private int minIndex;
-	__private double minValue = 32000; // initialize value with first value of array
-	__private double maxValue = 0; // initialize value with first value of array
-	
 	__private double2 Coords;
 	
 	__private double2 basePoint = membraneCoordinates[coordinateIndex];
@@ -64,33 +59,11 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * linFitSearchRangeXvalues[index];
 		lineIntensities[index] = getImageIntensitiesAtCoordinate(Img, sampler, Coords);
 	}
-	
-	barrier(CLK_GLOBAL_MEM_FENCE);
-	barrier(CLK_LOCAL_MEM_FENCE);
-
-	__private int gradientCenterIndex;
-	__private double gradientCenterValue = minValue+(maxValue-minValue)/2.0;
-	__private double minValue2 = 20000;
-	__private double refValue;
-	
-	__private double a=0.0, b=0.0, siga=0.0, sigb=0.0, chi2=0.0;
-	__private double aTmp=0.0, bTmp=0.0;
 		
-	barrier(CLK_GLOBAL_MEM_FENCE);
-	barrier(CLK_LOCAL_MEM_FENCE);
+	__private struct linearFitResultStruct fitResult = determineFitUsingInclineSearch(lineIntensities, imgSizeY, linFitParameter, linFitSearchRangeXvalues, inclineRefinementRange);
+	fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIntercept;
+	fitIncline[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIncline;
 	
-	/** Determine max gradient without perform maximum and minimum intensity search **/
-	
-	for(int index=imgSizeY/2-inclineRefinementRange;index<imgSizeY/2+inclineRefinementRange;index++){
-		linearFit(linFitSearchRangeXvalues, lineIntensities, index, linFitParameter, &a, &b, &siga, &sigb, &chi2);
-		__private double bTmp2 = bTmp;
-		bTmp = select(bTmp,b,(long)(fabs(b) > bTmp2));
-		aTmp = select(aTmp,a,(long)(fabs(b) > bTmp2));
-	}
-
-	fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = aTmp;
-	fitIncline[xIndLoc+yIndLoc*xSizeLoc] = bTmp;
-
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 	
@@ -165,4 +138,5 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 			membraneNormalVectors[coordinateIndex] = membraneNormalTmp/membraneNormalNorm;
 	}
 }
+
 
