@@ -360,14 +360,17 @@ __kernel void findMembranePosition(sampler_t sampler,
 		fNormCoords = convert_float2(NormCoords);
 		
 		lineIntensities[index] = read_imagef(Img, sampler, fNormCoords)[0];
-		
+	}
+	
+	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
+	{
 		maxIndex = select(maxIndex,index,(maxValue < lineIntensities[index]));
 		maxValue = select(maxValue,lineIntensities[index],(long)(maxValue < lineIntensities[index]));
 
 		minIndex = select(minIndex,index,(minValue > lineIntensities[index]));
 		minValue = select(minValue,lineIntensities[index],(long)(minValue > lineIntensities[index]));
 	}
-	
+
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
