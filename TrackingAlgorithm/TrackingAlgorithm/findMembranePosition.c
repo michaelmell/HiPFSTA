@@ -71,14 +71,17 @@ __kernel void findMembranePosition(sampler_t sampler,
 		fNormCoords = convert_float2(NormCoords);
 		
 		lineIntensities[index] = read_imagef(Img, sampler, fNormCoords)[0];
-		
+	}
+	
+	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
+	{
 		maxIndex = select(maxIndex,index,(maxValue < lineIntensities[index]));
 		maxValue = select(maxValue,lineIntensities[index],(long)(maxValue < lineIntensities[index]));
 
 		minIndex = select(minIndex,index,(minValue > lineIntensities[index]));
 		minValue = select(minValue,lineIntensities[index],(long)(minValue > lineIntensities[index]));
 	}
-	
+
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -133,18 +136,11 @@ __kernel void findMembranePosition(sampler_t sampler,
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	__private double relativeMembranePositionLocalCoordSys;
-
-	if(fitIncline[xIndLoc+yIndLoc*xSizeLoc] != 0)
-	{
-		relativeMembranePositionLocalCoordSys = (meanIntensity-fitIntercept[xIndLoc+yIndLoc*xSizeLoc])/fitIncline[xIndLoc+yIndLoc*xSizeLoc];
-	}
-	else
-	{
-		relativeMembranePositionLocalCoordSys = 0;
-	}
-
-	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc] = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * relativeMembranePositionLocalCoordSys;
+	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc] = calculateLocalMembranePositions(fitIncline[xIndLoc+yIndLoc*xSizeLoc],
+																					   fitIntercept[xIndLoc+yIndLoc*xSizeLoc],
+																					   meanIntensity,
+																					   basePoint,
+																					   rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc]);
 	
 	write_mem_fence(CLK_LOCAL_MEM_FENCE);
 
@@ -200,4 +196,5 @@ __kernel void findMembranePosition(sampler_t sampler,
 			membraneNormalVectors[coordinateIndex] = membraneNormalTmp/membraneNormalNorm;
 	}
 }
+
 

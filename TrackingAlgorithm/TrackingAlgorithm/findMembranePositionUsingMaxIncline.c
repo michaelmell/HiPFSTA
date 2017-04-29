@@ -119,18 +119,11 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	__private double relativeMembranePositionLocalCoordSys;
-
-	if(fitIncline[xIndLoc+yIndLoc*xSizeLoc] != 0)
-	{
-		relativeMembranePositionLocalCoordSys = (meanIntensity-fitIntercept[xIndLoc+yIndLoc*xSizeLoc])/fitIncline[xIndLoc+yIndLoc*xSizeLoc];
-	}
-	else
-	{
-		relativeMembranePositionLocalCoordSys = 0;
-	}
-
-	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc] = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * relativeMembranePositionLocalCoordSys;
+	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc] = calculateLocalMembranePositions(fitIncline[xIndLoc+yIndLoc*xSizeLoc],
+																					   fitIntercept[xIndLoc+yIndLoc*xSizeLoc],
+																					   meanIntensity,
+																					   basePoint,
+																					   rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc]);
 	
 	write_mem_fence(CLK_LOCAL_MEM_FENCE);
 
