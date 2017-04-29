@@ -352,16 +352,14 @@ __kernel void findMembranePosition(sampler_t sampler,
 
 	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
 	{
-		Coords.x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * linFitSearchRangeXvalues[index];
-		Coords.y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * linFitSearchRangeXvalues[index];
+		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * linFitSearchRangeXvalues[index];
 		
 		NormCoords = Coords/convert_double2(dims);
 		
 		float2 fNormCoords;
-		fNormCoords.x = (float)NormCoords.x;
-		fNormCoords.y = (float)NormCoords.y;
+		fNormCoords = convert_float2(NormCoords);
 		
-		lineIntensities[index] = read_imagef(Img, sampler, fNormCoords).x;
+		lineIntensities[index] = read_imagef(Img, sampler, fNormCoords)[0];
 		
 		maxIndex = select(maxIndex,index,(maxValue < lineIntensities[index]));
 		maxValue = select(maxValue,lineIntensities[index],(long)(maxValue < lineIntensities[index]));
@@ -410,16 +408,14 @@ __kernel void findMembranePosition(sampler_t sampler,
 	__private double meanIntensity = 0.0;
 	for(int index=0;index<meanParameter;index++)
 	{
-		Coords.x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * ( meanRangeXvalues[index] + meanRangePositionOffset );
-		Coords.y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * ( meanRangeXvalues[index] + meanRangePositionOffset );
+		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * ( meanRangeXvalues[index] + meanRangePositionOffset );
 		
 		NormCoords = Coords/convert_double2(dims);
 		
 		float2 fNormCoords;
-		fNormCoords.x = (float)NormCoords.x;
-		fNormCoords.y = (float)NormCoords.y;
+		fNormCoords = convert_float2(NormCoords);
 
-		meanIntensity = meanIntensity + read_imagef(Img, sampler, fNormCoords).x;
+		meanIntensity = meanIntensity + read_imagef(Img, sampler, fNormCoords)[0];
 	}
 	meanIntensity = meanIntensity/convert_float(meanParameter);
 	
@@ -437,8 +433,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 		relativeMembranePositionLocalCoordSys = 0;
 	}
 
-	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc].x = basePoint.x + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].x * relativeMembranePositionLocalCoordSys;
-	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc].y = basePoint.y + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc].y * relativeMembranePositionLocalCoordSys;
+	localMembranePositions[xIndLoc+yIndLoc*xSizeLoc] = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * relativeMembranePositionLocalCoordSys;
 	
 	write_mem_fence(CLK_LOCAL_MEM_FENCE);
 
@@ -468,8 +463,9 @@ __kernel void findMembranePosition(sampler_t sampler,
 	barrier(CLK_LOCAL_MEM_FENCE);
 
 	
-	__private double xTmp = 0.0, yTmp = 0.0, inclineSum = 0.0;
-	__private double xMembraneNormalTmp = 0.0, yMembraneNormalTmp = 0.0, membraneNormalNorm;
+	__private double2 CoordTmp = {0.0f,0.0f};
+	__private double inclineSum = 0.0;
+	__private double2 membraneNormalTmp = {0.0f,0.0f};
 	
 	if(xIndLoc==0)
 	{
@@ -477,29 +473,20 @@ __kernel void findMembranePosition(sampler_t sampler,
 			{
 				if(fabs(fitIncline[index+yIndLoc*xSizeLoc])>inclineTolerance*fabs(maxFitIncline))
 				{
-					xTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc].x;
-					yTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc].y;
+					CoordTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * localMembranePositions[index+yIndLoc*xSizeLoc];
 					
-					xMembraneNormalTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * rotatedUnitVector2[index+yIndLoc*xSizeLoc].x;
-					yMembraneNormalTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * rotatedUnitVector2[index+yIndLoc*xSizeLoc].y;
+					membraneNormalTmp += fabs(fitIncline[index+yIndLoc*xSizeLoc]) * rotatedUnitVector2[index+yIndLoc*xSizeLoc];
 					
 					inclineSum += fabs(fitIncline[index+yIndLoc*xSizeLoc]);
 				}
 			}
-			membraneCoordinates[coordinateIndex].x = xTmp/inclineSum;
-			membraneCoordinates[coordinateIndex].y = yTmp/inclineSum;
+			
+			membraneCoordinates[coordinateIndex] = CoordTmp/inclineSum;
 			fitInclines[coordinateIndex] = maxFitIncline;
 			
-			xMembraneNormalTmp = xMembraneNormalTmp/inclineSum;
-			yMembraneNormalTmp = yMembraneNormalTmp/inclineSum;
-
-			membraneNormalNorm = sqrt( pow(xMembraneNormalTmp,2) + pow(yMembraneNormalTmp,2) );
-			
-			xMembraneNormalTmp = xMembraneNormalTmp/membraneNormalNorm;
-			yMembraneNormalTmp = yMembraneNormalTmp/membraneNormalNorm;
-			
-			membraneNormalVectors[coordinateIndex].x = xMembraneNormalTmp;
-			membraneNormalVectors[coordinateIndex].y = yMembraneNormalTmp;
+			membraneNormalTmp = membraneNormalTmp/inclineSum;
+			__private double membraneNormalNorm = length(membraneNormalTmp);
+			membraneNormalVectors[coordinateIndex] = membraneNormalTmp/membraneNormalNorm;
 	}
 }
 
