@@ -4,6 +4,7 @@ import pyopencl as cl
 import pyopencl.array as cl_array
 import numpy as np
 import matplotlib.pyplot as plt
+from mako.template import Template
 
 class Test_testOpenClKernels(unittest.TestCase):
 	_equalityTolerance=1e-16
@@ -11,6 +12,7 @@ class Test_testOpenClKernels(unittest.TestCase):
 	def test_findMembranePositionUsingMaxIncline(self):
 		self.clPlatform = "intel"
 		self.computeDeviceId = 0
+		self.positioningMethod = "maximumIntensityIncline"
 		self.setupClContext()
 		self.loadClKernels()
 		self.setupClQueue(self.ctx)
@@ -87,6 +89,7 @@ class Test_testOpenClKernels(unittest.TestCase):
 	def test_findMembranePosition(self):
 		self.clPlatform = "intel"
 		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
 		self.setupClContext()
 		self.loadClKernels()
 		self.setupClQueue(self.ctx)
@@ -240,13 +243,23 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.trackingGlobalSize = (int(self.detectionKernelStrideSize),int(self.nrOfLocalAngleSteps))
 		
 	def loadClKernels(self):
-		codePath = ".";
 		modulePath = __file__
 		codePath, filename = os.path.split(modulePath) # get location of path where our tracking code is located
 		clCodeFile = codePath+"/"+"clKernelCode.cl"
 		fObj = open(clCodeFile, 'r')
 		self.kernelString = "".join(fObj.readlines())
+		self.applyTemplating()
 		self.prg = cl.Program(self.ctx,self.kernelString).build()
+		pass
+	
+	def applyTemplating(self):
+		tpl = Template(self.kernelString)
+		if self.positioningMethod == "maximumIntensityIncline":
+			linear_fit_search_method="MAX_INCLINE_SEARCH"
+		if self.positioningMethod == "meanIntensityIntercept":
+			linear_fit_search_method="MIN_MAX_INTENSITY_SEARCH"
+		rendered_tpl = tpl.render(linear_fit_search_method=linear_fit_search_method)
+		self.kernelString=str(rendered_tpl)
 		pass
 
 	def setupClQueue(self,ctx):
