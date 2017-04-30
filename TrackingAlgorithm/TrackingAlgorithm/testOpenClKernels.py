@@ -129,6 +129,7 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.loadDeviceVariable('dev_membraneNormalVectors',inputPath)
 		self.loadDeviceVariable('dev_fitInclines',inputPath)
 		self.loadHostVariable('inclineTolerance',inputPath)
+		self.inclineRefinementRange = np.int32(2)
 		self.setWorkGroupSizes()
 
 		for strideNr in range(self.nrOfStrides):
@@ -149,7 +150,8 @@ class Test_testOpenClKernels(unittest.TestCase):
 												self.dev_membraneNormalVectors.data, \
 												self.dev_fitInclines.data, \
 												kernelCoordinateStartingIndex, \
-												self.inclineTolerance)
+												self.inclineTolerance, \
+												self.inclineRefinementRange)
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 

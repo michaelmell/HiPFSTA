@@ -402,7 +402,8 @@ class contourTracker( object ):
 												 self.dev_membraneNormalVectors.data, \
 												 self.dev_fitInclines.data, \
 												 coordinateIndex, \
-												 self.inclineTolerance)
+												 self.inclineTolerance, \
+												 self.inclineRefinementRange)
 
 			if self.configReader.positioningMethod == "maximumIntensityIncline":
 				self.prg.findMembranePositionUsingMaxIncline(self.queue, self.global_size, self.local_size, self.sampler, \
@@ -545,7 +546,8 @@ class contourTracker( object ):
 												 self.dev_membraneNormalVectors.data, \
 												 self.dev_fitInclines.data, \
 												 kernelCoordinateStartingIndex, \
-												 self.inclineTolerance)
+												 self.inclineTolerance, \
+												 self.inclineRefinementRange)
 
 			if self.configReader.positioningMethod == "maximumIntensityIncline":
 				self.prg.findMembranePositionUsingMaxIncline(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \

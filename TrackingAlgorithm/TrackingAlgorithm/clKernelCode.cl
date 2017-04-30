@@ -396,8 +396,8 @@ __kernel void findMembranePosition(sampler_t sampler,
 								   __global double2* membraneNormalVectors,
 								   __global double* fitInclines,
 								   const int coordinateStartingIndex,
-								   const double inclineTolerance
-								   )
+								   const double inclineTolerance,
+								   const int inclineRefinementRange)
 {
 	const int xInd = get_global_id(1);
 	const int yInd = get_global_id(0);
