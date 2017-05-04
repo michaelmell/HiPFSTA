@@ -60,7 +60,7 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 		lineIntensities[index] = getImageIntensitiesAtCoordinate(Img, sampler, Coords);
 	}
 		
-	__private struct linearFitResultStruct fitResult = determineFitUsingInclineSearch(lineIntensities, imgSizeY, linFitParameter, linFitSearchRangeXvalues, inclineRefinementRange);
+	__private struct linearFitResultStruct fitResult = LINEAR_FIT_SEARCH_METHOD_CALL();
 	fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIntercept;
 	fitIncline[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIncline;
 	

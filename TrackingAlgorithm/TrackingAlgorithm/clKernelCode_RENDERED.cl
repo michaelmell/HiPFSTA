@@ -1,7 +1,7 @@
 #define MIN_MAX_INTENSITY_SEARCH 1
 #define MAX_INCLINE_SEARCH 2
 
-#define LINEAR_FIT_SEARCH_METHOD ${linear_fit_search_method}
+#define LINEAR_FIT_SEARCH_METHOD MIN_MAX_INTENSITY_SEARCH
 
 
 #if LINEAR_FIT_SEARCH_METHOD == MIN_MAX_INTENSITY_SEARCH
@@ -472,6 +472,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	}
 		
 	__private struct linearFitResultStruct fitResult = LINEAR_FIT_SEARCH_METHOD_CALL();
+	// __private struct linearFitResultStruct fitResult = determineFitUsingMinMaxIntensitySearch(lineIntensities, imgSizeY, linFitParameter, linFitSearchRangeXvalues)
 	fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIntercept;
 	fitIncline[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIncline;
 	
@@ -614,6 +615,7 @@ __kernel void findMembranePositionUsingMaxIncline(sampler_t sampler,
 	}
 		
 	__private struct linearFitResultStruct fitResult = LINEAR_FIT_SEARCH_METHOD_CALL();
+	// __private struct linearFitResultStruct fitResult = determineFitUsingInclineSearch(lineIntensities, imgSizeY, linFitParameter, linFitSearchRangeXvalues, inclineRefinementRange);
 	fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIntercept;
 	fitIncline[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIncline;
 	

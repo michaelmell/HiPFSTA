@@ -13,6 +13,7 @@ import ipdb
 import os
 import time
 from helpers import helpers
+from mako.template import Template
 
 class contourTracker( object ):
 	def __init__(self, ctx, configReader, imageProcessor):
@@ -56,9 +57,20 @@ class contourTracker( object ):
 		clCodeFile = codePath+"/"+"clKernelCode.cl"
 		fObj = open(clCodeFile, 'r')
 		self.kernelString = "".join(fObj.readlines())
+		self.applyTemplating()
 		self.prg = cl.Program(self.ctx,self.kernelString).build()
 		pass
 	
+	def applyTemplating(self):
+		tpl = Template(self.kernelString)
+		if self.configReader.positioningMethod == "maximumIntensityIncline":
+			linear_fit_search_method="MAX_INCLINE_SEARCH"
+		if self.configReader.positioningMethod == "meanIntensityIntercept":
+			linear_fit_search_method="MIN_MAX_INTENSITY_SEARCH"
+		rendered_tpl = tpl.render(linear_fit_search_method=linear_fit_search_method)
+		self.kernelString=str(rendered_tpl)
+		pass
+
 	def loadConfig(self,configReader):
 		self.startingCoordinate = configReader.startingCoordinate
 		self.rotationCenterCoordinate = configReader.rotationCenterCoordinate

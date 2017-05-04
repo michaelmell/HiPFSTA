@@ -249,6 +249,11 @@ class Test_testOpenClKernels(unittest.TestCase):
 		fObj = open(clCodeFile, 'r')
 		self.kernelString = "".join(fObj.readlines())
 		self.applyTemplating()
+
+		text_file = open(codePath+"/"+"clKernelCode_RENDERED.cl", "w")
+		text_file.write(self.kernelString)
+		text_file.close()
+
 		self.prg = cl.Program(self.ctx,self.kernelString).build()
 		pass
 	
