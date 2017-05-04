@@ -1,4 +1,4 @@
-_kernel void findMembranePosition(sampler_t sampler, 
+__kernel void findMembranePosition(sampler_t sampler, 
 								   __read_only image2d_t Img,
 								   const int imgSizeX,
 								   const int imgSizeY,
@@ -16,8 +16,8 @@ _kernel void findMembranePosition(sampler_t sampler,
 								   __global double2* membraneNormalVectors,
 								   __global double* fitInclines,
 								   const int coordinateStartingIndex,
-								   const double inclineTolerance
-								   )
+								   const double inclineTolerance,
+								   const int inclineRefinementRange)
 {
 	const int xInd = get_global_id(1);
 	const int yInd = get_global_id(0);
@@ -60,7 +60,7 @@ _kernel void findMembranePosition(sampler_t sampler,
 		lineIntensities[index] = getImageIntensitiesAtCoordinate(Img, sampler, Coords);
 	}
 		
-	__private struct linearFitResultStruct fitResult = determineFitUsingMinMaxIntensitySearch(lineIntensities, imgSizeY, linFitParameter, linFitSearchRangeXvalues);
+	__private struct linearFitResultStruct fitResult = LINEAR_FIT_SEARCH_METHOD_CALL();
 	fitIntercept[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIntercept;
 	fitIncline[xIndLoc+yIndLoc*xSizeLoc] = fitResult.fitIncline;
 	
