@@ -62,22 +62,22 @@ class Test_testOpenClKernels(unittest.TestCase):
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
 
-			self.prg.findMembranePositionUsingMaxIncline(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
-												self.dev_Img, self.imgSizeX, self.imgSizeY, \
-												self.buf_localRotationMatrices, \
-												self.buf_linFitSearchRangeXvalues, \
-												self.linFitParameter, \
-												cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-												cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												self.meanParameter, \
-												self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												cl.LocalMemory(self.localMembranePositions_memSize), \
-												self.dev_membraneCoordinates.data, \
-												self.dev_membraneNormalVectors.data, \
-												self.dev_fitInclines.data, \
-												kernelCoordinateStartingIndex, \
-												self.inclineTolerance, \
-												self.inclineRefinementRange )
+			self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
+											self.dev_Img, self.imgSizeX, self.imgSizeY, \
+											self.buf_localRotationMatrices, \
+											self.buf_linFitSearchRangeXvalues, \
+											self.linFitParameter, \
+											cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+											cl.LocalMemory(self.rotatedUnitVector_memSize), \
+											self.meanParameter, \
+											self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+											cl.LocalMemory(self.localMembranePositions_memSize), \
+											self.dev_membraneCoordinates.data, \
+											self.dev_membraneNormalVectors.data, \
+											self.dev_fitInclines.data, \
+											kernelCoordinateStartingIndex, \
+											self.inclineTolerance, \
+											self.inclineRefinementRange )
 
 		barrierEvent = cl.enqueue_barrier(self.queue)
 

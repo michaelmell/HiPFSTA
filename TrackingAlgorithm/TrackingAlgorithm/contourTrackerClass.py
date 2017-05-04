@@ -399,42 +399,22 @@ class contourTracker( object ):
 			self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
 			self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
 
-			if self.configReader.positioningMethod == "meanIntensityIntercept":
-				self.prg.findMembranePosition(self.queue, self.global_size, self.local_size, self.sampler, \
-												 self.dev_Img, self.imgSizeX, self.imgSizeY, \
-												 self.buf_localRotationMatrices, \
-												 self.buf_linFitSearchRangeXvalues, \
-												 self.linFitParameter, \
-												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 self.meanParameter, \
-												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), \
-												 self.dev_membraneCoordinates.data, \
-												 self.dev_membraneNormalVectors.data, \
-												 self.dev_fitInclines.data, \
-												 coordinateIndex, \
-												 self.inclineTolerance, \
-												 self.inclineRefinementRange)
-
-			if self.configReader.positioningMethod == "maximumIntensityIncline":
-				self.prg.findMembranePositionUsingMaxIncline(self.queue, self.global_size, self.local_size, self.sampler, \
-															 self.dev_Img, self.imgSizeX, self.imgSizeY, \
-															 self.buf_localRotationMatrices, \
-															 self.buf_linFitSearchRangeXvalues, \
-															 self.linFitParameter, \
-															 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-															 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-															 self.meanParameter, \
-															 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-															 cl.LocalMemory(self.localMembranePositions_memSize), \
-															 self.dev_membraneCoordinates.data, \
-															 self.dev_membraneNormalVectors.data, \
-															 self.dev_fitInclines.data, \
-															 coordinateIndex, \
-															 self.inclineTolerance, \
-															 self.inclineRefinementRange)
-
+			self.prg.findMembranePosition(self.queue, self.global_size, self.local_size, self.sampler, \
+												self.dev_Img, self.imgSizeX, self.imgSizeY, \
+												self.buf_localRotationMatrices, \
+												self.buf_linFitSearchRangeXvalues, \
+												self.linFitParameter, \
+												cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+												cl.LocalMemory(self.rotatedUnitVector_memSize), \
+												self.meanParameter, \
+												self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+												cl.LocalMemory(self.localMembranePositions_memSize), \
+												self.dev_membraneCoordinates.data, \
+												self.dev_membraneNormalVectors.data, \
+												self.dev_fitInclines.data, \
+												coordinateIndex, \
+												self.inclineTolerance, \
+												self.inclineRefinementRange)
 
 			barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -543,42 +523,23 @@ class contourTracker( object ):
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
 
-			if self.configReader.positioningMethod == "meanIntensityIntercept":
-				self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
-												 self.dev_Img, self.imgSizeX, self.imgSizeY, \
-												 self.buf_localRotationMatrices, \
-												 self.buf_linFitSearchRangeXvalues, \
-												 self.linFitParameter, \
-												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 self.meanParameter, \
-												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), \
-												 self.dev_membraneCoordinates.data, \
-												 self.dev_membraneNormalVectors.data, \
-												 self.dev_fitInclines.data, \
-												 kernelCoordinateStartingIndex, \
-												 self.inclineTolerance, \
-												 self.inclineRefinementRange)
+			self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
+												self.dev_Img, self.imgSizeX, self.imgSizeY, \
+												self.buf_localRotationMatrices, \
+												self.buf_linFitSearchRangeXvalues, \
+												self.linFitParameter, \
+												cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+												cl.LocalMemory(self.rotatedUnitVector_memSize), \
+												self.meanParameter, \
+												self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+												cl.LocalMemory(self.localMembranePositions_memSize), \
+												self.dev_membraneCoordinates.data, \
+												self.dev_membraneNormalVectors.data, \
+												self.dev_fitInclines.data, \
+												kernelCoordinateStartingIndex, \
+												self.inclineTolerance, \
+												self.inclineRefinementRange)
 
-			if self.configReader.positioningMethod == "maximumIntensityIncline":
-				self.prg.findMembranePositionUsingMaxIncline(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
-												 self.dev_Img, self.imgSizeX, self.imgSizeY, \
-												 self.buf_localRotationMatrices, \
-												 self.buf_linFitSearchRangeXvalues, \
-												 self.linFitParameter, \
-												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 self.meanParameter, \
-												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), \
-												 self.dev_membraneCoordinates.data, \
-												 self.dev_membraneNormalVectors.data, \
-												 self.dev_fitInclines.data, \
-												 kernelCoordinateStartingIndex, \
-												 self.inclineTolerance, \
-												 self.inclineRefinementRange )
-											 
 			barrierEvent = cl.enqueue_barrier(self.queue)
 
 		#path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePositionUsingMaxIncline_000/output'
