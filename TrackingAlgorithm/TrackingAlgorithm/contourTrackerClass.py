@@ -526,15 +526,6 @@ class contourTracker( object ):
 								 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/filterJumpedCoordinates_000'
-		path = basePath+'/input'
-		self.saveDeviceVariable('dev_previousContourCenter',path)
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_membraneNormalVectors',path)
-		self.saveDeviceVariable('dev_previousInterpolatedMembraneCoordinates',path)
-		self.saveDeviceVariable('dev_closestLowerNoneNanIndex',path)
-		self.saveDeviceVariable('dev_closestUpperNoneNanIndex',path)
-
 		self.prg.filterJumpedCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
 											self.dev_membraneCoordinates.data, \
@@ -547,16 +538,19 @@ class contourTracker( object ):
 											)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		path = basePath+'/output'
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateInterCoordinateAngles_000'
+		path = basePath+'/input'
+		self.saveDeviceVariable('dev_interCoordinateAngles',path)
 		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_membraneNormalVectors',path)
 
 		self.prg.calculateInterCoordinateAngles(self.queue, self.gradientGlobalSize, None, \
 												self.dev_interCoordinateAngles.data, \
 												self.dev_membraneCoordinates.data \
 											   )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_interCoordinateAngles',path)
 
 		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \

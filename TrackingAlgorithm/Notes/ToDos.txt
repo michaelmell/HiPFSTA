@@ -8,7 +8,7 @@ ToDos:
 Create Unit-Tests for further refactoring:
 DONE	filterNanValues
 DONE	filterJumpedCoordinates
-		calculateInterCoordinateAngles
+DONE	calculateInterCoordinateAngles
 		filterIncorrectCoordinates
 		calculateContourCenter
 		cart2pol
