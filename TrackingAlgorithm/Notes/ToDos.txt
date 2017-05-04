@@ -6,14 +6,14 @@ ToDos:
 
 	
 Create Unit-Tests for further refactoring:
-	filterNanValues
-	filterJumpedCoordinates
-	calculateInterCoordinateAngles
-	filterIncorrectCoordinates
-	calculateContourCenter
-	cart2pol
-	sortCoordinates
-	interpolatePolarCoordinatesLinear
-	checkIfTrackingFinished
-	checkIfCenterConverged
-	setIterationFinished
+DONE	filterNanValues
+DONE	filterJumpedCoordinates
+		calculateInterCoordinateAngles
+		filterIncorrectCoordinates
+		calculateContourCenter
+		cart2pol
+		sortCoordinates
+		interpolatePolarCoordinatesLinear
+		checkIfTrackingFinished
+		checkIfCenterConverged
+		setIterationFinished

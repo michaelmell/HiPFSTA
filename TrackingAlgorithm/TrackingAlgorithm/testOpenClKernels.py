@@ -238,6 +238,51 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVector2EqualsExpectedResult(self.dev_membraneNormalVectors,referencePath+'/'+referenceVariableName2+'.npy')
 		pass
 
+	def test_filterJumpedCoordinates_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/filterJumpedCoordinates_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_membraneCoordinates'
+		referenceVariableName2 = 'dev_membraneNormalVectors'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_previousContourCenter',inputPath)
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_membraneNormalVectors',inputPath)
+		self.loadDeviceVariable('dev_previousInterpolatedMembraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_closestLowerNoneNanIndex',inputPath)
+		self.loadDeviceVariable('dev_closestUpperNoneNanIndex',inputPath)
+		self.maxCoordinateShift = np.float64(10.0)
+		self.listOfGoodCoordinates_memSize = np.int(8192)
+
+		self.setWorkGroupSizes()
+
+		self.prg.filterJumpedCoordinates(self.queue, self.gradientGlobalSize, None, \
+											self.dev_previousContourCenter.data, \
+											self.dev_membraneCoordinates.data, \
+											self.dev_membraneNormalVectors.data, \
+										    self.dev_previousInterpolatedMembraneCoordinates.data, \
+										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), \
+											cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
+											cl.LocalMemory(self.listOfGoodCoordinates_memSize), \
+											self.maxCoordinateShift \
+											)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+		self.assertVector2EqualsExpectedResult(self.dev_membraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_membraneNormalVectors,referencePath+'/'+referenceVariableName2+'.npy')
+		pass
+
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)
