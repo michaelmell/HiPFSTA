@@ -424,9 +424,8 @@ class Test_testOpenClKernels(unittest.TestCase):
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/cart2pol_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
-		referenceVariableName1 = 'dev_membraneCoordinates'
-		referenceVariableName2 = 'dev_membranePolarCoordinates'
-		referenceVariableName3 = 'dev_contourCenter'
+
+		referenceVariableName1 = 'dev_membranePolarCoordinates'
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -445,9 +444,7 @@ class Test_testOpenClKernels(unittest.TestCase):
 						  self.dev_contourCenter.data)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		self.assertVector2EqualsExpectedResult(self.dev_membraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
-		self.assertVector2EqualsExpectedResult(self.dev_membranePolarCoordinates,referencePath+'/'+referenceVariableName2+'.npy')
-		self.assertVector2EqualsExpectedResult(self.dev_contourCenter,referencePath+'/'+referenceVariableName3+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_membranePolarCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
 		pass
 
 	def test_sortCoordinates_000(self):
@@ -461,7 +458,10 @@ class Test_testOpenClKernels(unittest.TestCase):
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/sortCoordinates_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
-		referenceVariableName1 = 'dev_membranePolarCoordinates'
+
+		referenceVariableName1 = 'dev_membraneCoordinates'
+		referenceVariableName2 = 'dev_membranePolarCoordinates'
+		referenceVariableName3 = 'dev_membraneNormalVectors'
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -481,7 +481,9 @@ class Test_testOpenClKernels(unittest.TestCase):
 								)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		self.assertVector2EqualsExpectedResult(self.dev_membranePolarCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_membraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_membranePolarCoordinates,referencePath+'/'+referenceVariableName2+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_membraneNormalVectors,referencePath+'/'+referenceVariableName3+'.npy')
 		pass
 
 	def test_interpolatePolarCoordinatesLinear_000(self):
