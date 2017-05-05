@@ -355,6 +355,37 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVector2EqualsExpectedResult(self.dev_membraneNormalVectors,referencePath+'/'+referenceVariableName2+'.npy')
 		pass
 
+	def test_calculateDs_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateDs_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_ds'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_ds',inputPath)
+		self.setWorkGroupSizes()
+
+		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
+					   self.dev_membraneCoordinates.data, \
+					   self.dev_ds.data \
+					 )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVectorEqualsExpectedResult(self.dev_ds,referencePath+'/'+referenceVariableName1+'.npy')
+		pass
+
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)

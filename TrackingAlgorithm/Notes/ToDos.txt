@@ -9,7 +9,9 @@ Create Unit-Tests for further refactoring:
 DONE	filterNanValues
 DONE	filterJumpedCoordinates
 DONE	calculateInterCoordinateAngles
-		filterIncorrectCoordinates
+DONE	filterIncorrectCoordinates
+		calculateDs
+		calculateSumDs
 		calculateContourCenter
 		cart2pol
 		sortCoordinates

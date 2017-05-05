@@ -544,15 +544,6 @@ class contourTracker( object ):
 											   )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/filterIncorrectCoordinates_000'
-		path = basePath+'/input'
-		self.saveDeviceVariable('dev_previousContourCenter',path)
-		self.saveDeviceVariable('dev_interCoordinateAngles',path)
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_membraneNormalVectors',path)
-		self.saveDeviceVariable('dev_closestLowerNoneNanIndex',path)
-		self.saveDeviceVariable('dev_closestUpperNoneNanIndex',path)
-
 		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
 										    self.dev_interCoordinateAngles.data, \
@@ -563,10 +554,6 @@ class contourTracker( object ):
 										    )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		path = basePath+'/output'
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_membraneNormalVectors',path)
-
 		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
 
 		########################################################################
@@ -654,12 +641,20 @@ class contourTracker( object ):
 		pass
 		
 	def calculateContourCenter(self):
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateDs_000'
+		path = basePath+'/input'
+
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_ds',path)
+
 		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_membraneCoordinates.data, \
 					   self.dev_ds.data \
 					 )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_ds',path)
 
 		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_ds.data, self.dev_sumds.data \
