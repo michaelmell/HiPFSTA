@@ -647,19 +647,18 @@ class contourTracker( object ):
 					 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateSumDs_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_ds',path)
-		self.saveDeviceVariable('dev_sumds',path)
-
 		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_ds.data, self.dev_sumds.data \
 					 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		path = basePath+'/output'
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateContourCenter_000'
+		path = basePath+'/input'
+
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_ds',path)
 		self.saveDeviceVariable('dev_sumds',path)
+		self.saveDeviceVariable('dev_contourCenter',path)
 
 		self.prg.calculateContourCenter(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinates.data, \
@@ -667,8 +666,13 @@ class contourTracker( object ):
 								   self.dev_contourCenter.data, \
 								   np.int32(self.nrOfDetectionAngleSteps) \
 								  )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_contourCenter',path)
+
+		tmp = 0
+
 
 	def checkTrackingFinished(self):
 		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:

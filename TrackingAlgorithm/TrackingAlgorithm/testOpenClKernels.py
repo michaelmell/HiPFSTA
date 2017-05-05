@@ -416,6 +416,42 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVectorEqualsExpectedResult(self.dev_sumds,referencePath+'/'+referenceVariableName1+'.npy')
 		pass
 
+	def test_calculateContourCenter_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateContourCenter_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_contourCenter'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_ds',inputPath)
+		self.loadDeviceVariable('dev_sumds',inputPath)
+		self.loadDeviceVariable('dev_contourCenter',inputPath)
+		self.nrOfDetectionAngleSteps = 2048
+		self.setWorkGroupSizes()
+
+		self.prg.calculateContourCenter(self.queue, (1,1), None, \
+								   self.dev_membraneCoordinates.data, \
+								   self.dev_ds.data, self.dev_sumds.data, \
+								   self.dev_contourCenter.data, \
+								   np.int32(self.nrOfDetectionAngleSteps) \
+								  )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVector2EqualsExpectedResult(self.dev_contourCenter,referencePath+'/'+referenceVariableName1+'.npy')
+		pass
+
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)
