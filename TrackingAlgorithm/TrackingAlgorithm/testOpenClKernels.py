@@ -163,45 +163,6 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVectorEqualsExpectedResult(self.dev_fitInclines,referencePath+'/'+referenceVariableName3+'.npy')
 		pass
 
-	def test_interpolatePolarCoordinatesLinear(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-
-		inputPath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/input'
-		referencePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000/output'
-		referenceVariableName = 'dev_interpolatedMembraneCoordinates'
-
-		self.nrOfLocalAngleSteps = 64
-		self.detectionKernelStrideSize = 2048
-		self.nrOfStrides = 1
-		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
-
-		self.loadHostVariable('gradientGlobalSize',inputPath)
-		self.loadHostVariable('nrOfAnglesToCompare',inputPath)
-		self.loadDeviceVariable('dev_membranePolarCoordinates',inputPath)
-		self.loadDeviceVariable('dev_radialVectors',inputPath)
-		self.loadDeviceVariable('dev_contourCenter',inputPath)
-		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
-		self.loadDeviceVariable('dev_interpolatedMembraneCoordinates',inputPath)
-		self.loadDeviceVariable('dev_interpolationAngles',inputPath)
-		self.setWorkGroupSizes()
-
-		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
-													self.dev_membranePolarCoordinates.data, \
-													self.dev_radialVectors.data, \
-													self.dev_contourCenter.data, \
-													self.dev_membraneCoordinates.data, \
-													self.dev_interpolatedMembraneCoordinates.data, \
-													self.dev_interpolationAngles.data, \
-													self.nrOfAnglesToCompare \
-													)
-		barrierEvent = cl.enqueue_barrier(self.queue)
-		self.assertVector2EqualsExpectedResult(self.dev_interpolatedMembraneCoordinates,referencePath+'/'+referenceVariableName+'.npy')
-		pass
-
 	def test_filterNanValues_000(self):
 		self.clPlatform = "intel"
 		self.computeDeviceId = 0
@@ -521,6 +482,47 @@ class Test_testOpenClKernels(unittest.TestCase):
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.assertVector2EqualsExpectedResult(self.dev_membranePolarCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
+		pass
+
+	def test_interpolatePolarCoordinatesLinear_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_interpolatedMembraneCoordinates'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_membranePolarCoordinates',inputPath)
+		self.loadDeviceVariable('dev_radialVectors',inputPath)
+		self.loadDeviceVariable('dev_contourCenter',inputPath)
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_interpolatedMembraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_interpolationAngles',inputPath)
+		self.nrOfAnglesToCompare=np.int32(100)
+		self.setWorkGroupSizes()
+
+		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
+													self.dev_membranePolarCoordinates.data, \
+													self.dev_radialVectors.data, \
+													self.dev_contourCenter.data, \
+													self.dev_membraneCoordinates.data, \
+													self.dev_interpolatedMembraneCoordinates.data, \
+													self.dev_interpolationAngles.data, \
+													self.nrOfAnglesToCompare \
+													)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVector2EqualsExpectedResult(self.dev_interpolatedMembraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
 		pass
 
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):

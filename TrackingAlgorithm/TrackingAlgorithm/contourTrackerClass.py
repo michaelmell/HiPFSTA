@@ -573,13 +573,6 @@ class contourTracker( object ):
 		########################################################################
 		### Interpolate polar coordinates
 		########################################################################
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/sortCoordinates_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
-		self.saveDeviceVariable('dev_membraneNormalVectors',path)
-
 		self.prg.sortCoordinates(self.queue, (1,1), None, \
 								self.dev_membranePolarCoordinates.data, \
 								self.dev_membraneCoordinates.data, \
@@ -588,10 +581,17 @@ class contourTracker( object ):
 								)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		path = basePath+'/output'
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000'
+		path = basePath+'/input'
+
 		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
-		self.saveDeviceVariable('dev_membraneNormalVectors',path)
+		self.saveDeviceVariable('dev_radialVectors',path)
+		self.saveDeviceVariable('dev_contourCenter',path)
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
+		self.saveDeviceVariable('dev_interpolationAngles',path)
+		self.saveDeviceVariable('dev_contourCenter',path)
+		self.saveDeviceVariable('dev_contourCenter',path)
 
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarCoordinates.data, \
@@ -602,8 +602,10 @@ class contourTracker( object ):
 													self.dev_interpolationAngles.data, \
 													self.nrOfAnglesToCompare \
 													)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
 
 		########################################################################
 		### Convert polar coordinates to cartesian coordinates
