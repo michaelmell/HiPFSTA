@@ -581,18 +581,6 @@ class contourTracker( object ):
 								)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
-		self.saveDeviceVariable('dev_radialVectors',path)
-		self.saveDeviceVariable('dev_contourCenter',path)
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
-		self.saveDeviceVariable('dev_interpolationAngles',path)
-		self.saveDeviceVariable('dev_contourCenter',path)
-		self.saveDeviceVariable('dev_contourCenter',path)
-
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarCoordinates.data, \
 													self.dev_radialVectors.data, \
@@ -604,19 +592,25 @@ class contourTracker( object ):
 													)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		path = basePath+'/output'
-		self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
-
 		########################################################################
 		### Convert polar coordinates to cartesian coordinates
 		########################################################################
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/checkIfTrackingFinished_000'
+		path = basePath+'/input'
+
+		self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
+		self.saveDeviceVariable('dev_previousInterpolatedMembraneCoordinates',path)
+		self.saveDeviceVariable('dev_trackingFinished',path)
+
 		self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
 										 self.dev_interpolatedMembraneCoordinates.data, \
 										 self.dev_previousInterpolatedMembraneCoordinates.data, \
 										 self.dev_trackingFinished.data, \
 										 self.coordinateTolerance)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_trackingFinished',path)
 
 		self.prg.checkIfCenterConverged(self.queue, (1,1), None, \
 										self.dev_contourCenter.data, \

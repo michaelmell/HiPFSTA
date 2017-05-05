@@ -10,12 +10,12 @@ DONE	filterNanValues
 DONE	filterJumpedCoordinates
 DONE	calculateInterCoordinateAngles
 DONE	filterIncorrectCoordinates
-		calculateDs
-		calculateSumDs
-		calculateContourCenter
-		cart2pol
-		sortCoordinates
-		interpolatePolarCoordinatesLinear
+DONE	calculateDs
+DONE	calculateSumDs
+DONE	calculateContourCenter
+DONE	cart2pol
+DONE	sortCoordinates
+DONE	interpolatePolarCoordinatesLinear
 		checkIfTrackingFinished
 		checkIfCenterConverged
 		setIterationFinished

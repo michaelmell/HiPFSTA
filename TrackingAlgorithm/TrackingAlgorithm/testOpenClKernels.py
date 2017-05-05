@@ -525,6 +525,40 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVector2EqualsExpectedResult(self.dev_interpolatedMembraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
 		pass
 
+	def test_checkIfTrackingFinished_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/checkIfTrackingFinished_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_trackingFinished'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_interpolatedMembraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_previousInterpolatedMembraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_trackingFinished',inputPath)
+		self.coordinateTolerance=np.float64(0.01)
+		self.setWorkGroupSizes()
+
+		self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
+										 self.dev_interpolatedMembraneCoordinates.data, \
+										 self.dev_previousInterpolatedMembraneCoordinates.data, \
+										 self.dev_trackingFinished.data, \
+										 self.coordinateTolerance)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVectorEqualsExpectedResult(self.dev_trackingFinished,referencePath+'/'+referenceVariableName1+'.npy')
+		pass
+
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)
