@@ -595,13 +595,6 @@ class contourTracker( object ):
 		########################################################################
 		### Convert polar coordinates to cartesian coordinates
 		########################################################################
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/checkIfTrackingFinished_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_interpolatedMembraneCoordinates',path)
-		self.saveDeviceVariable('dev_previousInterpolatedMembraneCoordinates',path)
-		self.saveDeviceVariable('dev_trackingFinished',path)
-
 		self.prg.checkIfTrackingFinished(self.queue, self.gradientGlobalSize, None, \
 										 self.dev_interpolatedMembraneCoordinates.data, \
 										 self.dev_previousInterpolatedMembraneCoordinates.data, \
@@ -609,7 +602,11 @@ class contourTracker( object ):
 										 self.coordinateTolerance)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		path = basePath+'/output'
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/checkIfCenterConverged_000'
+		path = basePath+'/input'
+
+		self.saveDeviceVariable('dev_contourCenter',path)
+		self.saveDeviceVariable('dev_previousContourCenter',path)
 		self.saveDeviceVariable('dev_trackingFinished',path)
 
 		self.prg.checkIfCenterConverged(self.queue, (1,1), None, \
@@ -617,9 +614,11 @@ class contourTracker( object ):
 										self.dev_previousContourCenter.data, \
 										self.dev_trackingFinished.data, \
 										self.centerTolerance)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_trackingFinished',path)
+
 		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
 		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
 		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
