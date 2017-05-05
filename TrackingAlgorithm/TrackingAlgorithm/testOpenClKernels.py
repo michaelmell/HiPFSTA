@@ -386,6 +386,36 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVectorEqualsExpectedResult(self.dev_ds,referencePath+'/'+referenceVariableName1+'.npy')
 		pass
 
+	def test_calculateSumDs_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateSumDs_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_sumds'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_ds',inputPath)
+		self.loadDeviceVariable('dev_sumds',inputPath)
+		self.setWorkGroupSizes()
+
+		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
+					   self.dev_ds.data, self.dev_sumds.data \
+					 )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVectorEqualsExpectedResult(self.dev_sumds,referencePath+'/'+referenceVariableName1+'.npy')
+		pass
+
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)

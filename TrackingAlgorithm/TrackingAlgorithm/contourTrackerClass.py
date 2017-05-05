@@ -641,27 +641,26 @@ class contourTracker( object ):
 		pass
 		
 	def calculateContourCenter(self):
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateDs_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_ds',path)
-
 		self.prg.calculateDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_membraneCoordinates.data, \
 					   self.dev_ds.data \
 					 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		path = basePath+'/output'
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateSumDs_000'
+		path = basePath+'/input'
+
 		self.saveDeviceVariable('dev_ds',path)
+		self.saveDeviceVariable('dev_sumds',path)
 
 		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_ds.data, self.dev_sumds.data \
 					 )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_sumds',path)
+
 		self.prg.calculateContourCenter(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinates.data, \
 								   self.dev_ds.data, self.dev_sumds.data, \
