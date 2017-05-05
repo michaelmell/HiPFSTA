@@ -564,33 +564,34 @@ class contourTracker( object ):
 		########################################################################
 		### Convert cartesian coordinates to polar coordinates
 		########################################################################
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/cart2pol_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
-		self.saveDeviceVariable('dev_contourCenter',path)
-
 		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
 						  self.dev_membraneCoordinates.data, \
 						  self.dev_membranePolarCoordinates.data, \
 						  self.dev_contourCenter.data)
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		path = basePath+'/output'
-		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
 
 		########################################################################
 		### Interpolate polar coordinates
 		########################################################################
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/sortCoordinates_000'
+		path = basePath+'/input'
+
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
+		self.saveDeviceVariable('dev_membraneNormalVectors',path)
+
 		self.prg.sortCoordinates(self.queue, (1,1), None, \
 								self.dev_membranePolarCoordinates.data, \
 								self.dev_membraneCoordinates.data, \
 								self.dev_membraneNormalVectors.data, \
 								np.int32(self.nrOfDetectionAngleSteps) \
 								)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
+		self.saveDeviceVariable('dev_membraneNormalVectors',path)
 
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarCoordinates.data, \

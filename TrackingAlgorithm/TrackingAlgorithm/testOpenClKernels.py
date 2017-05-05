@@ -463,7 +463,9 @@ class Test_testOpenClKernels(unittest.TestCase):
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/cart2pol_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
-		referenceVariableName1 = 'dev_membranePolarCoordinates'
+		referenceVariableName1 = 'dev_membraneCoordinates'
+		referenceVariableName2 = 'dev_membranePolarCoordinates'
+		referenceVariableName3 = 'dev_contourCenter'
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -473,12 +475,49 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
 		self.loadDeviceVariable('dev_membranePolarCoordinates',inputPath)
 		self.loadDeviceVariable('dev_contourCenter',inputPath)
+		self.nrOfDetectionAngleSteps = 2048
 		self.setWorkGroupSizes()
 
 		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
 						  self.dev_membraneCoordinates.data, \
 						  self.dev_membranePolarCoordinates.data, \
 						  self.dev_contourCenter.data)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVector2EqualsExpectedResult(self.dev_membraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_membranePolarCoordinates,referencePath+'/'+referenceVariableName2+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_contourCenter,referencePath+'/'+referenceVariableName3+'.npy')
+		pass
+
+	def test_sortCoordinates_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/sortCoordinates_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_membranePolarCoordinates'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_membranePolarCoordinates',inputPath)
+		self.loadDeviceVariable('dev_membraneNormalVectors',inputPath)
+		self.setWorkGroupSizes()
+
+		self.prg.sortCoordinates(self.queue, (1,1), None, \
+								self.dev_membranePolarCoordinates.data, \
+								self.dev_membraneCoordinates.data, \
+								self.dev_membraneNormalVectors.data, \
+								np.int32(self.nrOfDetectionAngleSteps) \
+								)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.assertVector2EqualsExpectedResult(self.dev_membranePolarCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
