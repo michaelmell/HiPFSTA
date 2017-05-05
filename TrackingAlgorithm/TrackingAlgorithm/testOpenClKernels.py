@@ -452,6 +452,38 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVector2EqualsExpectedResult(self.dev_contourCenter,referencePath+'/'+referenceVariableName1+'.npy')
 		pass
 
+	def test_cart2pol_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/cart2pol_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_membranePolarCoordinates'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_membranePolarCoordinates',inputPath)
+		self.loadDeviceVariable('dev_contourCenter',inputPath)
+		self.setWorkGroupSizes()
+
+		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
+						  self.dev_membraneCoordinates.data, \
+						  self.dev_membranePolarCoordinates.data, \
+						  self.dev_contourCenter.data)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVector2EqualsExpectedResult(self.dev_membranePolarCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
+		pass
+
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)

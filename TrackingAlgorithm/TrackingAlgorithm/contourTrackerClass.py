@@ -564,13 +564,21 @@ class contourTracker( object ):
 		########################################################################
 		### Convert cartesian coordinates to polar coordinates
 		########################################################################
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/cart2pol_000'
+		path = basePath+'/input'
+
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
+		self.saveDeviceVariable('dev_contourCenter',path)
+
 		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
 						  self.dev_membraneCoordinates.data, \
-						  #self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
 						  self.dev_membranePolarCoordinates.data, \
 						  self.dev_contourCenter.data)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
+		
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_membranePolarCoordinates',path)
 
 		########################################################################
 		### Interpolate polar coordinates
@@ -652,14 +660,6 @@ class contourTracker( object ):
 					 )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateContourCenter_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_ds',path)
-		self.saveDeviceVariable('dev_sumds',path)
-		self.saveDeviceVariable('dev_contourCenter',path)
-
 		self.prg.calculateContourCenter(self.queue, (1,1), None, \
 								   self.dev_membraneCoordinates.data, \
 								   self.dev_ds.data, self.dev_sumds.data, \
@@ -667,12 +667,6 @@ class contourTracker( object ):
 								   np.int32(self.nrOfDetectionAngleSteps) \
 								  )
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		path = basePath+'/output'
-		self.saveDeviceVariable('dev_contourCenter',path)
-
-		tmp = 0
-
 
 	def checkTrackingFinished(self):
 		if self.nrOfTrackingIterations < self.minNrOfTrackingIterations:
