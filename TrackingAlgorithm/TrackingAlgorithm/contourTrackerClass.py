@@ -602,22 +602,12 @@ class contourTracker( object ):
 										 self.coordinateTolerance)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/checkIfCenterConverged_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_contourCenter',path)
-		self.saveDeviceVariable('dev_previousContourCenter',path)
-		self.saveDeviceVariable('dev_trackingFinished',path)
-
 		self.prg.checkIfCenterConverged(self.queue, (1,1), None, \
 										self.dev_contourCenter.data, \
 										self.dev_previousContourCenter.data, \
 										self.dev_trackingFinished.data, \
 										self.centerTolerance)
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
-		path = basePath+'/output'
-		self.saveDeviceVariable('dev_trackingFinished',path)
 
 		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
 		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
@@ -634,9 +624,16 @@ class contourTracker( object ):
 		cl.enqueue_copy_buffer(self.queue,self.dev_contourCenter.data,self.dev_previousContourCenter.data).wait()
 
 		# set variable to tell host program that the tracking iteration has finished
-		self.prg.setIterationFinished(self.queue, (1,1), None, self.dev_iterationFinished.data)
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/setIterationFinished_000'
+		path = basePath+'/input'
 
+		self.saveDeviceVariable('dev_iterationFinished',path)
+
+		self.prg.setIterationFinished(self.queue, (1,1), None, self.dev_iterationFinished.data)
 		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_iterationFinished',path)
 
 		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
 

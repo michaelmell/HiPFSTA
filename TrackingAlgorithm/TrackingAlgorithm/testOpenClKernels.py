@@ -593,6 +593,33 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVectorEqualsExpectedResult(self.dev_trackingFinished,referencePath+'/'+referenceVariableName1+'.npy')
 		pass
 
+	def test_setIterationFinished_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/setIterationFinished_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_iterationFinished'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_iterationFinished',inputPath)
+		self.setWorkGroupSizes()
+
+		self.prg.setIterationFinished(self.queue, (1,1), None, self.dev_iterationFinished.data)
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVectorEqualsExpectedResult(self.dev_iterationFinished,referencePath+'/'+referenceVariableName1+'.npy')
+		pass
+
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)
