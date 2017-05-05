@@ -63,23 +63,23 @@ class Test_testOpenClKernels(unittest.TestCase):
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
 
 			self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
-											self.dev_Img, self.imgSizeX, self.imgSizeY, \
-											self.buf_localRotationMatrices, \
-											self.buf_linFitSearchRangeXvalues, \
-											self.linFitParameter, \
-											cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-											cl.LocalMemory(self.rotatedUnitVector_memSize), \
-											self.meanParameter, \
-											self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-											cl.LocalMemory(self.localMembranePositions_memSize), \
-											self.dev_membraneCoordinates.data, \
-											self.dev_membraneNormalVectors.data, \
-											self.dev_fitInclines.data, \
-											kernelCoordinateStartingIndex, \
-											self.inclineTolerance, \
-											self.inclineRefinementRange )
+												self.dev_Img, self.imgSizeX, self.imgSizeY, \
+												self.buf_localRotationMatrices, \
+												self.buf_linFitSearchRangeXvalues, \
+												self.linFitParameter, \
+												cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+												cl.LocalMemory(self.rotatedUnitVector_memSize), \
+												self.meanParameter, \
+												self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+												cl.LocalMemory(self.localMembranePositions_memSize), \
+												self.dev_membraneCoordinates.data, \
+												self.dev_membraneNormalVectors.data, \
+												self.dev_fitInclines.data, \
+												kernelCoordinateStartingIndex, \
+												self.inclineTolerance, \
+												self.inclineRefinementRange)
 
-		barrierEvent = cl.enqueue_barrier(self.queue)
+			barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.assertVector2EqualsExpectedResult(self.dev_membraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
 		self.assertVector2EqualsExpectedResult(self.dev_membraneNormalVectors,referencePath+'/'+referenceVariableName2+'.npy')
