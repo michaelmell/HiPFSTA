@@ -313,6 +313,48 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.assertVectorEqualsExpectedResult(self.dev_interCoordinateAngles,referencePath+'/'+referenceVariableName1+'.npy')
 		pass
 
+	def test_filterIncorrectCoordinates_000(self):
+		self.clPlatform = "intel"
+		self.computeDeviceId = 0
+		self.positioningMethod = "meanIntensityIntercept"
+		self.setupClContext()
+		self.loadClKernels()
+		self.setupClQueue(self.ctx)
+		
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/filterIncorrectCoordinates_000'
+		inputPath = basePath+'/input'
+		referencePath = basePath+'/output'
+		referenceVariableName1 = 'dev_membraneCoordinates'
+		referenceVariableName2 = 'dev_membraneNormalVectors'
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
+
+		self.loadDeviceVariable('dev_previousContourCenter',inputPath)
+		self.loadDeviceVariable('dev_interCoordinateAngles',inputPath)
+		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
+		self.loadDeviceVariable('dev_membraneNormalVectors',inputPath)
+		self.loadDeviceVariable('dev_closestLowerNoneNanIndex',inputPath)
+		self.loadDeviceVariable('dev_closestUpperNoneNanIndex',inputPath)
+		self.maxInterCoordinateAngle = np.float64(1.5707899999999999)
+		self.setWorkGroupSizes()
+
+		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
+											self.dev_previousContourCenter.data, \
+										    self.dev_interCoordinateAngles.data, \
+										    self.dev_membraneCoordinates.data, \
+										    self.dev_membraneNormalVectors.data, \
+										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
+										    self.maxInterCoordinateAngle \
+										    )
+		barrierEvent = cl.enqueue_barrier(self.queue)
+
+		self.assertVector2EqualsExpectedResult(self.dev_membraneCoordinates,referencePath+'/'+referenceVariableName1+'.npy')
+		self.assertVector2EqualsExpectedResult(self.dev_membraneNormalVectors,referencePath+'/'+referenceVariableName2+'.npy')
+		pass
+
 	def assertVectorEqualsExpectedResult(self,variable,referencePath):
 		outputValue = variable.get(self.queue)
 		referenceValue = np.load(referencePath)

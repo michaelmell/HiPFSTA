@@ -538,19 +538,20 @@ class contourTracker( object ):
 											)
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateInterCoordinateAngles_000'
-		path = basePath+'/input'
-		self.saveDeviceVariable('dev_interCoordinateAngles',path)
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-
 		self.prg.calculateInterCoordinateAngles(self.queue, self.gradientGlobalSize, None, \
 												self.dev_interCoordinateAngles.data, \
 												self.dev_membraneCoordinates.data \
 											   )
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
-		path = basePath+'/output'
+		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/filterIncorrectCoordinates_000'
+		path = basePath+'/input'
+		self.saveDeviceVariable('dev_previousContourCenter',path)
 		self.saveDeviceVariable('dev_interCoordinateAngles',path)
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_membraneNormalVectors',path)
+		self.saveDeviceVariable('dev_closestLowerNoneNanIndex',path)
+		self.saveDeviceVariable('dev_closestUpperNoneNanIndex',path)
 
 		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
 											self.dev_previousContourCenter.data, \
@@ -560,9 +561,12 @@ class contourTracker( object ):
 										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
 										    self.maxInterCoordinateAngle \
 										    )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
+		path = basePath+'/output'
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_membraneNormalVectors',path)
+
 		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
 
 		########################################################################
