@@ -16,6 +16,6 @@ DONE	calculateContourCenter
 DONE	cart2pol
 DONE	sortCoordinates
 DONE	interpolatePolarCoordinatesLinear
-		checkIfTrackingFinished
-		checkIfCenterConverged
-		setIterationFinished
+DONE	checkIfTrackingFinished
+DONE	checkIfCenterConverged
+DONE	setIterationFinished

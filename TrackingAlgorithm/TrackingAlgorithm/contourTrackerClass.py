@@ -496,29 +496,6 @@ class contourTracker( object ):
 		self.dev_membranePolarCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membranePolarTheta,self.dev_membranePolarRadius)
 		self.dev_interpolatedMembraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_interpolatedMembraneCoordinatesX,self.dev_interpolatedMembraneCoordinatesY)
 
-		path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePositionUsingMaxIncline_000/input'
-		self.saveHostVariable('trackingGlobalSize',path)
-		self.saveHostVariable('trackingWorkGroupSize',path)
-		self.saveHostVariable('host_Img',path)
-		self.saveHostVariable('imgSizeX',path)
-		self.saveHostVariable('imgSizeY',path)
-		#self.saveDeviceVariable('buf_localRotationMatrices',path)
-		self.saveHostVariable('localRotationMatrices',path)
-		#self.saveDeviceVariable('buf_linFitSearchRangeXvalues',path)
-		self.saveHostVariable('linFitSearchRangeXvalues',path)
-		self.saveHostVariable('linFitParameter',path)
-		self.saveHostVariable('fitIntercept_memSize',path)
-		self.saveHostVariable('rotatedUnitVector_memSize',path)
-		self.saveHostVariable('meanParameter',path)
-		#self.saveDeviceVariable('buf_meanRangeXvalues',path)
-		self.saveHostVariable('meanRangeXvalues',path)
-		self.saveHostVariable('meanRangePositionOffset',path)
-		self.saveHostVariable('localMembranePositions_memSize',path)
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_membraneNormalVectors',path)
-		self.saveDeviceVariable('dev_fitInclines',path)
-		self.saveHostVariable('inclineTolerance',path)
-
 		for strideNr in range(self.nrOfStrides):
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
@@ -541,11 +518,6 @@ class contourTracker( object ):
 												self.inclineRefinementRange)
 
 			barrierEvent = cl.enqueue_barrier(self.queue)
-
-		path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePositionUsingMaxIncline_000/output'
-		self.saveDeviceVariable('dev_membraneCoordinates',path)
-		self.saveDeviceVariable('dev_membraneNormalVectors',path)
-		self.saveDeviceVariable('dev_fitInclines',path)
 		
 		self.prg.filterNanValues(self.queue, self.gradientGlobalSize, None, \
 								 self.dev_membraneCoordinates.data, \
@@ -651,17 +623,8 @@ class contourTracker( object ):
 		cl.enqueue_copy_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 		cl.enqueue_copy_buffer(self.queue,self.dev_contourCenter.data,self.dev_previousContourCenter.data).wait()
 
-		# set variable to tell host program that the tracking iteration has finished
-		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/setIterationFinished_000'
-		path = basePath+'/input'
-
-		self.saveDeviceVariable('dev_iterationFinished',path)
-
 		self.prg.setIterationFinished(self.queue, (1,1), None, self.dev_iterationFinished.data)
 		barrierEvent = cl.enqueue_barrier(self.queue)
-
-		path = basePath+'/output'
-		self.saveDeviceVariable('dev_iterationFinished',path)
 
 		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
 
