@@ -3,3 +3,4 @@
 *.pyc
 *.tif
 *.cih
+**/output/*

@@ -13,6 +13,7 @@ import ipdb
 import os
 import time
 from helpers import helpers
+from mako.template import Template
 
 class contourTracker( object ):
 	def __init__(self, ctx, configReader, imageProcessor):
@@ -56,9 +57,20 @@ class contourTracker( object ):
 		clCodeFile = codePath+"/"+"clKernelCode.cl"
 		fObj = open(clCodeFile, 'r')
 		self.kernelString = "".join(fObj.readlines())
+		self.applyTemplating()
 		self.prg = cl.Program(self.ctx,self.kernelString).build()
 		pass
 	
+	def applyTemplating(self):
+		tpl = Template(self.kernelString)
+		if self.configReader.positioningMethod == "maximumIntensityIncline":
+			linear_fit_search_method="MAX_INCLINE_SEARCH"
+		if self.configReader.positioningMethod == "meanIntensityIntercept":
+			linear_fit_search_method="MIN_MAX_INTENSITY_SEARCH"
+		rendered_tpl = tpl.render(linear_fit_search_method=linear_fit_search_method)
+		self.kernelString=str(rendered_tpl)
+		pass
+
 	def loadConfig(self,configReader):
 		self.startingCoordinate = configReader.startingCoordinate
 		self.rotationCenterCoordinate = configReader.rotationCenterCoordinate
@@ -121,12 +133,12 @@ class contourTracker( object ):
 
 		localAngles = np.linspace(startAngle,endAngle,self.nrOfLocalAngleSteps)
 
-		localRotationMatrices = np.empty((localAngles.shape[0],2,2),np.dtype(np.float64))
+		self.localRotationMatrices = np.empty((localAngles.shape[0],2,2),np.dtype(np.float64))
 		for index in range(localAngles.shape[0]):
 			localAngle = localAngles[index]
-			localRotationMatrices[index,:,:] = np.array([[np.cos(localAngle),-np.sin(localAngle)],[np.sin(localAngle),np.cos(localAngle)]])
+			self.localRotationMatrices[index,:,:] = np.array([[np.cos(localAngle),-np.sin(localAngle)],[np.sin(localAngle),np.cos(localAngle)]])
 
-		self.buf_localRotationMatrices = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=localRotationMatrices)
+		self.buf_localRotationMatrices = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.localRotationMatrices)
 
 		### setup local rotation matrices
 		initialNormalVector = self.startingCoordinate - self.rotationCenterCoordinate
@@ -387,41 +399,22 @@ class contourTracker( object ):
 			self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
 			self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
 
-			if self.configReader.positioningMethod == "meanIntensityIntercept":
-				self.prg.findMembranePosition(self.queue, self.global_size, self.local_size, self.sampler, \
-												 self.dev_Img, self.imgSizeX, self.imgSizeY, \
-												 self.buf_localRotationMatrices, \
-												 self.buf_linFitSearchRangeXvalues, \
-												 self.linFitParameter, \
-												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 self.meanParameter, \
-												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), \
-												 self.dev_membraneCoordinates.data, \
-												 self.dev_membraneNormalVectors.data, \
-												 self.dev_fitInclines.data, \
-												 coordinateIndex, \
-												 self.inclineTolerance)
-
-			if self.configReader.positioningMethod == "maximumIntensityIncline":
-				self.prg.findMembranePositionNew2(self.queue, self.global_size, self.local_size, self.sampler, \
-												 self.dev_Img, self.imgSizeX, self.imgSizeY, \
-												 self.buf_localRotationMatrices, \
-												 self.buf_linFitSearchRangeXvalues, \
-												 self.linFitParameter, \
-												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 self.meanParameter, \
-												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), \
-												 self.dev_membraneCoordinates.data, \
-												 self.dev_membraneNormalVectors.data, \
-												 self.dev_fitInclines.data, \
-												 coordinateIndex, \
-												 self.inclineTolerance, \
-												 self.inclineRefinementRange)
-
+			self.prg.findMembranePosition(self.queue, self.global_size, self.local_size, self.sampler, \
+												self.dev_Img, self.imgSizeX, self.imgSizeY, \
+												self.buf_localRotationMatrices, \
+												self.buf_linFitSearchRangeXvalues, \
+												self.linFitParameter, \
+												cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+												cl.LocalMemory(self.rotatedUnitVector_memSize), \
+												self.meanParameter, \
+												self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+												cl.LocalMemory(self.localMembranePositions_memSize), \
+												self.dev_membraneCoordinates.data, \
+												self.dev_membraneNormalVectors.data, \
+												self.dev_fitInclines.data, \
+												coordinateIndex, \
+												self.inclineTolerance, \
+												self.inclineRefinementRange)
 
 			barrierEvent = cl.enqueue_barrier(self.queue)
 
@@ -507,43 +500,25 @@ class contourTracker( object ):
 			# set the starting index of the coordinate array for each kernel instance
 			kernelCoordinateStartingIndex = np.int32(strideNr*self.detectionKernelStrideSize)
 
-			if self.configReader.positioningMethod == "meanIntensityIntercept":
-				self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
-												 self.dev_Img, self.imgSizeX, self.imgSizeY, \
-												 self.buf_localRotationMatrices, \
-												 self.buf_linFitSearchRangeXvalues, \
-												 self.linFitParameter, \
-												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 self.meanParameter, \
-												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), \
-												 self.dev_membraneCoordinates.data, \
-												 self.dev_membraneNormalVectors.data, \
-												 self.dev_fitInclines.data, \
-												 kernelCoordinateStartingIndex, \
-												 self.inclineTolerance)
+			self.prg.findMembranePosition(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
+												self.dev_Img, self.imgSizeX, self.imgSizeY, \
+												self.buf_localRotationMatrices, \
+												self.buf_linFitSearchRangeXvalues, \
+												self.linFitParameter, \
+												cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
+												cl.LocalMemory(self.rotatedUnitVector_memSize), \
+												self.meanParameter, \
+												self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
+												cl.LocalMemory(self.localMembranePositions_memSize), \
+												self.dev_membraneCoordinates.data, \
+												self.dev_membraneNormalVectors.data, \
+												self.dev_fitInclines.data, \
+												kernelCoordinateStartingIndex, \
+												self.inclineTolerance, \
+												self.inclineRefinementRange)
 
-			if self.configReader.positioningMethod == "maximumIntensityIncline":
-				self.prg.findMembranePositionNew2(self.queue, self.trackingGlobalSize, self.trackingWorkGroupSize, self.sampler, \
-												 self.dev_Img, self.imgSizeX, self.imgSizeY, \
-												 self.buf_localRotationMatrices, \
-												 self.buf_linFitSearchRangeXvalues, \
-												 self.linFitParameter, \
-												 cl.LocalMemory(self.fitIntercept_memSize), cl.LocalMemory(self.fitIncline_memSize), \
-												 cl.LocalMemory(self.rotatedUnitVector_memSize), \
-												 self.meanParameter, \
-												 self.buf_meanRangeXvalues, self.meanRangePositionOffset, \
-												 cl.LocalMemory(self.localMembranePositions_memSize), \
-												 self.dev_membraneCoordinates.data, \
-												 self.dev_membraneNormalVectors.data, \
-												 self.dev_fitInclines.data, \
-												 kernelCoordinateStartingIndex, \
-												 self.inclineTolerance, \
-												 self.inclineRefinementRange )
-											 
 			barrierEvent = cl.enqueue_barrier(self.queue)
-
+		
 		self.prg.filterNanValues(self.queue, self.gradientGlobalSize, None, \
 								 self.dev_membraneCoordinates.data, \
 								 self.dev_membraneNormalVectors.data, \
@@ -567,7 +542,6 @@ class contourTracker( object ):
 												self.dev_interCoordinateAngles.data, \
 												self.dev_membraneCoordinates.data \
 											   )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.prg.filterIncorrectCoordinates(self.queue, self.gradientGlobalSize, None, \
@@ -578,7 +552,6 @@ class contourTracker( object ):
 										    cl.LocalMemory(self.dev_closestLowerNoneNanIndex.nbytes), cl.LocalMemory(self.dev_closestUpperNoneNanIndex.nbytes), \
 										    self.maxInterCoordinateAngle \
 										    )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		# information regarding barriers: http://stackoverflow.com/questions/13200276/what-is-the-difference-between-clenqueuebarrier-and-clfinish
@@ -593,10 +566,8 @@ class contourTracker( object ):
 		########################################################################
 		self.prg.cart2pol(self.queue, self.gradientGlobalSize, None, \
 						  self.dev_membraneCoordinates.data, \
-						  #self.dev_membranePolarRadius.data, self.dev_membranePolarTheta.data, \
 						  self.dev_membranePolarCoordinates.data, \
 						  self.dev_contourCenter.data)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		########################################################################
@@ -608,9 +579,8 @@ class contourTracker( object ):
 								self.dev_membraneNormalVectors.data, \
 								np.int32(self.nrOfDetectionAngleSteps) \
 								)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
-
+		
 		self.prg.interpolatePolarCoordinatesLinear(self.queue, self.gradientGlobalSize, None, \
 													self.dev_membranePolarCoordinates.data, \
 													self.dev_radialVectors.data, \
@@ -620,7 +590,6 @@ class contourTracker( object ):
 													self.dev_interpolationAngles.data, \
 													self.nrOfAnglesToCompare \
 													)
-		
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		########################################################################
@@ -631,7 +600,6 @@ class contourTracker( object ):
 										 self.dev_previousInterpolatedMembraneCoordinates.data, \
 										 self.dev_trackingFinished.data, \
 										 self.coordinateTolerance)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.prg.checkIfCenterConverged(self.queue, (1,1), None, \
@@ -639,9 +607,8 @@ class contourTracker( object ):
 										self.dev_previousContourCenter.data, \
 										self.dev_trackingFinished.data, \
 										self.centerTolerance)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
-		
+
 		self.dev_membraneNormalVectorsX, self.dev_membraneNormalVectorsY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneNormalVectors)
 		self.dev_previousInterpolatedMembraneCoordinatesX, self.dev_previousInterpolatedMembraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_previousInterpolatedMembraneCoordinates)
 		self.dev_membraneCoordinatesX, self.dev_membraneCoordinatesY = helpers.ToSingleVectorsOnDevice(self.queue,self.dev_membraneCoordinates)
@@ -656,9 +623,7 @@ class contourTracker( object ):
 		cl.enqueue_copy_buffer(self.queue,self.dev_interpolatedMembraneCoordinatesY.data,self.dev_previousInterpolatedMembraneCoordinatesY.data).wait()
 		cl.enqueue_copy_buffer(self.queue,self.dev_contourCenter.data,self.dev_previousContourCenter.data).wait()
 
-		# set variable to tell host program that the tracking iteration has finished
 		self.prg.setIterationFinished(self.queue, (1,1), None, self.dev_iterationFinished.data)
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		cl.enqueue_read_buffer(self.queue, self.dev_iterationFinished.data, self.iterationFinished).wait()
@@ -672,13 +637,11 @@ class contourTracker( object ):
 					   self.dev_membraneCoordinates.data, \
 					   self.dev_ds.data \
 					 )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 		self.prg.calculateSumDs(self.queue, self.gradientGlobalSize, None, \
 					   self.dev_ds.data, self.dev_sumds.data \
 					 )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 		
 		self.prg.calculateContourCenter(self.queue, (1,1), None, \
@@ -687,7 +650,6 @@ class contourTracker( object ):
 								   self.dev_contourCenter.data, \
 								   np.int32(self.nrOfDetectionAngleSteps) \
 								  )
-
 		barrierEvent = cl.enqueue_barrier(self.queue)
 
 	def checkTrackingFinished(self):

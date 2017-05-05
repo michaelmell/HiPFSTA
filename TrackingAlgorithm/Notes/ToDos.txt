@@ -3,3 +3,19 @@ ToDos:
 	2. In kernel 'findMembranePosition' there is a bug on line:
 	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
 	Reference commit: a444cace346c01169448a95c9509d8f5b195834f
+
+	
+Create Unit-Tests for further refactoring:
+DONE	filterNanValues
+DONE	filterJumpedCoordinates
+DONE	calculateInterCoordinateAngles
+DONE	filterIncorrectCoordinates
+DONE	calculateDs
+DONE	calculateSumDs
+DONE	calculateContourCenter
+DONE	cart2pol
+DONE	sortCoordinates
+DONE	interpolatePolarCoordinatesLinear
+DONE	checkIfTrackingFinished
+DONE	checkIfCenterConverged
+DONE	setIterationFinished
