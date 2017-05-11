@@ -59,40 +59,33 @@ void linearFit(__constant double x[], double y[], int gradientCenterIndex, int l
 	*sigb *= sigdat;
 }
 
+/* This modulo function returns the modulo value index%arraySize, where index is always positive, with value 
+ * 0<=index<arraySize-1. This allows use to easily perform circular indexing of our arrays.
+ * For further details on this solution see here, where I found it:
+ * https://codereview.stackexchange.com/questions/57923/index-into-array-as-if-it-is-circular
+ * A similar solution can be found here:
+ * http://stackoverflow.com/questions/4868049/how-to-efficiently-wrap-the-index-of-a-fixed-size-circular-buffer
+ */
+int WrapIndex(int index, int arraySize)
+{
+  return (index % arraySize + arraySize) % arraySize;
+}
+
 __kernel void calculateMembraneNormalVectors(__global double2* membraneCoordinates,
 											 __global double2* membraneNormalVectors
 											)
 	{
-		const int xInd = get_global_id(0);
-		const int xSize = get_global_size(0);
+		const int arraySize = get_global_size(0);
+		const int currentInd = get_global_id(0);
+		const int prevNeighborInd = WrapIndex(currentInd-1,arraySize);
+		const int nextNeighborInd = WrapIndex(currentInd+1,arraySize);
 		
-		__private double vectorNorm;
+		membraneNormalVectors[currentInd].y = -(  (membraneCoordinates[currentInd].x - membraneCoordinates[prevNeighborInd].x)
+												+ (membraneCoordinates[nextNeighborInd].x - membraneCoordinates[currentInd].x) )/2;
+		membraneNormalVectors[currentInd].x =  (  (membraneCoordinates[currentInd].y - membraneCoordinates[prevNeighborInd].y)
+												+ (membraneCoordinates[nextNeighborInd].y - membraneCoordinates[currentInd].y) )/2;
 		
-		// NOTE: we use bilinear interpolation to calculate the gradient vectors
-		if(xInd>0 && xInd<xSize-1){
-			membraneNormalVectors[xInd].y = -(  (membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x)
-			                                  + (membraneCoordinates[xInd+1].x - membraneCoordinates[xInd].x) )/2;
-			membraneNormalVectors[xInd].x =  (  (membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y)
-			                                  + (membraneCoordinates[xInd+1].y - membraneCoordinates[xInd].y) )/2;
-		}
-		else if(xInd==0){
-			membraneNormalVectors[xInd].y = -(  (membraneCoordinates[xInd].x - membraneCoordinates[xSize-1].x)
-			                                  + (membraneCoordinates[xInd+1].x - membraneCoordinates[xInd].x) )/2;
-			membraneNormalVectors[xInd].x =  (  (membraneCoordinates[xInd].y - membraneCoordinates[xSize-1].y)
-			                                  + (membraneCoordinates[xInd+1].y - membraneCoordinates[xInd].y) )/2;
-		}
-		else if(xInd==xSize-1){
-			membraneNormalVectors[xInd].y = -(  (membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x)
-			                                  + (membraneCoordinates[0].x - membraneCoordinates[xInd].x) )/2;
-			membraneNormalVectors[xInd].x =  (  (membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y)
-			                                  + (membraneCoordinates[0].y - membraneCoordinates[xInd].y) )/2;
-		}
-		
-		barrier(CLK_GLOBAL_MEM_FENCE);
-		vectorNorm = sqrt(pow(membraneNormalVectors[xInd].x,2) + pow(membraneNormalVectors[xInd].y,2));
-		
-		membraneNormalVectors[xInd].x = membraneNormalVectors[xInd].x/vectorNorm;
-		membraneNormalVectors[xInd].y = membraneNormalVectors[xInd].y/vectorNorm;
+		membraneNormalVectors[currentInd] = normalize(membraneNormalVectors[currentInd]);
 	}
 
 __kernel void calculateDs(
