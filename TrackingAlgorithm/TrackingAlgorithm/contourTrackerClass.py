@@ -454,10 +454,18 @@ class contourTracker( object ):
 		self.dev_membraneCoordinates = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneCoordinatesX,self.dev_membraneCoordinatesY)
 		self.dev_membraneNormalVectors = helpers.ToDoubleVectorOnDevice(self.queue,self.dev_membraneNormalVectorsX,self.dev_membraneNormalVectorsY)
 
+		path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateMembraneNormalVectors_000/input'
+		self.saveDeviceVariable('dev_membraneCoordinates',path)
+		self.saveDeviceVariable('dev_membraneNormalVectors',path)
+		self.saveHostVariable('gradientGlobalSize',path)
+
 		self.prg.calculateMembraneNormalVectors(self.queue, self.gradientGlobalSize, None, \
 										   self.dev_membraneCoordinates.data, \
 										   self.dev_membraneNormalVectors.data \
 										  )
+
+		path = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateMembraneNormalVectors_000/output'
+		self.saveDeviceVariable('dev_membraneNormalVectors',path)
 
 		self.calculateContourCenter()
 
