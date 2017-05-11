@@ -93,19 +93,11 @@ __kernel void calculateDs(
 						 __global double* ds
 						 )
 {
-	const int xInd = get_global_id(0);
-	const int xSize = get_global_size(0);
-
-	if(xInd>=1){
-		ds[xInd] = sqrt(pow((membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x),2)
-				  + 	pow((membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y),2)
-				  );
-	}
-	else if(xInd==0){
-		ds[xInd] = sqrt(pow((membraneCoordinates[xInd].x - membraneCoordinates[xSize-1].x),2)
-				  + 	pow((membraneCoordinates[xInd].y - membraneCoordinates[xSize-1].y),2)
-				  );
-	}
+	const int arraySize = get_global_size(0);
+	const int currentInd = get_global_id(0);
+	const int prevNeighborInd = WrapIndex(currentInd-1,arraySize);
+	
+	ds[currentInd] = length(membraneCoordinates[currentInd]-membraneCoordinates[prevNeighborInd]);
 }
 
 __kernel void calculateSumDs(__global double* ds,
