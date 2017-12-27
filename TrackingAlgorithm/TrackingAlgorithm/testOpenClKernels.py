@@ -9,10 +9,10 @@ from mako.template import Template
 class Test_testOpenClKernels(unittest.TestCase):
 	_equalityTolerance=1e-16
 	
-	def setupTest(self):
+	def setupTest(self, positioningMethod = "meanIntensityIntercept"):
 		self.clPlatform = "intel"
 		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
+		self.positioningMethod = positioningMethod
 		self.setupClContext()
 		self.loadClKernels()
 		self.setupClQueue(self.ctx)
@@ -25,7 +25,7 @@ class Test_testOpenClKernels(unittest.TestCase):
 		referenceVariableName3 = 'dev_fitInclines'
 
 		self.loadHostVariable('linFitSearchRangeXvalues',inputPath)
-		self.setupTest()
+		self.setupTest("maximumIntensityIncline")
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
