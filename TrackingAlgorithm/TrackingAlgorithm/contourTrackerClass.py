@@ -20,11 +20,11 @@ class contourTracker( object ):
 		self.configReader = configReader
 		self.imageProcessor = imageProcessor
 		self.setupClQueue(ctx)
-		self.loadClKernels()
 		self.loadConfig(configReader)
 		self.setupTrackingParameters()
 		self.setWorkGroupSizes()
 		self.setupClTrackingVariables()
+		self.loadClKernels()
 		self.setContourId(-1) # initialize the contour id to -1; this will later change at run time
 		self.nrOfTrackingIterations = 0
 		pass
@@ -58,16 +58,23 @@ class contourTracker( object ):
 		fObj = open(clCodeFile, 'r')
 		self.kernelString = "".join(fObj.readlines())
 		self.applyTemplating()
+
+		text_file = open(codePath+"/"+"clKernelCode_RENDERED.cl", "w")
+		text_file.write(self.kernelString)
+		text_file.close()
+
 		self.prg = cl.Program(self.ctx,self.kernelString).build()
 		pass
 	
 	def applyTemplating(self):
-		tpl = Template(self.kernelString)
+		lineIntensitiesLength = str(self.linFitSearchRangeXvalues.size)
 		if self.configReader.positioningMethod == "maximumIntensityIncline":
 			linear_fit_search_method="MAX_INCLINE_SEARCH"
 		if self.configReader.positioningMethod == "meanIntensityIntercept":
 			linear_fit_search_method="MIN_MAX_INTENSITY_SEARCH"
-		rendered_tpl = tpl.render(linear_fit_search_method=linear_fit_search_method)
+		tpl = Template(self.kernelString)
+		rendered_tpl = tpl.render(linear_fit_search_method=linear_fit_search_method, \
+								  lineIntensities_LENGTH=lineIntensitiesLength)
 		self.kernelString=str(rendered_tpl)
 		pass
 

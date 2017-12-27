@@ -1,3 +1,5 @@
+#define lineIntensities_LENGTH 200
+
 #define MIN_MAX_INTENSITY_SEARCH 1
 #define MAX_INCLINE_SEARCH 2
 
@@ -5,9 +7,9 @@
 
 
 #if LINEAR_FIT_SEARCH_METHOD == MIN_MAX_INTENSITY_SEARCH
-	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingMinMaxIntensitySearch(lineIntensities,imgSizeY,linFitParameter,linFitSearchRangeXvalues)
+	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingMinMaxIntensitySearch(lineIntensities,lineIntensities_LENGTH,linFitParameter,linFitSearchRangeXvalues)
 #elif LINEAR_FIT_SEARCH_METHOD == MAX_INCLINE_SEARCH
-	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingInclineSearch(lineIntensities,imgSizeY,linFitParameter,linFitSearchRangeXvalues,inclineRefinementRange)
+	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingInclineSearch(lineIntensities,lineIntensities_LENGTH,linFitParameter,linFitSearchRangeXvalues,inclineRefinementRange)
 #endif
 
 
@@ -59,40 +61,33 @@ void linearFit(__constant double x[], double y[], int gradientCenterIndex, int l
 	*sigb *= sigdat;
 }
 
+/* This modulo function returns the modulo value index%arraySize, where index is always positive, with value 
+ * 0<=index<arraySize-1. This allows use to easily perform circular indexing of our arrays.
+ * For further details on this solution see here, where I found it:
+ * https://codereview.stackexchange.com/questions/57923/index-into-array-as-if-it-is-circular
+ * A similar solution can be found here:
+ * http://stackoverflow.com/questions/4868049/how-to-efficiently-wrap-the-index-of-a-fixed-size-circular-buffer
+ */
+int WrapIndex(int index, int arraySize)
+{
+  return (index % arraySize + arraySize) % arraySize;
+}
+
 __kernel void calculateMembraneNormalVectors(__global double2* membraneCoordinates,
 											 __global double2* membraneNormalVectors
 											)
 	{
-		const int xInd = get_global_id(0);
-		const int xSize = get_global_size(0);
+		const int arraySize = get_global_size(0);
+		const int currentInd = get_global_id(0);
+		const int prevNeighborInd = WrapIndex(currentInd-1,arraySize);
+		const int nextNeighborInd = WrapIndex(currentInd+1,arraySize);
 		
-		__private double vectorNorm;
+		membraneNormalVectors[currentInd].y = -(  (membraneCoordinates[currentInd].x - membraneCoordinates[prevNeighborInd].x)
+												+ (membraneCoordinates[nextNeighborInd].x - membraneCoordinates[currentInd].x) )/2;
+		membraneNormalVectors[currentInd].x =  (  (membraneCoordinates[currentInd].y - membraneCoordinates[prevNeighborInd].y)
+												+ (membraneCoordinates[nextNeighborInd].y - membraneCoordinates[currentInd].y) )/2;
 		
-		// NOTE: we use bilinear interpolation to calculate the gradient vectors
-		if(xInd>0 && xInd<xSize-1){
-			membraneNormalVectors[xInd].y = -(  (membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x)
-			                                  + (membraneCoordinates[xInd+1].x - membraneCoordinates[xInd].x) )/2;
-			membraneNormalVectors[xInd].x =  (  (membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y)
-			                                  + (membraneCoordinates[xInd+1].y - membraneCoordinates[xInd].y) )/2;
-		}
-		else if(xInd==0){
-			membraneNormalVectors[xInd].y = -(  (membraneCoordinates[xInd].x - membraneCoordinates[xSize-1].x)
-			                                  + (membraneCoordinates[xInd+1].x - membraneCoordinates[xInd].x) )/2;
-			membraneNormalVectors[xInd].x =  (  (membraneCoordinates[xInd].y - membraneCoordinates[xSize-1].y)
-			                                  + (membraneCoordinates[xInd+1].y - membraneCoordinates[xInd].y) )/2;
-		}
-		else if(xInd==xSize-1){
-			membraneNormalVectors[xInd].y = -(  (membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x)
-			                                  + (membraneCoordinates[0].x - membraneCoordinates[xInd].x) )/2;
-			membraneNormalVectors[xInd].x =  (  (membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y)
-			                                  + (membraneCoordinates[0].y - membraneCoordinates[xInd].y) )/2;
-		}
-		
-		barrier(CLK_GLOBAL_MEM_FENCE);
-		vectorNorm = sqrt(pow(membraneNormalVectors[xInd].x,2) + pow(membraneNormalVectors[xInd].y,2));
-		
-		membraneNormalVectors[xInd].x = membraneNormalVectors[xInd].x/vectorNorm;
-		membraneNormalVectors[xInd].y = membraneNormalVectors[xInd].y/vectorNorm;
+		membraneNormalVectors[currentInd] = normalize(membraneNormalVectors[currentInd]);
 	}
 
 __kernel void calculateDs(
@@ -100,19 +95,11 @@ __kernel void calculateDs(
 						 __global double* ds
 						 )
 {
-	const int xInd = get_global_id(0);
-	const int xSize = get_global_size(0);
-
-	if(xInd>=1){
-		ds[xInd] = sqrt(pow((membraneCoordinates[xInd].x - membraneCoordinates[xInd-1].x),2)
-				  + 	pow((membraneCoordinates[xInd].y - membraneCoordinates[xInd-1].y),2)
-				  );
-	}
-	else if(xInd==0){
-		ds[xInd] = sqrt(pow((membraneCoordinates[xInd].x - membraneCoordinates[xSize-1].x),2)
-				  + 	pow((membraneCoordinates[xInd].y - membraneCoordinates[xSize-1].y),2)
-				  );
-	}
+	const int arraySize = get_global_size(0);
+	const int currentInd = get_global_id(0);
+	const int prevNeighborInd = WrapIndex(currentInd-1,arraySize);
+	
+	ds[currentInd] = length(membraneCoordinates[currentInd]-membraneCoordinates[prevNeighborInd]);
 }
 
 __kernel void calculateSumDs(__global double* ds,
@@ -335,14 +322,14 @@ typedef struct linearFitResultStruct
 	double fitIncline;
 } linearFitResult;
 
-struct linearFitResultStruct determineFitUsingMinMaxIntensitySearch(double lineIntensities[], int imgSizeY, const int linFitParameter, __constant double linFitSearchRangeXvalues[])
+struct linearFitResultStruct determineFitUsingMinMaxIntensitySearch(double lineIntensities[], const int lineIntensitiesLength, const int linFitParameter, __constant double linFitSearchRangeXvalues[])
 {
 	__private int maxIndex;
 	__private int minIndex;
 	__private double minValue = 32000; // initialize value with first value of array
 	__private double maxValue = 0; // initialize value with first value of array
 	
-	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
+	for(int index=0;index<lineIntensitiesLength;index++)
 	{
 		maxIndex = select(maxIndex,index,(maxValue < lineIntensities[index]));
 		maxValue = select(maxValue,lineIntensities[index],(long)(maxValue < lineIntensities[index]));
@@ -390,12 +377,17 @@ struct linearFitResultStruct determineFitUsingMinMaxIntensitySearch(double lineI
 	return linearFitResult;
 }
 
-struct linearFitResultStruct determineFitUsingInclineSearch(double lineIntensities[], int imgSizeY, const int linFitParameter, __constant double linFitSearchRangeXvalues[], const int inclineRefinementRange)
+struct linearFitResultStruct determineFitUsingInclineSearch(double lineIntensities[], const int lineIntensitiesLength, const int linFitParameter, __constant double linFitSearchRangeXvalues[], const int inclineRefinementRange)
 {
 	__private double a=0.0, b=0.0, siga=0.0, sigb=0.0, chi2=0.0;
 	__private double aTmp=0.0, bTmp=0.0, bTmp2;
-		
-	for(int index=imgSizeY/2-inclineRefinementRange;index<imgSizeY/2+inclineRefinementRange;index++){
+	
+	int intervalCenterIndex = lineIntensitiesLength/2;
+	int lowerLimit = intervalCenterIndex - inclineRefinementRange;
+	int upperLimit = intervalCenterIndex + inclineRefinementRange;
+	
+	for(int index=lowerLimit; index<upperLimit; index++)
+	{
 		linearFit(linFitSearchRangeXvalues, lineIntensities, index, linFitParameter, &a, &b, &siga, &sigb, &chi2);
 		bTmp2 = bTmp;
 		bTmp = select(bTmp,b,(long)(fabs(b) > bTmp2));
@@ -445,7 +437,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	
 	const int coordinateIndex = coordinateStartingIndex + yGroupId*ySizeLoc + yIndLoc;
 	
-	__private double lineIntensities[400];
+	__private double lineIntensities[lineIntensities_LENGTH];
 	
 	__private double2 membraneNormalVector = membraneNormalVectors[coordinateIndex];
 	
@@ -465,7 +457,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
+	for(int index=0;index<lineIntensities_LENGTH;index++)
 	{
 		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * linFitSearchRangeXvalues[index];
 		lineIntensities[index] = getImageIntensitiesAtCoordinate(Img, sampler, Coords);

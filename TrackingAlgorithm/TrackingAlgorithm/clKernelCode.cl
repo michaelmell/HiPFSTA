@@ -1,3 +1,5 @@
+#define lineIntensities_LENGTH ${lineIntensities_LENGTH}
+
 #define MIN_MAX_INTENSITY_SEARCH 1
 #define MAX_INCLINE_SEARCH 2
 
@@ -5,9 +7,9 @@
 
 
 #if LINEAR_FIT_SEARCH_METHOD == MIN_MAX_INTENSITY_SEARCH
-	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingMinMaxIntensitySearch(lineIntensities,imgSizeY,linFitParameter,linFitSearchRangeXvalues)
+	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingMinMaxIntensitySearch(lineIntensities,lineIntensities_LENGTH,linFitParameter,linFitSearchRangeXvalues)
 #elif LINEAR_FIT_SEARCH_METHOD == MAX_INCLINE_SEARCH
-	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingInclineSearch(lineIntensities,imgSizeY,linFitParameter,linFitSearchRangeXvalues,inclineRefinementRange)
+	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingInclineSearch(lineIntensities,lineIntensities_LENGTH,linFitParameter,linFitSearchRangeXvalues,inclineRefinementRange)
 #endif
 
 
@@ -320,14 +322,14 @@ typedef struct linearFitResultStruct
 	double fitIncline;
 } linearFitResult;
 
-struct linearFitResultStruct determineFitUsingMinMaxIntensitySearch(double lineIntensities[], int imgSizeY, const int linFitParameter, __constant double linFitSearchRangeXvalues[])
+struct linearFitResultStruct determineFitUsingMinMaxIntensitySearch(double lineIntensities[], const int lineIntensitiesLength, const int linFitParameter, __constant double linFitSearchRangeXvalues[])
 {
 	__private int maxIndex;
 	__private int minIndex;
 	__private double minValue = 32000; // initialize value with first value of array
 	__private double maxValue = 0; // initialize value with first value of array
 	
-	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
+	for(int index=0;index<lineIntensitiesLength;index++)
 	{
 		maxIndex = select(maxIndex,index,(maxValue < lineIntensities[index]));
 		maxValue = select(maxValue,lineIntensities[index],(long)(maxValue < lineIntensities[index]));
@@ -375,12 +377,17 @@ struct linearFitResultStruct determineFitUsingMinMaxIntensitySearch(double lineI
 	return linearFitResult;
 }
 
-struct linearFitResultStruct determineFitUsingInclineSearch(double lineIntensities[], int imgSizeY, const int linFitParameter, __constant double linFitSearchRangeXvalues[], const int inclineRefinementRange)
+struct linearFitResultStruct determineFitUsingInclineSearch(double lineIntensities[], const int lineIntensitiesLength, const int linFitParameter, __constant double linFitSearchRangeXvalues[], const int inclineRefinementRange)
 {
 	__private double a=0.0, b=0.0, siga=0.0, sigb=0.0, chi2=0.0;
 	__private double aTmp=0.0, bTmp=0.0, bTmp2;
-		
-	for(int index=imgSizeY/2-inclineRefinementRange;index<imgSizeY/2+inclineRefinementRange;index++){
+	
+	int intervalCenterIndex = lineIntensitiesLength/2;
+	int lowerLimit = intervalCenterIndex - inclineRefinementRange;
+	int upperLimit = intervalCenterIndex + inclineRefinementRange;
+	
+	for(int index=lowerLimit; index<upperLimit; index++)
+	{
 		linearFit(linFitSearchRangeXvalues, lineIntensities, index, linFitParameter, &a, &b, &siga, &sigb, &chi2);
 		bTmp2 = bTmp;
 		bTmp = select(bTmp,b,(long)(fabs(b) > bTmp2));
@@ -430,7 +437,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	
 	const int coordinateIndex = coordinateStartingIndex + yGroupId*ySizeLoc + yIndLoc;
 	
-	__private double lineIntensities[400];
+	__private double lineIntensities[lineIntensities_LENGTH];
 	
 	__private double2 membraneNormalVector = membraneNormalVectors[coordinateIndex];
 	
@@ -450,7 +457,7 @@ __kernel void findMembranePosition(sampler_t sampler,
 	barrier(CLK_GLOBAL_MEM_FENCE);
 	barrier(CLK_LOCAL_MEM_FENCE);
 
-	for(int index=0;index<imgSizeY;index++) // TODO: The maximum index range 'imgSizeY' is almost certainly wrong here! It should run till the max length of 'linFitSearchRangeXvalues'. - Michael 2017-04-16
+	for(int index=0;index<lineIntensities_LENGTH;index++)
 	{
 		Coords = basePoint + rotatedUnitVector2[xIndLoc+yIndLoc*xSizeLoc] * linFitSearchRangeXvalues[index];
 		lineIntensities[index] = getImageIntensitiesAtCoordinate(Img, sampler, Coords);

@@ -9,19 +9,23 @@ from mako.template import Template
 class Test_testOpenClKernels(unittest.TestCase):
 	_equalityTolerance=1e-16
 	
-	def test_findMembranePositionUsingMaxIncline(self):
+	def setupTest(self, positioningMethod = "meanIntensityIntercept"):
 		self.clPlatform = "intel"
 		self.computeDeviceId = 0
-		self.positioningMethod = "maximumIntensityIncline"
+		self.positioningMethod = positioningMethod
 		self.setupClContext()
 		self.loadClKernels()
 		self.setupClQueue(self.ctx)
-
+	
+	def test_findMembranePositionUsingMaxIncline(self):
 		inputPath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePositionUsingMaxIncline_000/input'
 		referencePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePositionUsingMaxIncline_000/output'
 		referenceVariableName1 = 'dev_membraneCoordinates'
 		referenceVariableName2 = 'dev_membraneNormalVectors'
 		referenceVariableName3 = 'dev_fitInclines'
+
+		self.loadHostVariable('linFitSearchRangeXvalues',inputPath)
+		self.setupTest("maximumIntensityIncline")
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -39,7 +43,6 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.loadHostVariable('localRotationMatrices',inputPath)
 		self.buf_localRotationMatrices = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.localRotationMatrices)
 		#self.saveDeviceVariable('buf_linFitSearchRangeXvalues',inputPath)
-		self.loadHostVariable('linFitSearchRangeXvalues',inputPath)
 		self.buf_linFitSearchRangeXvalues = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.linFitSearchRangeXvalues)
 		self.loadHostVariable('linFitParameter',inputPath)
 		self.loadHostVariable('fitIntercept_memSize',inputPath)
@@ -87,18 +90,14 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_findMembranePosition(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-
 		inputPath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePosition_000/input'
 		referencePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/findMembranePosition_000/output'
 		referenceVariableName1 = 'dev_membraneCoordinates'
 		referenceVariableName2 = 'dev_membraneNormalVectors'
 		referenceVariableName3 = 'dev_fitInclines'
+
+		self.loadHostVariable('linFitSearchRangeXvalues',inputPath)
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -116,7 +115,6 @@ class Test_testOpenClKernels(unittest.TestCase):
 		self.loadHostVariable('localRotationMatrices',inputPath)
 		self.buf_localRotationMatrices = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.localRotationMatrices)
 		#self.saveDeviceVariable('buf_linFitSearchRangeXvalues',inputPath)
-		self.loadHostVariable('linFitSearchRangeXvalues',inputPath)
 		self.buf_linFitSearchRangeXvalues = cl.Buffer(self.ctx, self.mf.READ_ONLY | self.mf.COPY_HOST_PTR, hostbuf=self.linFitSearchRangeXvalues)
 		self.loadHostVariable('linFitParameter',inputPath)
 		self.loadHostVariable('fitIntercept_memSize',inputPath)
@@ -164,19 +162,15 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_filterNanValues_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/filterNanValues_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_membraneCoordinates'
 		referenceVariableName2 = 'dev_membraneNormalVectors'
 
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
+		
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
 		self.nrOfStrides = 1
@@ -200,18 +194,14 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_filterJumpedCoordinates_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/filterJumpedCoordinates_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_membraneCoordinates'
 		referenceVariableName2 = 'dev_membraneNormalVectors'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -245,17 +235,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_calculateInterCoordinateAngles_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateInterCoordinateAngles_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_interCoordinateAngles'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -275,18 +261,14 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_filterIncorrectCoordinates_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/filterIncorrectCoordinates_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_membraneCoordinates'
 		referenceVariableName2 = 'dev_membraneNormalVectors'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -317,17 +299,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_calculateDs_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateDs_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_ds'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -348,17 +326,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_calculateSumDs_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateSumDs_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_sumds'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -378,17 +352,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_calculateContourCenter_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateContourCenter_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_contourCenter'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -414,16 +384,12 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_cart2pol_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/cart2pol_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		referenceVariableName1 = 'dev_membranePolarCoordinates'
 
@@ -448,13 +414,6 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_sortCoordinates_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/sortCoordinates_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
@@ -462,6 +421,9 @@ class Test_testOpenClKernels(unittest.TestCase):
 		referenceVariableName1 = 'dev_membraneCoordinates'
 		referenceVariableName2 = 'dev_membranePolarCoordinates'
 		referenceVariableName3 = 'dev_membraneNormalVectors'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -487,17 +449,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_interpolatePolarCoordinatesLinear_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/interpolatePolarCoordinatesLinear_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_interpolatedMembraneCoordinates'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -528,17 +486,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_checkIfTrackingFinished_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/checkIfTrackingFinished_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_trackingFinished'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -562,17 +516,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_checkIfCenterConverged_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/checkIfCenterConverged_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_trackingFinished'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -596,17 +546,13 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_setIterationFinished_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/setIterationFinished_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_iterationFinished'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
 
 		self.nrOfLocalAngleSteps = 64
 		self.detectionKernelStrideSize = 2048
@@ -623,22 +569,18 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 
 	def test_calculateMembraneNormalVectors_000(self):
-		self.clPlatform = "intel"
-		self.computeDeviceId = 0
-		self.positioningMethod = "meanIntensityIntercept"
-		self.setupClContext()
-		self.loadClKernels()
-		self.setupClQueue(self.ctx)
-		
-		self.nrOfLocalAngleSteps = 64
-		self.detectionKernelStrideSize = 2048
-		self.nrOfStrides = 1
-		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
-
 		basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/TrackingAlgorithm/TrackingAlgorithm/TestData/ReferenceDataForTests/UnitTests/OpenClKernels/calculateMembraneNormalVectors_000'
 		inputPath = basePath+'/input'
 		referencePath = basePath+'/output'
 		referenceVariableName1 = 'dev_membraneNormalVectors'
+
+		self.linFitSearchRangeXvalues = np.float64(np.transpose(np.linspace(1,200,200)))
+		self.setupTest()
+
+		self.nrOfLocalAngleSteps = 64
+		self.detectionKernelStrideSize = 2048
+		self.nrOfStrides = 1
+		self.nrOfDetectionAngleSteps = np.float64(self.nrOfStrides*self.detectionKernelStrideSize)
 
 		self.loadDeviceVariable('dev_membraneCoordinates',inputPath)
 		self.loadDeviceVariable('dev_membraneNormalVectors',inputPath)
@@ -710,12 +652,14 @@ class Test_testOpenClKernels(unittest.TestCase):
 		pass
 	
 	def applyTemplating(self):
-		tpl = Template(self.kernelString)
+		lineIntensitiesLength = str(self.linFitSearchRangeXvalues.size)
 		if self.positioningMethod == "maximumIntensityIncline":
 			linear_fit_search_method="MAX_INCLINE_SEARCH"
 		if self.positioningMethod == "meanIntensityIntercept":
 			linear_fit_search_method="MIN_MAX_INTENSITY_SEARCH"
-		rendered_tpl = tpl.render(linear_fit_search_method=linear_fit_search_method)
+		tpl = Template(self.kernelString)
+		rendered_tpl = tpl.render(linear_fit_search_method=linear_fit_search_method, \
+								  lineIntensities_LENGTH=lineIntensitiesLength)
 		self.kernelString=str(rendered_tpl)
 		pass
 
