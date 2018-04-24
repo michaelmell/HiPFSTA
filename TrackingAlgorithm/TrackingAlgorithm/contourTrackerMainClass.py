@@ -150,7 +150,7 @@ class contourTrackerMain( object ):
 			#~ plt.imshow(self.contourTracker.host_Img)
 			plt.matshow(self.contourTracker.host_Img)
 			plt.plot(self.contourTracker.getMembraneCoordinatesXscaled()-0.5,self.contourTracker.getMembraneCoordinatesYscaled()-0.5,'k')
-			if self.snrRoi is not None:
+			if self.configReader.snrRoi is not None:
 				self.drawSnrRoiRectangle()
 			self.printTrackingParameters()
 			plt.show()
@@ -174,17 +174,17 @@ class contourTrackerMain( object ):
 		self.printImageStdMsg()
 		self.printImageSnrMsg()
 		print("\tUse image filtering:")
-		print("\t"+str(self.contourTracker.performImageFiltering))
+		print("\t"+str(self.contourTracker.configReader.performImageFiltering))
 		print("")
 		print("\tUse image scaling:")
-		print("\t"+str(self.contourTracker.performImageScaling))
+		print("\t"+str(self.contourTracker.configReader.performImageScaling))
 		print("")
 		print("")
 		
 	def printImageIntensityMsg(self):
 		print("\tImage intensity (obtained from 'snrRoi'):")
-		if self.snrRoi is not None:
-			print("\t"+str(self.contourTracker.getImageIntensity()))
+		if self.configReader.snrRoi is not None:
+			print("\t"+str(self.contourTracker.imageProcessor.getImageIntensity()))
 		else:
 			print("\tNo snrRoi provided.")
 		print("")
@@ -192,8 +192,8 @@ class contourTrackerMain( object ):
 	
 	def printImageSnrMsg(self):
 		print("\tImage SNR=intensity/std (obtained from 'snrRoi'):")
-		if self.snrRoi is not None:
-			print("\t"+str(self.contourTracker.getImageSnr()))
+		if self.configReader.snrRoi is not None:
+			print("\t"+str(self.contourTracker.imageProcessor.getImageSnr()))
 		else:
 			print("\tNo snrRoi provided.")
 		print("")
@@ -201,8 +201,8 @@ class contourTrackerMain( object ):
 	
 	def printImageStdMsg(self):
 		print("\tImage STD (obtained from 'snrRoi'):")
-		if self.snrRoi is not None:
-			print("\t"+str(self.contourTracker.getImageStd()))
+		if self.configReader.snrRoi is not None:
+			print("\t"+str(self.contourTracker.imageProcessor.getImageStd()))
 		else:
 			print("\tNo snrRoi provided.")
 		print("")
