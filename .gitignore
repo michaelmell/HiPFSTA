@@ -5,3 +5,4 @@
 *.cih
 **/output/*
 TrackingAlgorithm/.vs/TrackingAlgorithm/v15/.suo
+TrackingAlgorithm/TrackingAlgorithm/clKernelCode_RENDERED.cl
