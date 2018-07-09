@@ -6,3 +6,6 @@
 **/output/*
 TrackingAlgorithm/.vs/TrackingAlgorithm/v15/.suo
 TrackingAlgorithm/TrackingAlgorithm/clKernelCode_RENDERED.cl
+contourclosedindex.txt
+nrOfClosedContours.txt
+trackingLog.txt
