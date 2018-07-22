@@ -1,10 +1,10 @@
-function rbcHealthySpectrumAlgorithmComparison_1_v000
+function popcGuvSpectrumAlgorithmComparison_1_v000
 
 %%
 % run('/media/data_volume/mirrored_files/work/phd_thesis/matlab_functions/setPaths.m');
 run('C:\Private\PhD_Publications\Publication_of_Algorithm\2018-06-13__figure_10_reproduction_code\matlab_functions/setPaths.m');
 
-    %%
+%%
 % close all;
 
 %%
@@ -21,17 +21,16 @@ mkdir(scriptDataDir);
 %                 '/media/data_volume/non-mirrored_files/work/phd_thesis/flicker_spectroscopy_data/popc/2014-06-03/vesicle_4/movie_1_tracking/tracking_001/'; ...
 %                 };
 datasetPaths = { ...
-                'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/rbc/tracking/matlab_tracking_002/'; ...
-%                 'C:\Private\PhD_Publications\Publication_of_Algorithm\Data\healthy\2014-05-05\rbc_4\movie_1_tracking/tracking_001/'; ...
-                'C:\Private\PhD_Publications\Publication_of_Algorithm\Code\examples\rbc\tracking\tracking_000/'; ...
+                'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/guv_popc/tracking/matlab_tracking_002/'; ...
+%                 'C:\Private\PhD_Publications\Publication_of_Algorithm\Data\popc\2014-06-03\vesicle_4\movie_1_tracking_from_Lisa_2018-06-10\movie_1_tracking/matlab_tracking_002'; ...
+                'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/guv_popc/tracking/tracking_000/'; ...
                 };
 
 fourierSeriesDataFilename = 'fourierSeriesCenterOfEachContourCorrected.mat';
-% fourierSeriesDataFilename = 'fourierSeriesMeanCenterCorrected.mat';
 radiusSeriesDataFilename = 'radiusSeries.mat';
 
 datasetName =  {...
-                'rbc_2014-05-05_healthy_movie_1_matlab_tracking_002'; ...
+                'popc_2014-06-03_vesicle_4_movie_1_matlab_tracking_002'; ...
                 'popc_2014-06-03_vesicle_4_movie_1_tracking_001'; ...
               };
 
@@ -65,7 +64,6 @@ for datasetIndex = selectedDatasetIndexes
         %%
         load([datasetPaths{datasetIndex},'/',fourierSeriesDataFilename]);
         dataset(datasetIndex).fourierseries = fourierSeries;
-
         load([datasetPaths{datasetIndex},'/',radiusSeriesDataFilename]);
         dataset(datasetIndex).radiusseries = radiusSeries;
         
@@ -111,8 +109,8 @@ figure(1);
 
 set(gca,'FontSize',fontSizeMainAxes);
 
-datasetLabels = {'Pecreaux________','new algorithm________'};
-datasetLabelsFrags = {'Pecreaux','new algorithm'};
+datasetLabels = {'Pecréaux____','new algorithm_____'};
+datasetLabelsFrags = {'Pecréaux','new algorithm'};
 % datasetPlotStyles = {'k--','k-.','k:','k-','k--o','k-.square'};
 datasetPlotColor = {'b','r','b','c','m','k','y','r','g'};
 datasetPlotFitStyle = {'-','-','-','-','-','-','-','-','-'};
@@ -136,15 +134,17 @@ end
 hold off;
 
 hold on;
-xScale = 0.31;
+% xScale = 0.22;
+xScale = 0.24;
 x = linspace(0,2*pi*xScale,length(wavenumber));
 % prefactor = 2.646e-26;
-prefactor = 1.4e-24;
+prefactor = 1e-26*1.8065e+03;
 % plot(wavenumbersTwoSided,prefactor*abs(sinc(x)),'r')
 % sinc2fnc = prefactor*abs(sinc(x).^2);
 % plot(wavenumber,sinc2fnc,'k-.','displayname','$\sinc^2$')
 % plot(prefactor*abs(sinc(x).^3),'b')
 sinc5fnc = prefactor*abs(sinc(x).^5);
+% wavenumber = wavenumber / 1.45;
 plot(wavenumber,sinc5fnc,'k--','displayname','noise floor','LineWidth',2);
 % plot(prefactor*abs(sinc(x).^5),'m')
 hold off;
@@ -154,13 +154,14 @@ hold off;
 % % ylim([1e-25,1e-19]);
 % ylim([1e-28,1e-19]);
 
-% xlim([0.0023e8,1.5398e8]);
-xlim([0.0023e8,2.7e8]);
-% ylim([2.0e-29,0.3354e-19]);
-ylim([2.0e-29,1e-19]);
+% xlim([0.0341e+07,5.4923e+07]);
+% xlim([1.6e+05,10.4923e+07]);
+% ylim([1e-24,0.7049e-19]);
 
-% xlim([0.0023e8,1.5398e8]);
-% ylim([1.0e-29,0.3354e-19]);
+% xlim([1.6e+05,10.4923e+07]);
+% ylim([5e-24,0.7049e-19]);
+xlim([0.0017e8,2e8]);
+ylim([2.0e-29,1e-19]);
 
 % format figure
 set(gca,'xscale','log');
