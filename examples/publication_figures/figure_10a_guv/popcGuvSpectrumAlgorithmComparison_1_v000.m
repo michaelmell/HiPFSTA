@@ -2,7 +2,7 @@ function popcGuvSpectrumAlgorithmComparison_1_v000
 
 %%
 % run('/media/data_volume/mirrored_files/work/phd_thesis/matlab_functions/setPaths.m');
-run('C:\Private\PhD_Publications\Publication_of_Algorithm\2018-06-13__figure_10_reproduction_code\matlab_functions/setPaths.m');
+run('C:\Private\PhD_Publications\Publication_of_Algorithm\Code\matlab_code/setPaths.m');
 
 %%
 % close all;
