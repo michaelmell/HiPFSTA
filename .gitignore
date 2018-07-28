@@ -9,3 +9,4 @@ TrackingAlgorithm/TrackingAlgorithm/clKernelCode_RENDERED.cl
 contourclosedindex.txt
 nrOfClosedContours.txt
 trackingLog.txt
+*.asv
