@@ -23,6 +23,9 @@ end
 [programParameters,trackingParameters,trackingVariables] = initializeTracking(parameterStruct);
 parameterStruct = createImageFileList(parameterStruct);
 
+if ~exist(programParameters.data_analysis_directory_path,'dir')
+    mkdir(programParameters.data_analysis_directory_path);
+end
 save([programParameters.data_analysis_directory_path,'/parameterStruct','.mat'],'parameterStruct','-MAT');
 save([programParameters.data_analysis_directory_path,'/programParameters','.mat'],'programParameters','-MAT');
 save([programParameters.data_analysis_directory_path,'/trackingParameters','.mat'],'trackingParameters','-MAT');
