@@ -158,7 +158,7 @@ try
 %         imageData(imageData==Inf) = 0;
 %         imageData(isnan(imageData)) = 0;
 %         imagesc(imageData);
-    subaxis(1,2,1,'SpacingVert',0,'MR',0)
+    subplot(1,2,1);
     imageData(imageData==Inf) = 0;
     imagesc(imageData,[0,nanmean(nanmean(imageData))]);
     daspect([1 1 1]);
@@ -173,7 +173,7 @@ try
     drawOverlay(gca,trackingVariables.startingPixelPosition,'w',8);
 %         drawOverlay(gca,trackingVariables.center,'r',8);
     if trackingVariables.firstdetection
-        subaxis(1,2,2,'SpacingVert',0,'MR',0)
+        subplot(1,2,2);
         imageData(imageData==Inf) = 0;
         imagesc(imageData,[0,nanmean(nanmean(imageData))]);
         daspect([1 1 1]);
