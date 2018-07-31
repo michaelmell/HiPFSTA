@@ -122,7 +122,6 @@ for datasetIndex = selectedDatasetIndexes
 %     meanRadius = nanmean(dataset(datasetIndex).radiusseries);
     meanRadius = datasetsResults{datasetIndex}.meanRadius;
     spectrumData = ((meanRadius^3 * pi)/2) * datasetsResults{datasetIndex}.spectrumDataNonNormalized;
-    spectrumData = 25*spectrumData;
     wavenumber = datasetsResults{datasetIndex}.wavenumber;
 
     datasetDataPlotStyles = [datasetPlotColor{counter},datasetPlotDataStyle{counter}];
