@@ -5,6 +5,6 @@ sys.path.append("C:/Private/PhD_Publications/Publication_of_Algorithm/Code/Track
 from contourTrackerMainClass import contourTrackerMain
 
 # run tracking
-prg = contourTrackerMain("tracking_000.conf",runInteractive=True)
+prg = contourTrackerMain("tracking_config.conf",runInteractive=True)
 # prg.initializeTracking()
 prg.startTracking()
