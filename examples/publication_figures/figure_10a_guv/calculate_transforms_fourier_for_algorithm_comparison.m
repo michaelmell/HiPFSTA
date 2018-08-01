@@ -1,6 +1,5 @@
 %%
-% run('/media/data_volume/mirrored_files/work/phd_thesis/matlab_functions/setPaths.m');
-run('C:\Private\PhD_Publications\Publication_of_Algorithm\Code\matlab_code/setPaths.m');  
+run('../../../matlab_code/setPaths.m');  
 
 %% create POPC dataset
 close all;
@@ -10,10 +9,10 @@ clear classes;
 % /media/data_volume/figure_10_files/guv/popc/2014-06-03/vesicle_4/movie_1_tracking
 
 % basePath = '/media/lisa_3/figure_10_analysis_mike_2016-05-05/guv_analysis/popc/2014-06-03/';
-basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/';
+basePath = '../../';
 % basePath = '/media/data_volume/figure_10_files/guv/popc/2014-06-03/';
 
-datasetPath = {'guv_popc/tracking/matlab_tracking_002/', ...
+datasetPath = {'guv/tracking/matlab_tracking_002/', ...
 %                'vesicle_4/movie_1_tracking/tracking_001/', ...
                };
 datasetLabelAlternative = {'guv_popc_2014-06-03_vesicle_4_movie_1_tracking_matlab_tracking_002', ...
@@ -98,7 +97,6 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-return
 %%
 close all;
 clear all;
@@ -108,7 +106,7 @@ fourierSeriesFilenameEachCenter = 'fourierSeriesCenterOfEachContourCorrected.mat
 fourierSeriesFilenameMeanCenter = 'fourierSeriesMeanCenterCorrected.mat';
 
 basePath = {...
-            'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/'; ...
+            '../../'; ...
             };
 
 basePaths = {...
@@ -116,7 +114,7 @@ basePaths = {...
              };
         
 datasetPath = { ...
-               [basePath{1},'/','guv_popc/tracking/tracking_000/'], ...
+               [basePath{1},'/','guv/tracking/tracking_000/'], ...
                };
 
 % check that paths exist before starting

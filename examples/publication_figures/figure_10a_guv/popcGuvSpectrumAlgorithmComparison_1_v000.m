@@ -2,7 +2,7 @@ function popcGuvSpectrumAlgorithmComparison_1_v000
 
 %%
 % run('/media/data_volume/mirrored_files/work/phd_thesis/matlab_functions/setPaths.m');
-run('C:\Private\PhD_Publications\Publication_of_Algorithm\Code\matlab_code/setPaths.m');
+run('../../../matlab_code/setPaths.m');
 
 %%
 % close all;
@@ -21,9 +21,9 @@ mkdir(scriptDataDir);
 %                 '/media/data_volume/non-mirrored_files/work/phd_thesis/flicker_spectroscopy_data/popc/2014-06-03/vesicle_4/movie_1_tracking/tracking_001/'; ...
 %                 };
 datasetPaths = { ...
-                'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/guv_popc/tracking/matlab_tracking_002/'; ...
+                '../../guv/tracking/matlab_tracking_002/'; ...
 %                 'C:\Private\PhD_Publications\Publication_of_Algorithm\Data\popc\2014-06-03\vesicle_4\movie_1_tracking_from_Lisa_2018-06-10\movie_1_tracking/matlab_tracking_002'; ...
-                'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/guv_popc/tracking/tracking_000/'; ...
+                '../../guv/tracking/tracking_000/'; ...
                 };
 
 fourierSeriesDataFilename = 'fourierSeriesCenterOfEachContourCorrected.mat';
@@ -137,7 +137,7 @@ hold on;
 xScale = 0.24;
 x = linspace(0,2*pi*xScale,length(wavenumber));
 % prefactor = 2.646e-26;
-prefactor = 1e-26*1.8065e+03;
+prefactor = 1e-26*1.8065e+03/25;
 % plot(wavenumbersTwoSided,prefactor*abs(sinc(x)),'r')
 % sinc2fnc = prefactor*abs(sinc(x).^2);
 % plot(wavenumber,sinc2fnc,'k-.','displayname','$\sinc^2$')
