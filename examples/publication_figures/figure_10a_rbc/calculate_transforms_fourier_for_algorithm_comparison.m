@@ -1,12 +1,12 @@
 %%
-run('C:\Private\PhD_Publications\Publication_of_Algorithm\Code\matlab_code/setPaths.m');  
+run('../../../matlab_code/setPaths.m');  
 
 %% create RBC dataset
 close all;
 clear all;
 clear classes;
 
-basePath = 'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/';
+basePath = '../../';
 % basePath = '/media/data_volume/figure_10_files/rbc/healthy/2014-05-05/';
 
 datasetPath = {'rbc/tracking/matlab_tracking_002/', ...
@@ -56,7 +56,7 @@ for index = indices
     else
        disp(['File exists: ',[savePath{index},'/',fourierSeriesFilenameEachCenter]]) 
     end
-
+    
     if( ~exist([savePath{index},'/',fourierSeriesFilenameMeanCenter],'file'))
         dataset.setReferenceCenterMethod('meanCenter');
         dataset.calculatePolarCoordinates();
@@ -68,7 +68,7 @@ for index = indices
     else
        disp(['File exists: ',[savePath{index},'/',fourierSeriesFilenameMeanCenter]]) 
     end
-    
+
     radiusSeries = dataset(1).getRadiusSeries;
     save([savePath{index},'/radiusSeries'],'radiusSeries');
     circumferenceSeries = dataset(1).getCircumferenceSeries;
@@ -76,7 +76,9 @@ for index = indices
     
 end
 
-return
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%
 close all;
 clear all;
@@ -86,7 +88,7 @@ fourierSeriesFilenameEachCenter = 'fourierSeriesCenterOfEachContourCorrected.mat
 fourierSeriesFilenameMeanCenter = 'fourierSeriesMeanCenterCorrected.mat';
 
 basePath = {...
-            'C:/Private/PhD_Publications/Publication_of_Algorithm/Code/examples/'; ...
+            '../../'; ...
             };
 
 basePaths = {...
