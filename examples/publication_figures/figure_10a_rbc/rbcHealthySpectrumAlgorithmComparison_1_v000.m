@@ -101,19 +101,16 @@ figureSettings;
 % fontSizeMainAxes = 7;
 
 %%
-keyboard
-
-%%
 close(figure(1));
 figure(1);
 
 set(gca,'FontSize',fontSizeMainAxes);
 
-datasetLabels = {'Pecreaux________','new algorithm________'};
-datasetLabelsFrags = {'Pecreaux','new algorithm'};
+datasetLabels = {'Pecreaux'' algorithm','HiPFSTA'};
+% datasetLabelsFrags = {'Pecreaux','HiPFSTA'};
 % datasetPlotStyles = {'k--','k-.','k:','k-','k--o','k-.square'};
 datasetPlotColor = {'b','r','b','c','m','k','y','r','g'};
-datasetPlotFitStyle = {'-','-','-','-','-','-','-','-','-'};
+% datasetPlotFitStyle = {'-','-','-','-','-','-','-','-','-'};
 datasetPlotDataStyle = {'o','s','o','o','o','o','o','s','s'};
 
 counter = 1;
@@ -136,7 +133,7 @@ hold on;
 xScale = 0.31;
 x = linspace(0,2*pi*xScale,length(wavenumber));
 % prefactor = 2.646e-26;
-prefactor = 1.4e-24/25;
+prefactor = 5.6e-26;
 % plot(wavenumbersTwoSided,prefactor*abs(sinc(x)),'r')
 % sinc2fnc = prefactor*abs(sinc(x).^2);
 % plot(wavenumber,sinc2fnc,'k-.','displayname','$\sinc^2$')
@@ -154,7 +151,7 @@ hold off;
 % xlim([0.0023e8,1.5398e8]);
 xlim([0.0023e8,2.7e8]);
 % ylim([2.0e-29,0.3354e-19]);
-ylim([2.0e-29,1e-19]);
+ylim([5.0e-30,2e-21]);
 
 % xlim([0.0023e8,1.5398e8]);
 % ylim([1.0e-29,0.3354e-19]);
@@ -165,11 +162,12 @@ set(gca,'yscale','log');
 
 pixelSize = 50e-9;
 q_pixel = 2*pi/pixelSize;
-[hLine,hLabel] = vline(q_pixel,'--k','$\q_{\text{px}}$');
+[hLine,hLabel] = vline(q_pixel,'--k','q_{pix}');
 set(hLine,'LineWidth',2);
 pos = get(hLabel,'pos');
-pos(1) = 6e7;
-pos(2) = 3e-20;
+% pos(1) = 1.3e8;
+pos(1) = 8e7;
+pos(2) = 8e-22;
 set(hLabel,'pos',pos);
 
 % pixelSize = 50e-9;
@@ -178,20 +176,23 @@ set(hLabel,'pos',pos);
 
 box on;
 
-xlabel('$\q \,[\m^{-1}]$');
-ylabel('$\spectrum(\q) \,[\m^{3}]$');
-set(get(gca,'ylabel'),'position',[relLocX(-0.16),relLocY(0.5),0])
-set(get(gca,'xlabel'),'position',[relLocX(0.5),relLocY(-0.1),0])
+xlabel('q [m^{-1}]');
+ylabel('P(q) [m^3]');
+% set(get(gca,'ylabel'),'position',[relLocX(-0.16),relLocY(0.5),0])
+% set(get(gca,'xlabel'),'position',[relLocX(0.5),relLocY(-0.1),0])
 
 hLeg = legend('-dynamiclegend');
-hLegc = get(hLeg,'children');
-for index = 1:length(datasetLabels)
-    set( findobj(hLegc,'string',datasetLabels{index}), 'userdata',...
-    ['matlabfrag:',datasetLabelsFrags{index}]);
-end
+% hLegc = get(hLeg,'children');
+% for index = 1:length(datasetLabels)
+%     set( findobj(hLegc,'string',datasetLabels{index}), 'userdata',...
+%     ['matlabfrag:',datasetLabelsFrags{index}]);
+% end
 set(hLeg,'location','southwest');
 
 % ylim([0.5e-24,5e-20]);
+
+%%
+return
 
 %%
 saveFile = [scriptName,'/',scriptName,'_subfig1'];
