@@ -1,0 +1,119 @@
+function void = doTestTracking
+
+% get new tracking settings settings
+hTrackingMenuGUI = gcbf;
+hTrackingMenuData = guidata(hTrackingMenuGUI);
+handles = hTrackingMenuData;
+
+parameterStruct = handles.parameterStruct;
+contourNrIndex = 1;
+
+firstdetection_tmp = 0;
+
+while parameterStruct.continuousTrackingOn == 1
+    for fileImageIndex = parameterStruct.selected_image_files
+
+        % get new tracking settings settings
+        hTrackingMenuGUI = gcbf;
+        hTrackingMenuData = guidata(hTrackingMenuGUI);
+        handles = hTrackingMenuData;
+
+        parameterStruct = handles.parameterStruct;
+        [programParameters,trackingParameters,trackingVariables] = initializeTracking(parameterStruct);
+        
+        trackingVariables.firstdetection = firstdetection_tmp;
+        
+        trackingVariables.contourclosed = 0;
+        
+        % load image
+        [imageData,trackingVariables.displayimage] = loadImage(programParameters.image_data_directory_path,parameterStruct.image_file_list{fileImageIndex});
+
+        parameterStruct.image = imageData;
+        parameterStruct = calculateCorrectedImage(parameterStruct);
+        imageData = parameterStruct.correctedImage;
+
+        % this calculates the radius of the vesicle
+        trackingVariables.sizeofvesicle = sqrt((trackingVariables.furthestmembranepos(1)-trackingVariables.center(1))^2 + ...
+                                               (trackingVariables.furthestmembranepos(2)-trackingVariables.center(2))^2);   
+
+        %determine the size of the image to later determine the middle line of the
+        %image on which to find the membrane (see below)
+        [trackingVariables.imagexmax trackingVariables.imageymax] = size(imageData); % max coordinates in the x- and y-directions
+
+        % set starting point for the tracking of the following image,
+        % depending on whether the contour was detected correctly or not
+        if trackingVariables.firstdetection == 0
+            trackingVariables.startingPixelPosition = findFirstStartingPixelPosition(imageData,trackingVariables.center,trackingParameters,trackingVariables);
+        else
+            trackingVariables.startingPixelPosition = startingPixelPosition_tmp;
+        end
+        
+        % reset control variables start tracking
+        trackingVariables.contourclosedindex(contourNrIndex) = 0;
+    try
+        % track image to extract contour
+        [trackingVariables.xymempos,trackingVariables.pixpos,trackingVariables.contourclosed] = contourTrack(imageData,trackingVariables.startingPixelPosition,trackingParameters,trackingVariables);
+
+        % write tracked coordinates to structure
+        trackingVariables.contour.coordinates{contourNrIndex} = trackingVariables.xymempos;
+
+        % test the tracked contour
+        trackingVariables = testContour(contourNrIndex,trackingVariables,trackingParameters);
+
+        % show zoomed image of selected vesicle
+    %     trackingVariables.displayimage = markContourCoordinates(trackingVariables.displayimage,trackingVariables);
+    %     trackingVariables.VesicleROI = getVesicleROI(trackingVariables.displayimage,trackingVariables.center,trackingVariables.sizeofvesicle,trackingParameters.surroundings);
+    %     programParameters.hFig = showImage(trackingVariables.VesicleROI,trackingParameters.colorMapType);
+
+        % mark contour in the displayed image
+        draw_image_to_axes(handles.tracked_vesicle_data_axes,imageData);
+        % draw tracked contour
+        drawOverlay(handles.tracked_vesicle_data_axes,trackingVariables.pixpos,'b',2);
+        drawOverlay(handles.tracked_vesicle_data_axes,trackingVariables.xymempos,'r',2);
+        % draw starting point of track and the vesicle center
+        drawOverlay(handles.tracked_vesicle_data_axes,trackingVariables.startingPixelPosition,'w',8);
+        drawOverlay(handles.tracked_vesicle_data_axes,trackingVariables.center,'r',8);
+        drawnow;
+        pause(0.1);
+
+        
+        %%% END SAME
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % this sets the variable trackingVariables.firstdetection to 1 once the contour was tracked
+        % correctly for the first time
+        if trackingVariables.contourclosed == 1
+            if trackingVariables.firstdetection == 0
+                trackingVariables = userRequestTrackingSuccess(trackingVariables);
+                firstdetection_tmp = trackingVariables.firstdetection;
+            end
+            %%% find starting point for membrane recognition
+            if trackingVariables.firstdetection == 1
+                trackingVariables.sizeofvesicle = sqrt((trackingVariables.startingPixelPosition(1)-trackingVariables.center(1))^2 + ...
+                                                       (trackingVariables.startingPixelPosition(2)-trackingVariables.center(2))^2);
+                trackingVariables.delta = trackingVariables.startingPixelPosition - trackingVariables.center;
+                trackingVariables.startingPixelPosition = setNewTrackingStartingPoint(contourNrIndex,trackingVariables.startingPixelPosition,trackingVariables.center,trackingVariables.delta,trackingVariables.xymempos);
+                startingPixelPosition_tmp = trackingVariables.startingPixelPosition;
+            end
+        end
+
+        % output control information
+        outputTrackingInformation(contourNrIndex,trackingVariables);
+        
+    catch exception
+        display('###################### An error occured! ######################')
+        display(getReport(exception)); 
+    end
+    contourNrIndex = contourNrIndex + 1;
+    
+    % stop tracking if terminated by user input
+    if parameterStruct.continuousTrackingOn == 0
+        break;
+    end
+    
+    end
+end
+
+% write settings to main GUI and close submenu
+handles.trackingVariables = trackingVariables;
+hTrackingMenuData = handles;
+guidata(hTrackingMenuGUI,hTrackingMenuData);

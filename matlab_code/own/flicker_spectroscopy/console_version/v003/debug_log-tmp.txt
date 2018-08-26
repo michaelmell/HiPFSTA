@@ -1,0 +1,27 @@
+Value of breakofpixel: 
+Contour Index: 1517
+Contour center coordinates: 417.1267      494.6693
+Value of trackingVariables.sizeofvesicle: 143.1271
+Value of trackingVariables.delta: -143.1267     0.3307111
+Value of trackingVariables.contourRadius: 324.7045
+Value of trackingVariables.newstartingpixpos: 272  495
+Current image file: polymer_vesicle_C001H001S0001001518.tif
+###################### An error occured! ######################
+Index exceeds matrix dimensions.
+
+Error in calcNewMembranePosition (line 26)
+meanvaluey = meanOneDimension(image(trackingVariables.pixpos(index2,1)+trackingVariables.xdirection,trackingVariables.pixpos(index2,2)-trackingParameters.meanparameter:trackingVariables.pixpos(index2
+Error in contourTrack (line 28)
+    trackingVariables = calcNewMembranePosition(imageData,index2,trackingParameters,trackingVariables);
+
+Error in console_tracking (line 107)
+        [trackingVariables.xymempos,trackingVariables.pixpos,trackingVariables.contourclosed] = contourTrack(imageData,trackingVariables.startingPixelPosition,trackingParameters,trackingVariables);
+
+Error in trackImages (line 16)
+console_tracking(parameterStruct);
+
+Error in runAnalysis (line 2)
+trackImages('/media/data_volume/non-mirrored_files/work/phd_thesis/flicker_spectroscopy_data/pdbpeo/polymer_08062010/vesicle1/S0006_analysis_1.conf');
+
+The desktop configuration was not saved successfully
+trackingVariables.pixpos(index2,1)

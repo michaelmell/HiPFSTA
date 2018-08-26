@@ -294,7 +294,8 @@ class contourTracker( object ):
 		for counter, angle in enumerate(self.host_interpolationAngles):
 			radiusVectorRotationMatrix = np.array([[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
 			rotatedRadiusUnitVector = radiusVectorRotationMatrix.dot(radiusUnitVector)
-			self.host_radialVectors[counter] = rotatedRadiusUnitVector
+			self.host_radialVectors[counter][0] = rotatedRadiusUnitVector[0]
+			self.host_radialVectors[counter][1] = rotatedRadiusUnitVector[1]
 			self.host_radialVectorsX[counter] = rotatedRadiusUnitVector[0]
 			self.host_radialVectorsY[counter] = rotatedRadiusUnitVector[1]
 		
