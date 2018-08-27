@@ -19,15 +19,16 @@ HiPFSTA is a high-precision, high-throughput contour tracking algorithm for flic
 * Download and install the newest version of Anaconda3-5.X with Python3 support from ContinuumAnalytics: https://repo.continuum.io/archive/
 * Start the anaconda prompt: open the Windows Start-Menu -> type "anaconda prompt" -> hit Enter
 * Install required python version (see https://anaconda.org/anaconda/python):
-    ```sh
-    $ conda install -c anaconda python=3.6.6
+    ```
+    > conda install -c anaconda python=3.6.6
+    > conda install -c anaconda ipython=6.1
     ```
 	 
 * Install dependencies:
-    ```sh
-	$ conda install -c conda-forge pyopencl=2018.1.1
-	$ conda install -c conda-forge ipdb=0.11
-	$ conda install -c anaconda pillow=5.2.0
+    ```
+	> conda install -c conda-forge pyopencl=2018.1.1
+	> conda install -c conda-forge ipdb=0.11
+	> conda install -c anaconda pillow=5.2.0
     ```
 
 # Generating figures 10A and 10B of the publication
@@ -36,40 +37,40 @@ Note that Matlab is required to generate the figures. The code was tested with M
 In the following `$GITREPOPATH$` refers to the path were you cloned the Git repository:
 
 * Run python contour tracking for GUV dataset. In the anaconda prompt enter:
-    ```sh
-	$ cd $GITREPOPATH$\examples\guv\tracking
-	$ ipython
-	$ %run run_tracking.py
+    ```
+	> cd $GITREPOPATH$\examples\guv\tracking
+	> ipython
+	> %run run_tracking.py
     ```
 	
 * Run python contour tracking for RBC dataset. In the anaconda prompt enter:
-    ```sh
-	$ cd $GITREPOPATH$\examples\rbc\tracking
-	$ ipython
-	$ %run run_tracking.py
+    ```
+	> cd $GITREPOPATH$\examples\rbc\tracking
+	> ipython
+	> %run run_tracking.py
     ```
 	
 * Run Matlab contour tracking for GUV dataset. In Matlab prompt enter:
-    ```sh
+    ```
 	> cd $GITREPOPATH$\examples\guv\tracking
 	> run_matlab_tracking_002
     ```
 	
 * Run Matlab contour tracking for RBC dataset. In Matlab prompt enter:
-    ```sh
+    ```
 	> cd $GITREPOPATH$\examples\rbc\tracking
 	> run_matlab_tracking_002
     ```
 
 * Generate comparison figure 10a for the GUV dataset. In Matlab prompt enter (you will have to wait for each script to finish before running the next one):
-    ```sh
+    ```
     > cd $GITREPOPATH$\examples\publication_figures\figure_10a_guv
     > calculate_transforms_fourier_for_algorithm_comparison
     > popcGuvSpectrumAlgorithmComparison_1_v000
     ```
 		
 * Generate comparison figure 10b for the RBC dataset. In Matlab prompt enter (you will have to wait for each script to finish before running the next one):
-    ```sh
+    ```
     > cd $GITREPOPATH$\examples\publication_figures\figure_10b_rbc
     > calculate_transforms_fourier_for_algorithm_comparison
     > popcGuvSpectrumAlgorithmComparison_1_v000
