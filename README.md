@@ -16,7 +16,7 @@ HiPFSTA is a high-precision, high-throughput contour tracking algorithm for flic
 * If you have problems checking out this repository with Git LFS, please refer to the documentation of your Git client.
 
 # Setup python environment
-* Install the newest version of Anaconda Python 5.2.X from ContinuumAnalytics for your respective OS from here: https://repo.continuum.io/archive/
+* Install the newest version of Anaconda Python 3-5.X from ContinuumAnalytics for your respective OS from here: https://repo.continuum.io/archive/
 * Start the anaconda prompt: open Windows Start-Menu -> type "anaconda prompt" -> hit Enter
 * Install python 3.7 (see https://anaconda.org/anaconda/python):
     ```sh
