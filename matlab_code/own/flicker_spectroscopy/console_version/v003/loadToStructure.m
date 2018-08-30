@@ -8,6 +8,6 @@ c = textscan(fid, '%s = %[^%\n]'); % loads config into the cell 'c' reading file
 fclose(fid);
 
 % write loaded cell do data-structure
-for index = 1:length(c{1})
+for index = 1:length(c{1})-1
     eval(['returnStructure.', c{1}{index}, '=', c{2}{index},';']);
 end

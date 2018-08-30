@@ -1,5 +1,6 @@
 % pathBase = '/home/micha/tmp/work/matlab_functions/';
 pathBase = '.';
+%pathBase = '../../../matlab_code/';
 
 % % add path to opencl toolbox
 % addpath(genpath([pathBase,'/external/opencl_toolbox/opencl-toolbox']));
@@ -76,7 +77,7 @@ addpath([pathBase,'/external/hline_vline']);
 % addpath([pathBase,'/external/barwitherr']);
 
 % add settings of figures
-addpath([pathBase,'/own/figureSettings'])
+addpath([pathBase,'/own/figureSettings']);
 
 % % add functions for converting units
 % addpath([pathBase,'/external/Degree_Radian_Conversion'])

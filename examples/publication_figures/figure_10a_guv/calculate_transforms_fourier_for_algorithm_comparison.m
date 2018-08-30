@@ -1,5 +1,10 @@
 %%
-run('../../../matlab_code/setPaths.m');  
+##run('../../../matlab_code/setPaths.m');  
+##genpath('../../../matlab_code');
+pathBase = '../../../matlab_code/';
+addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
+addpath([pathBase,'/external/hline_vline']);
+addpath([pathBase,'/own/figureSettings']);
 
 %% create POPC dataset
 close all;
@@ -80,9 +85,9 @@ for index = indices
     end
 
     radiusSeries = dataset(1).getRadiusSeries;
-    save([savePath{index},'/radiusSeries'],'radiusSeries');
+    save([savePath{index},'/radiusSeries.mat'],'radiusSeries');
     circumferenceSeries = dataset(1).getCircumferenceSeries;
-    save([savePath{index},'/circumferenceSeries'],'circumferenceSeries');
+    save([savePath{index},'/circumferenceSeries.mat'],'circumferenceSeries');
     
     %%%
 %     save([savePath,'/',name,'_center_of_each_mode.mat'],'dataset');
@@ -93,7 +98,6 @@ for index = indices
 %     dataset.calculateFourierTransform();
 %     save([savePath,'/',name,'_averaged_center.mat'],'dataset');
 end
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
