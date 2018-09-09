@@ -164,11 +164,11 @@ pixelSize = 50e-9;
 q_pixel = 2*pi/pixelSize;
 [hLine,hLabel] = vline(q_pixel,'--k','q_{pix}');
 set(hLine,'LineWidth',2);
-pos = get(hLabel,'pos');
+pos = get(hLabel,'position');
 % pos(1) = 1.3e8;
 pos(1) = 8e7;
 pos(2) = 8e-22;
-set(hLabel,'pos',pos);
+set(hLabel,'position',pos);
 
 % pixelSize = 50e-9;
 % [hhh,hLabelText]=vline(2*pi/pixelSize,'k--','$1\px$'); % plot vline at wavenumber corresponding to pixel size
