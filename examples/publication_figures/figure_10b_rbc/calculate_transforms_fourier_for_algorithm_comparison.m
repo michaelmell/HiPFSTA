@@ -52,7 +52,7 @@ for index = indices
         dataset.calculateFourierTransformNEW2();
 %         dataset.calculateFourierTransformNEW();
         fourierSeries = dataset.fourierseries;
-        save([savePath{index},'/',fourierSeriesFilenameEachCenter],'fourierSeries');
+        save([savePath{index},'/',fourierSeriesFilenameEachCenter],'fourierSeries','-mat');
     else
        disp(['File exists: ',[savePath{index},'/',fourierSeriesFilenameEachCenter]]) 
     end
@@ -64,15 +64,15 @@ for index = indices
         dataset.calculateFourierTransformNEW2();
 %         dataset.calculateFourierTransformNEW();
         fourierSeries = dataset.fourierseries;
-        save([savePath{index},'/',fourierSeriesFilenameMeanCenter],'fourierSeries');
+        save([savePath{index},'/',fourierSeriesFilenameMeanCenter],'fourierSeries','-mat');
     else
        disp(['File exists: ',[savePath{index},'/',fourierSeriesFilenameMeanCenter]]) 
     end
 
     radiusSeries = dataset(1).getRadiusSeries;
-    save([savePath{index},'/radiusSeries'],'radiusSeries');
+    save([savePath{index},'/radiusSeries','.mat'],'radiusSeries','-mat');
     circumferenceSeries = dataset(1).getCircumferenceSeries;
-    save([savePath{index},'/circumferenceSeries'],'circumferenceSeries');
+    save([savePath{index},'/circumferenceSeries','.mat'],'circumferenceSeries','-mat');
     
 end
 
@@ -146,7 +146,7 @@ for datasetIndex = indexes
 %     dataset.setReferenceCenterMethod('forEachContour');
 %     dataset.calculatePolarCoordinates();
 %     dataset.calculateFourierTransformNEW();
-%     save([savePath{datasetIndex},'/',datasetLabel{datasetIndex},'_center_of_each_mode.mat'],'dataset');
+%     save([savePath{datasetIndex},'/',datasetLabel{datasetIndex},'_center_of_each_mode.mat'],'dataset','-mat');
 
     %     dataset.loadImageInterpolationSettings_v002( path );
     %     dataset.setResolution(50.0e-09);
@@ -158,7 +158,7 @@ for datasetIndex = indexes
 %     dataset.setReferenceCenterMethod('meanCenter');
 %     dataset.calculatePolarCoordinates();
 %     dataset.calculateFourierTransformNEW2();
-%     save([savePath{datasetIndex},'/',datasetLabel{datasetIndex},'_averaged_center.mat'],'dataset');
+%     save([savePath{datasetIndex},'/',datasetLabel{datasetIndex},'_averaged_center.mat'],'dataset','-mat');
 
         % create version with center for each profile
     fileName = [savePath{datasetIndex},'/',fourierSeriesFilenameEachCenter];
@@ -169,7 +169,7 @@ for datasetIndex = indexes
         dataset.calculateFourierTransformNEW2();
 %         dataset.calculateFourierTransformNEW();
         fourierSeries = dataset.fourierseries;
-        save(fileName,'fourierSeries');
+        save(fileName,'fourierSeries','-mat');
     else
        disp(['File exists: ',fileName]) 
     end
@@ -182,11 +182,11 @@ for datasetIndex = indexes
         dataset.calculateFourierTransformNEW2();
 %         dataset.calculateFourierTransformNEW();
         fourierSeries = dataset.fourierseries;
-        save(fileName,'fourierSeries');
+        save(fileName,'fourierSeries','-mat');
         radiusSeries = dataset(1).getRadiusSeries;
-        save([savePath{index},'/radiusSeries'],'radiusSeries');
+        save([savePath{index},'/radiusSeries','.mat'],'radiusSeries','-mat');
         circumferenceSeries = dataset(1).getCircumferenceSeries;
-        save([savePath{index},'/circumferenceSeries'],'circumferenceSeries');
+        save([savePath{index},'/circumferenceSeries','.mat'],'circumferenceSeries','-mat');
     else
        disp(['File exists: ',fileName]) 
     end
