@@ -1,6 +1,7 @@
 % pathBase = '/home/micha/tmp/work/matlab_functions/';
-pathBase = '.';
-%pathBase = '../../../matlab_code/';
+% pathBase = '.';
+
+pathBase = pwd;
 
 % % add path to opencl toolbox
 % addpath(genpath([pathBase,'/external/opencl_toolbox/opencl-toolbox']));
@@ -41,7 +42,7 @@ pathBase = '.';
 % 
 % % function for loading experimental data
 % addpath([pathBase,'/own/data_analysis/flickeringLoaderClass']);
-addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
+addpath([pathBase,'\own\data_analysis\flickeringDataClass']);
 % 
 % % functions for data loading, saving and caching (e.g.: memory mapping, etc.)
 % addpath(genpath([pathBase,'/external/waterloo']));
@@ -57,7 +58,7 @@ addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
 % addpath([pathBase,'/own/data_fitting/multiscalar_fitting']);
 % 
 % functions for plotting and saving figures
-addpath([pathBase,'/external/hline_vline']);
+addpath([pathBase,'\\external\hline_vline']);
 % addpath([pathBase,'/external/matlabfrag']);
 % addpath([pathBase,'/external/errorbarlogx']);
 % addpath([pathBase,'/external/errorbar_tick']);
@@ -77,7 +78,7 @@ addpath([pathBase,'/external/hline_vline']);
 % addpath([pathBase,'/external/barwitherr']);
 
 % add settings of figures
-addpath([pathBase,'/own/figureSettings']);
+addpath([pathBase,'\\own\\figureSettings'])
 
 % % add functions for converting units
 % addpath([pathBase,'/external/Degree_Radian_Conversion'])
