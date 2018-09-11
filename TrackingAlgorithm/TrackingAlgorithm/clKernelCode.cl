@@ -12,16 +12,8 @@
 	#define LINEAR_FIT_SEARCH_METHOD_CALL() determineFitUsingInclineSearch(lineIntensities,lineIntensities_LENGTH,linFitParameter,linFitSearchRangeXvalues,inclineRefinementRange)
 #endif
 
-
-#ifdef cl_khr_fp64
-    #pragma OPENCL EXTENSION cl_khr_fp64 : enable
-#elif defined(cl_amd_fp64)
-    #pragma OPENCL EXTENSION cl_amd_fp64 : enable
-#else
-    #error "Double precision floating point not supported by OpenCL implementation."
-#endif
-//~ #pragma OPENCL EXTENSION cl_amd_printf : enable
-
+/* Calculate linear regressino on arrays (x,y) for using 2*linFitParameter+1 values centered on gradientCenterIndex.
+ */
 void linearFit(__constant double x[], double y[], int gradientCenterIndex, int linFitParameter, double *a, double *b, double *siga, double *sigb, double *chi2)
 {
 	int i;
@@ -627,7 +619,6 @@ __kernel void checkIfCenterConverged(
 	const int xInd = get_global_id(0);
 	const int xSize = get_global_size(0);
 	
-	__private double xDistance, yDistance;
 	if(xInd==0)
 	{
 		__private double distance =  length(contourCenter[xInd] - previousContourCenter[xInd]);
