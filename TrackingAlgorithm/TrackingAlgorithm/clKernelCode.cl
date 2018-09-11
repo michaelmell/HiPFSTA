@@ -155,9 +155,9 @@ __kernel void cart2pol(__global double2* membraneCoordinates,
 	double2 contourCenterLoc;
 	contourCenterLoc = contourCenter[0];
 	
-	membranePolarCoordinates[xInd][0] =  atan2( membraneCoordinates[xInd].y - contourCenterLoc.y,
+	membranePolarCoordinates[xInd].x =  atan2( membraneCoordinates[xInd].y - contourCenterLoc.y,
 												membraneCoordinates[xInd].x - contourCenterLoc.x);
-	membranePolarCoordinates[xInd][1] =  sqrt( pow((membraneCoordinates[xInd].y - contourCenterLoc.y),2)
+	membranePolarCoordinates[xInd].y =  sqrt( pow((membraneCoordinates[xInd].y - contourCenterLoc.y),2)
 											 + pow((membraneCoordinates[xInd].x - contourCenterLoc.x),2) 
 											 );
 }
@@ -173,8 +173,8 @@ __kernel void pol2cart(__global double2* membraneCoordinates,
 	double2 contourCenterLoc;
 	contourCenterLoc = contourCenter[0];
 	
-	membraneCoordinates[xInd].x = contourCenterLoc.x + membranePolarCoordinates[xInd][1] * cos(membranePolarCoordinates[xInd][0]);
-	membraneCoordinates[xInd].y = contourCenterLoc.y + membranePolarCoordinates[xInd][1] * sin(membranePolarCoordinates[xInd][0]);
+	membraneCoordinates[xInd].x = contourCenterLoc.x + membranePolarCoordinates[xInd].y * cos(membranePolarCoordinates[xInd].x);
+	membraneCoordinates[xInd].y = contourCenterLoc.y + membranePolarCoordinates[xInd].y * sin(membranePolarCoordinates[xInd].x);
 }
 
 __kernel void emptyKernel(__global double* membraneCoordinatesX, __global double* membraneCoordinatesY)
@@ -263,7 +263,7 @@ __kernel void sortCoordinates(__global double2* membranePolarCoordinates,
 		   int newn = 0;
 		   for(int i=1;i<=n-1;i++)
 		   {
-				if(membranePolarCoordinates[i-1][0]>membranePolarCoordinates[i][0])
+				if(membranePolarCoordinates[i-1].x>membranePolarCoordinates[i].x)
 				{
 					__private double2 tmp;
 					
@@ -303,7 +303,7 @@ double2 calculateLocalMembranePositions(double fitIncline, double fitIntercept, 
 	
 }
 
-double getImageIntensitiesAtCoordinate(const image2d_t Img, const sampler_t sampler, const double2 Coords)
+double getImageIntensitiesAtCoordinate(image2d_t Img, sampler_t sampler, double2 Coords)
 {
 	__private double2 NormCoords;
 	__private const int2 dims = get_image_dim(Img);
@@ -313,7 +313,7 @@ double getImageIntensitiesAtCoordinate(const image2d_t Img, const sampler_t samp
 	float2 fNormCoords;
 	fNormCoords = convert_float2(NormCoords);
 	
-	return read_imagef(Img, sampler, fNormCoords)[0];
+	return read_imagef(Img, sampler, fNormCoords).x;
 }
 
 typedef struct linearFitResultStruct
@@ -935,8 +935,8 @@ __kernel void interpolatePolarCoordinatesLinear(__global double2* membranePolarC
 			upperIndex = upperIndex - xSize;
 		}
 		
-		lowerAngle = membranePolarCoordinates[lowerIndex][0];
-		upperAngle = membranePolarCoordinates[upperIndex][0];
+		lowerAngle = membranePolarCoordinates[lowerIndex].x;
+		upperAngle = membranePolarCoordinates[upperIndex].x;
 		interpolationAngle = interpolationAngles[xInd];
 		
 		if(lowerAngle>upperAngle){
