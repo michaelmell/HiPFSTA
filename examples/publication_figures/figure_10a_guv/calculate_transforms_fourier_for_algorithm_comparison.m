@@ -1,6 +1,6 @@
 %%
-##run('../../../matlab_code/setPaths.m');  
-##genpath('../../../matlab_code');
+%run('../../../matlab_code/setPaths.m');  
+%genpath('../../../matlab_code');
 pathBase = '../../../matlab_code/';
 addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
 addpath([pathBase,'/external/hline_vline']);
