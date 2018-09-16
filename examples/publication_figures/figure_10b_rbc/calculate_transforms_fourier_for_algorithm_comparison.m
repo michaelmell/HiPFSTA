@@ -1,5 +1,10 @@
 %%
-run('../../../matlab_code/setPaths.m');  
+%run('../../../matlab_code/setPaths.m');  
+%genpath('../../../matlab_code');
+pathBase = '../../../matlab_code/';
+addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
+addpath([pathBase,'/external/hline_vline']);
+addpath([pathBase,'/own/figureSettings']);
 
 %% create RBC dataset
 close all;
