@@ -75,9 +75,9 @@ for index = indices
     end
 
     radiusSeries = dataset(1).getRadiusSeries;
-    save([savePath{index},'/radiusSeries'],'radiusSeries');
+    save([savePath{index},'/radiusSeries.mat'],'radiusSeries');
     circumferenceSeries = dataset(1).getCircumferenceSeries;
-    save([savePath{index},'/circumferenceSeries'],'circumferenceSeries');
+    save([savePath{index},'/circumferenceSeries.mat'],'circumferenceSeries');
     
 end
 
@@ -189,9 +189,9 @@ for datasetIndex = indexes
         fourierSeries = dataset.fourierseries;
         save(fileName,'fourierSeries');
         radiusSeries = dataset(1).getRadiusSeries;
-        save([savePath{index},'/radiusSeries'],'radiusSeries');
+        save([savePath{index},'/radiusSeries.mat'],'radiusSeries');
         circumferenceSeries = dataset(1).getCircumferenceSeries;
-        save([savePath{index},'/circumferenceSeries'],'circumferenceSeries');
+        save([savePath{index},'/circumferenceSeries.mat'],'circumferenceSeries');
     else
        disp(['File exists: ',fileName]) 
     end
