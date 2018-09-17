@@ -1,4 +1,4 @@
-classdef flickeringDataClass < handle & hgsetget
+classdef flickeringDataClass < handle
     properties
         closedContours;
         closedContourIndexes;
@@ -493,6 +493,9 @@ end
     
     methods
         function obj = flickeringDataClass( varargin )
+          if(obj.isOctave())
+            pkg load statistics;
+          end
         end
         
         function savedStructure = saveobj(obj) % for details see: http://www.mathworks.es/es/help/matlab/ref/saveobj.html
@@ -502,6 +505,7 @@ end
             end
         end
     end
+    
     methods (Static = true)
         function obj = loadobj(savedStructure) % for details see: http://www.mathworks.es/es/help/matlab/ref/loadobj.html
             obj = flickeringDataClass();
@@ -513,6 +517,19 @@ end
                 obj = writePolarCoordinatesToArray(obj);
                 obj = writeCartesianCoordinatesToArray(obj);
             end
+        end
+
+        %%
+        %% Return: true if the environment is Octave.
+        %%
+        function retval = isOctave
+          persistent cacheval;  % speeds up repeated calls
+
+          if isempty (cacheval)
+            cacheval = (exist ('OCTAVE_VERSION', 'builtin') > 0);
+          end
+
+          retval = cacheval;
         end
     end
     

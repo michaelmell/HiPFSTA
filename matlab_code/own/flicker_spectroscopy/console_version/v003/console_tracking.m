@@ -13,6 +13,23 @@ function bkgrData = calculateBkgrImage(parameterStruct)
     bkgrData = bkgrData/length(fileList);
 end
 
+%%
+%% Return: true if the environment is Octave.
+%%
+function retval = isOctave
+  persistent cacheval;  % speeds up repeated calls
+
+  if isempty (cacheval)
+    cacheval = (exist ('OCTAVE_VERSION', 'builtin') > 0);
+  end
+
+  retval = cacheval;
+end
+
+if(isOctave())
+  pkg load statistics;
+end
+
 % % get new tracking settings settings
 % hTrackingMenuGUI = gcbf;
 % hTrackingMenuData = guidata(hTrackingMenuGUI);
@@ -26,9 +43,9 @@ parameterStruct = createImageFileList(parameterStruct);
 if ~exist(programParameters.data_analysis_directory_path,'dir')
     mkdir(programParameters.data_analysis_directory_path);
 end
-save([programParameters.data_analysis_directory_path,'/parameterStruct','.mat'],'parameterStruct','-MAT');
-save([programParameters.data_analysis_directory_path,'/programParameters','.mat'],'programParameters','-MAT');
-save([programParameters.data_analysis_directory_path,'/trackingParameters','.mat'],'trackingParameters','-MAT');
+save([programParameters.data_analysis_directory_path,'/parameterStruct','.mat'],'parameterStruct');
+save([programParameters.data_analysis_directory_path,'/programParameters','.mat'],'programParameters');
+save([programParameters.data_analysis_directory_path,'/trackingParameters','.mat'],'trackingParameters');
 
 contourNrIndex = 1;
 
@@ -236,8 +253,8 @@ contourCenters(contourNrIndex,:) = trackingVariables.center;
 if mod(fileImageIndex,parameterStruct.saveInterval) == 0
     disp('Saving intermediate tracked data ...');
     
-    save([programParameters.data_analysis_directory_path,'/contourCoordinates','.mat'],'contourCoordinates','-MAT');
-    save([programParameters.data_analysis_directory_path,'/contourCenters','.mat'],'contourCenters','-MAT');
+    save([programParameters.data_analysis_directory_path,'/contourCoordinates','.mat'],'contourCoordinates');
+    save([programParameters.data_analysis_directory_path,'/contourCenters','.mat'],'contourCenters');
     saveTrackingResults(contourNrIndex,trackingVariables,programParameters)
 end
 

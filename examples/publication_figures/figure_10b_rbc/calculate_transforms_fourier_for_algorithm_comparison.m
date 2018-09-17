@@ -1,5 +1,10 @@
 %%
-run('../../../matlab_code/setPaths.m');  
+%run('../../../matlab_code/setPaths.m');  
+%genpath('../../../matlab_code');
+pathBase = '../../../matlab_code/';
+addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
+addpath([pathBase,'/external/hline_vline']);
+addpath([pathBase,'/own/figureSettings']);
 
 %% create RBC dataset
 close all;
@@ -70,9 +75,9 @@ for index = indices
     end
 
     radiusSeries = dataset(1).getRadiusSeries;
-    save([savePath{index},'/radiusSeries'],'radiusSeries');
+    save([savePath{index},'/radiusSeries.mat'],'radiusSeries');
     circumferenceSeries = dataset(1).getCircumferenceSeries;
-    save([savePath{index},'/circumferenceSeries'],'circumferenceSeries');
+    save([savePath{index},'/circumferenceSeries.mat'],'circumferenceSeries');
     
 end
 
@@ -184,9 +189,9 @@ for datasetIndex = indexes
         fourierSeries = dataset.fourierseries;
         save(fileName,'fourierSeries');
         radiusSeries = dataset(1).getRadiusSeries;
-        save([savePath{index},'/radiusSeries'],'radiusSeries');
+        save([savePath{index},'/radiusSeries.mat'],'radiusSeries');
         circumferenceSeries = dataset(1).getCircumferenceSeries;
-        save([savePath{index},'/circumferenceSeries'],'circumferenceSeries');
+        save([savePath{index},'/circumferenceSeries.mat'],'circumferenceSeries');
     else
        disp(['File exists: ',fileName]) 
     end

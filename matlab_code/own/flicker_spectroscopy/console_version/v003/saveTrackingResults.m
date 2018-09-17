@@ -9,7 +9,7 @@ function void = saveTrackingResults(contourNrIndex,trackingVariables,programPara
 
 %%% save tracked contours
 contourCoordinates = trackingVariables.contour.coordinates;
-save([programParameters.data_analysis_directory_path,'/contourCoordinates','.mat'],'contourCoordinates','-MAT');
+save([programParameters.data_analysis_directory_path,'/contourCoordinates','.mat'],'contourCoordinates');
 % for index = 1:contourNrIndex
 %     xymempos = trackingVariables.contour.coordinates{index};
 %     save([pathToResultsDirectory,'/contours/contour',num2str(index),'.txt'],'xymempos','-ascii'); % save the contour
@@ -17,11 +17,11 @@ save([programParameters.data_analysis_directory_path,'/contourCoordinates','.mat
 
 %%% save pixel-positions tracked contours
 pixelPositions = trackingVariables.contour.pixelPositions;
-save([programParameters.data_analysis_directory_path,'/pixelPositions','.mat'],'pixelPositions','-MAT');
+save([programParameters.data_analysis_directory_path,'/pixelPositions','.mat'],'pixelPositions');
 
 %%% save tracking output
 trackingVariables = rmfield(trackingVariables,'contour');
-save([programParameters.data_analysis_directory_path,'/trackingVariables','.mat'],'trackingVariables','-MAT');
+save([programParameters.data_analysis_directory_path,'/trackingVariables','.mat'],'trackingVariables');
 
 % make directory that will be holding the information on the specific
 % project
