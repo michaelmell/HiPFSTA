@@ -73,5 +73,5 @@ In the following `$GITREPOPATH$` refers to the path were you cloned the Git repo
     ```
     > cd $GITREPOPATH$\examples\publication_figures\figure_10b_rbc
     > calculate_transforms_fourier_for_algorithm_comparison
-    > popcGuvSpectrumAlgorithmComparison_1_v000
+    > rbcHealthySpectrumAlgorithmComparison_1_v000
     ```
