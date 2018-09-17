@@ -211,7 +211,7 @@ class configReader(object):
 				if answer.lower().startswith("y"):
 					os.makedirs(self.dataAnalysisDirectoryPath)
 				else:
-					exit()
+					sys.exit()
 			else:
 				print("")
 				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' did not exist. Created it.")
@@ -228,5 +228,5 @@ class configReader(object):
 				print("")
 				answer = input("\tContinue? (y: yes, n: no) ")
 				if answer.lower().startswith("n"):
-					exit()
+					sys.exit()
 	

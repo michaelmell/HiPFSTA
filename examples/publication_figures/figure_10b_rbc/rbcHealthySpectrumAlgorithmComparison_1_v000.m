@@ -94,7 +94,7 @@ for datasetIndex = selectedDatasetIndexes
         
         datasetResult = datasetsResults{datasetIndex};
         
-        save(fileName,'datasetResult');
+        save(fileName,'datasetResult','-mat');
         
         clear tmp, dataset;
     end

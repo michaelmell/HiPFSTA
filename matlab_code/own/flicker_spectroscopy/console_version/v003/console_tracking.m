@@ -43,9 +43,9 @@ parameterStruct = createImageFileList(parameterStruct);
 if ~exist(programParameters.data_analysis_directory_path,'dir')
     mkdir(programParameters.data_analysis_directory_path);
 end
-save([programParameters.data_analysis_directory_path,'/parameterStruct','.mat'],'parameterStruct');
-save([programParameters.data_analysis_directory_path,'/programParameters','.mat'],'programParameters');
-save([programParameters.data_analysis_directory_path,'/trackingParameters','.mat'],'trackingParameters');
+save([programParameters.data_analysis_directory_path,'/parameterStruct','.mat'],'parameterStruct','-mat');
+save([programParameters.data_analysis_directory_path,'/programParameters','.mat'],'programParameters','-mat');
+save([programParameters.data_analysis_directory_path,'/trackingParameters','.mat'],'trackingParameters','-mat');
 
 contourNrIndex = 1;
 
@@ -242,8 +242,8 @@ try
     
 catch exception
     display('###################### An error occured! ######################')
-    display(getReport(exception)); 
-keyboard
+    % display(getReport(exception)); 
+    display(exception); 
 end
 
 
