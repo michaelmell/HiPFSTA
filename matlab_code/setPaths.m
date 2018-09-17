@@ -1,6 +1,7 @@
 % pathBase = '/home/micha/tmp/work/matlab_functions/';
-pathBase = '.';
-%pathBase = '../../../matlab_code/';
+% pathBase = '.';
+
+pathBase = pwd;
 
 % % add path to opencl toolbox
 % addpath(genpath([pathBase,'/external/opencl_toolbox/opencl-toolbox']));
