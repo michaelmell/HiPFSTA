@@ -1,39 +1,69 @@
 # Description
-HiPFSTA is a high-precision, high-throughput contour tracking algorithm for flicker spectroscopy with the following properties:
+HiPPFSTA is a **h**igh-**p**recision, high-**p**erformance **f**licker **s**pectroscopy contour **t**racking **a**lgorithm with the following properties:
+* It is capable of achieving nanometer localization accuracy in phase contrast light-microscopy images given correct image material (see publication).
 * It is written in Python and OpenCL and capable of levaraging the GPU for accelerated image processing (although it will run on CPU as well provided an OpenCL driver).
-* It is capable of achieving nanometer localization accuracy in phase contrast light-microscopy images.
 
 # References
-* HiPFSTA was developed as part of Michael Mells PhD thesis and is published here: **[TODO: ADD REFERENCE, ONCE PUBLISHED]**
-* If you use HiPFSTA in your research, please cite:  **[TODO: ADD REFERENCE, ONCE PUBLISHED]**
+* HiPPFSTA was developed by Michael Mell as part of his research work during his PhD thesis, which was conducted at the University Complutense of Madrid under the supervision of Prof. Francisco Monroy.
+* If you use HiPPFSTA in your research, please cite:  **[TODO: ADD REFERENCE, ONCE PUBLISHED]**
 
-# Install OpenCL driver (instructions for Windows)
-* The GPU/CPU Driver Packages for modern Intel chips with Intel Graphics are include with Windows Graphics driver (see here: https://software.intel.com/en-us/articles/opencl-drivers#win64). If your CPU does not include integrated graphics you need install the CPU-only driver found here: https://software.intel.com/en-us/articles/opencl-drivers#latest_CPU_runtime
-* For any other type of graphics card or CPU (e.g. AMD or NVidia) please see the instructions of the vendor.
-
-# Git LFS
-* This repository uses Git LFS to include image files for running the examples and code-tests.
+# Getting the code and images
+This repository uses Git LFS to manage the image files that are necessary for running the examples and code-tests. To obtain these you need to use the Git client to checkout the respository by following these instructions: 
+Instructions:
+* Download Git from gitscm.com by selecting the button "Download 2.XX for Windows"
+* Install it with default configuration (unless you know what you are doing).
+* Pull this repository:
+    ```
+    > git clone https://gitlab.com/michaelmell/cellcontourtracker.git
+    ```
+* Enter GitLab credentials  **[TODO: REMOVE THIS, WHEN RESPOSITORY IS PUBLIC]**
+* Git will download the code along with the image necessary for running the examples
 * If you have problems checking out this repository with Git LFS, please refer to the documentation of your Git client.
+
+**Important**: Please note that the tar-ball/zip-file provided by GitLab.com for download on this page (above) does not include the Git LFS image files.
+
+# OpenCL runtimes (installation instructions for Windows)
+To run the HiPPFSTA you need a functioning OpenCL runtime supporting OpenCL 1.2. OpenCL runtimes are currently not included in major operating systems (except for macOS). There are several OpenCL runtimes provided from different hardware vendors. In particular, the runtimes from AMD, Intel and Nvidia have been tested with the HiPPFSTA.
+
+### Intel runtime
+Modern Intel CPUs include integrated GPUs capable of running OpenCL. The corresponding runtime is included with Graphics driver, which can be downloaded from Intel. Furthermore, there exists an OpenCL runtime for Intel CPUs, which is included with the Intel SDK.
+
+* Drivers for the integrated GPUs can be download here: https://software.intel.com/en-us/articles/opencl-drivers#graph-win
+* The CPU runtime can be found here (requires registration): https://software.intel.com/en-us/articles/opencl-drivers#cpu-section
+
+### AMD runtime
+* The AMD runtime can be found here: https://www.amd.com/en/support
+* It is capable of running on AMD GPUs as well as AMD and Intel CPUs (_not_ Intel GPUs).
+
+### NVIDIA  runtime
+* NVIDIA GPUs support OpenCL as well: https://developer.nvidia.com/opencl
+* OpenCL support is included in the NVIDIA GPU drivers: www.nvidia.com/drivers
 
 # Setup python environment (instructions for Windows)
 * Download and install the newest version of Anaconda3-5.X with Python3 support from ContinuumAnalytics: https://repo.continuum.io/archive/
 * Start the anaconda prompt: open the Windows Start-Menu -> type "anaconda prompt" -> hit Enter
-* Install required python version (see https://anaconda.org/anaconda/python):
+* Install required python version:
     ```
     > conda install -c anaconda python=3.6.6
     > conda install -c anaconda ipython=6.1
     ```
+* Install PyOpenCL:
+Download PyOpenCL for OpenCL 1.2  https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyopencl
+pyopencl-2018.1.1+cl12-cp36-cp36m-win_amd64.whl
+    ```
+	> conda install -c conda-forge pyopencl=2018.1.1
+    ```
 	 
 * Install dependencies:
     ```
-	> conda install -c conda-forge pyopencl=2018.1.1
 	> conda install -c conda-forge ipdb=0.11
 	> conda install -c anaconda pillow=5.2.0
+	> conda install -c anaconda icu=58.2 ipykernel=4.6.1 libtiff libpng jpeg qt
     ```
 
-# Generating figures 10A and 10B of the publication
-The repository includes sample data from POPC GUV and RBC measurements to generate figures 10A and 10B of the corresponding publication (using Git LFS, see above), which are generated by following the instructions below. Due to space-limitation, these are _reduced_ datasets, which is why the resulting spectra are _noisier_ than in the published figure.
-Note that Matlab is required to generate the figures. The code was tested with Matlab 2016b, but older versions >2014a should work too. Compatiblity with GNU Octave (https://www.gnu.org/software/octave/) has not yet been tested.
+# Generating figures 10A and 10B of the corresponding publication
+The repository includes sample data from POPC GUV and RBC measurements to generate figures 10A and 10B of the corresponding publication (see section **Getting the code and images**), which can be generated using the following the instructions. To limit data-usage, these are _reduced_ datasets, which is why the resulting spectra are _noisier_ than in the published figure.
+The scripts are written in Matlab code and were tested with Matlab 2016b, but older versions >2014a should work too. The scripts were also tested with the free and open-source GNU Octave (https://www.gnu.org/software/octave/), but performance is worse than when using Matlab.
 In the following `$GITREPOPATH$` refers to the path were you cloned the Git repository:
 
 * Run python contour tracking for GUV dataset. In the anaconda prompt enter:
@@ -42,6 +72,7 @@ In the following `$GITREPOPATH$` refers to the path were you cloned the Git repo
 	> ipython
 	> %run run_tracking.py
     ```
+**Note**: When running the program in interactive mode (default setting used in this repository), the program will display a window showing the first frame with its tracking (black line at the contour of the cell). Please close this window to continue the processing of the dataset.
 	
 * Run python contour tracking for RBC dataset. In the anaconda prompt enter:
     ```
