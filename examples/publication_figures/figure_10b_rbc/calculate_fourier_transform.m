@@ -33,25 +33,17 @@ for index = indices
     dataset.calculateCircumference();
     dataset.calculateBarioCenter();
 
-    if( ~exist([savePath{index},'/',fourierSeriesFilenameEachCenter],'file'))
-        dataset.setReferenceCenterMethod('forEachContour');
-        dataset.calculatePolarCoordinates();
-        dataset.calculateFourierTransformNEW2();
-        fourierSeries = dataset.fourierseries;
-        save([savePath{index},'/',fourierSeriesFilenameEachCenter],'fourierSeries','-mat');
-    else
-       disp(['File exists: ',[savePath{index},'/',fourierSeriesFilenameEachCenter]]) 
-    end
+    dataset.setReferenceCenterMethod('forEachContour');
+    dataset.calculatePolarCoordinates();
+    dataset.calculateFourierTransformNEW2();
+    fourierSeries = dataset.fourierseries;
+    save([savePath{index},'/',fourierSeriesFilenameEachCenter],'fourierSeries','-mat');
     
-    if( ~exist([savePath{index},'/',fourierSeriesFilenameMeanCenter],'file'))
-        dataset.setReferenceCenterMethod('meanCenter');
-        dataset.calculatePolarCoordinates();
-        dataset.calculateFourierTransformNEW2();
-        fourierSeries = dataset.fourierseries;
-        save([savePath{index},'/',fourierSeriesFilenameMeanCenter],'fourierSeries','-mat');
-    else
-       disp(['File exists: ',[savePath{index},'/',fourierSeriesFilenameMeanCenter]]) 
-    end
+    dataset.setReferenceCenterMethod('meanCenter');
+    dataset.calculatePolarCoordinates();
+    dataset.calculateFourierTransformNEW2();
+    fourierSeries = dataset.fourierseries;
+    save([savePath{index},'/',fourierSeriesFilenameMeanCenter],'fourierSeries','-mat');
 
     radiusSeries = dataset(1).getRadiusSeries;
 
@@ -104,30 +96,23 @@ for datasetIndex = indexes
     dataset.calculateBarioCenter();
 
     fileName = [savePath{datasetIndex},'/',fourierSeriesFilenameEachCenter];
-    if( ~exist(fileName,'file'))
-        dataset.setReferenceCenterMethod('forEachContour');
-        dataset.calculatePolarCoordinates();
-        dataset.calculateFourierTransformNEW2();
-        fourierSeries = dataset.fourierseries;
-        save(fileName,'fourierSeries','-mat');
-    else
-       disp(['File exists: ',fileName]) 
-    end
+
+    dataset.setReferenceCenterMethod('forEachContour');
+    dataset.calculatePolarCoordinates();
+    dataset.calculateFourierTransformNEW2();
+    fourierSeries = dataset.fourierseries;
+    save(fileName,'fourierSeries','-mat');
     
     fileName = [savePath{datasetIndex},'/',fourierSeriesFilenameMeanCenter];
-    if( ~exist(fileName,'file'))
-        dataset.setReferenceCenterMethod('meanCenter');
-        dataset.calculatePolarCoordinates();
-        dataset.calculateFourierTransformNEW2();
-        fourierSeries = dataset.fourierseries;
-        save(fileName,'fourierSeries','-mat');
-        radiusSeries = dataset(1).getRadiusSeries;
+    dataset.setReferenceCenterMethod('meanCenter');
+    dataset.calculatePolarCoordinates();
+    dataset.calculateFourierTransformNEW2();
+    fourierSeries = dataset.fourierseries;
+    save(fileName,'fourierSeries','-mat');
+    radiusSeries = dataset(1).getRadiusSeries;
 
-        save([savePath{index},'/radiusSeries','.mat'],'radiusSeries','-mat');
-        circumferenceSeries = dataset(1).getCircumferenceSeries;
-        save([savePath{index},'/circumferenceSeries','.mat'],'circumferenceSeries','-mat');
-    else
-       disp(['File exists: ',fileName]) 
-    end
+    save([savePath{index},'/radiusSeries','.mat'],'radiusSeries','-mat');
+    circumferenceSeries = dataset(1).getCircumferenceSeries;
+    save([savePath{index},'/circumferenceSeries','.mat'],'circumferenceSeries','-mat');
 end
 
