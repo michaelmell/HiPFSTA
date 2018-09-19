@@ -2,6 +2,7 @@ import os
 import configparser
 import json
 import numpy as np
+import sys
 
 class configReader(object):
 	"""description of class"""
@@ -13,6 +14,11 @@ class configReader(object):
 		self.loadContourTrackerConfig()
 
 	def loadContourTrackerConfig(self):
+		self.configFileVersion  = json.loads(self.config.get("FileVersion","version"))
+		if(self.configFileVersion != "1.0.0"):
+			print("ERROR: The provided config file with version "+self.configFileVersion+" is incompatible with this program version.")
+			sys.exit(1);
+
 		self.positioningMethod  = json.loads(self.config.get("TrackingParameters","positioningMethod"))
 
 		self.inclineRefinementRange = np.int32(np.round(self.scalingFactor * np.float64(json.loads(self.config.get("TrackingParameters","inclineRefinementRange")))))
