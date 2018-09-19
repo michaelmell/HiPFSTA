@@ -253,13 +253,12 @@ class contourTrackerMain( object ):
 		
 	def setupClContext(self):
 		self.clPlatformList = cl.get_platforms()
-		counter = 0
-		for platform in self.clPlatformList:
-			if self.configReader.clPlatform in platform.name.lower():
-				self.platformIndex = counter
-			counter = counter + 1
-		clDevicesList = self.clPlatformList[self.platformIndex].get_devices()
-		
+		#counter = 0
+		#for platform in self.clPlatformList:
+		#	if self.configReader.clPlatform in platform.name.lower():
+		#		self.platformIndex = counter
+		#	counter = counter + 1
+		clDevicesList = self.clPlatformList[self.configReader.platformId].get_devices()
 		computeDeviceIdSelection = self.configReader.computeDeviceId # 0: AMD-GPU; 1: Intel CPU
 		self.device = clDevicesList[computeDeviceIdSelection]
 		self.ctx = cl.Context([self.device])
@@ -319,19 +318,18 @@ class contourTrackerMain( object ):
 		for platform in self.clPlatformList:
 			print("\tPlatform "+str(platformIndex)+": "+platform.name)
 
-			platformIndex = platformIndex + 1
-			clDevicesList = self.clPlatformList[self.platformIndex].get_devices()
+			clDevicesList = self.clPlatformList[platformIndex].get_devices()
 			deviceIndex = 0
 			for device in clDevicesList:
 				print("\t\tDevice "+str(deviceIndex)+": "+device.name)
 				deviceIndex = deviceIndex + 1
-		
+			platformIndex = platformIndex + 1
 		pass
 		
 	def printTrackingSetupInformation(self):
 		print("")
 		print("\tSelected OpenCL platform/device:")
-		print("\tPlatform "+str(self.platformIndex)+": "+self.clPlatformList[self.platformIndex].name)
+		print("\tPlatform "+str(self.configReader.platformId)+": "+self.clPlatformList[self.configReader.platformId].name)
 		print("\tDevice "+str(self.configReader.computeDeviceId)+": "+self.device.name)
 		print("")
 		print("\tImage directory: ")

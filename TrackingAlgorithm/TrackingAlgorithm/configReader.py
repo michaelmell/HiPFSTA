@@ -37,7 +37,8 @@ class configReader(object):
 		
 		self.nrOfIterationsPerContour = np.int32(json.loads(self.config.get("TrackingParameters","nrOfIterationsPerContour")))
 		
-		self.computeDeviceId = json.loads(self.config.get("OpenClParameters","computeDeviceId"))
+		self.platformId = json.loads(self.config.get("OpenClParameters","platformIndex"))
+		self.computeDeviceId = json.loads(self.config.get("OpenClParameters","deviceIndex"))
 
 		self.inclineTolerance = np.float64(json.loads(self.config.get("TrackingParameters","inclineTolerance")))
 		
@@ -140,8 +141,9 @@ class configReader(object):
 		self.nrOfContourPoints = self.detectionKernelStrideSize*self.nrOfStrides
 		self.nrOfDetectionAngleSteps = int(self.detectionKernelStrideSize * self.nrOfStrides)
 		
-		self.clPlatform = json.loads(self.config.get("OpenClParameters","clPlatform"))
-		self.computeDeviceId = json.loads(self.config.get("OpenClParameters","computeDeviceId"))
+		#self.clPlatform = json.loads(self.config.get("OpenClParameters","clPlatform"))
+		self.platformId = json.loads(self.config.get("OpenClParameters","platformIndex"))
+		self.computeDeviceId = json.loads(self.config.get("OpenClParameters","deviceIndex"))
 		
 		self.detectionKernelStrideSize = np.int32(json.loads(self.config.get("TrackingParameters","detectionKernelStrideSize")))
 		self.nrOfStrides = np.int32(json.loads(self.config.get("TrackingParameters","nrOfStrides")))
@@ -220,7 +222,7 @@ class configReader(object):
 		if os.listdir(self.dataAnalysisDirectoryPath) != [] and self.imageIndexToContinueFrom == 0:
 			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
 				print("")
-				print("\tWARNING: Results output directory is not empty and 'imageIndexToContinueFrom' is 0.")
+				print("\tWARNING: Output directory is not empty and 'imageIndexToContinueFrom' is 0.")
 				print("\t         Continuing may result in data-loss.")
 				print("")
 				answer = input("\tContinue? (y: yes, n: no) ")
