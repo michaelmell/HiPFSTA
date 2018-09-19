@@ -69,8 +69,7 @@ set(0, 'defaulttextfontsize', 10);  % sets alos size of pixel-indicator label
 set(0, 'defaultaxesfontsize', 10);  % axes labels
 set(0, 'defaultlinelinewidth', 1);  % linewidth
 
-close(figure(1));
-figure(1);
+figure();
 
 datasetLabels = {'Pecreaux'' algorithm','HiPFSTA'};
 datasetPlotColor = {'b','r','b','c','m','k','y','r','g'};
@@ -96,17 +95,17 @@ xScale = 0.31;
 x = linspace(0,2*pi*xScale,length(wavenumber));
 prefactor = 5.6e-26;
 sinc5fnc = prefactor*abs(sinc(x).^5);
-plot(wavenumber,sinc5fnc,'k--','displayname','noise floor','LineWidth',2);
+plot(wavenumber,sinc5fnc,'k--','displayname','noise floor');
 hold off;
 
 % format figure
-xlim([0.0023e8,2.7e8]);
-ylim([5.0e-30,2e-21]);
-
 set(gca,'xscale','log');
 set(gca,'yscale','log');
 
-% add indicator for pixel-size
+xlim(gca,[0.0017e8,2.7e8]);
+ylim(gca,[5.0e-30,1e-20]);
+
+% add indicator for pixel-size wavenumber
 pixelSize = 50e-9;
 q_pixel = 2*pi/pixelSize;
 [hLine,hLabel] = vline(q_pixel,'--k','q_{pix}');
@@ -120,3 +119,5 @@ box on;
 
 xlabel('q [m^{-1}]');
 ylabel('P(q) [m^3]');
+
+title('RBC spectra comparison');
