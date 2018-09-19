@@ -5,7 +5,7 @@ clear all;
 pathBase = '../../../matlab_code/';
 addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
 
-%% process RBC dataset
+%% Process RBC data from Pecreaux' algorithm
 basePath = '../../';
 
 datasetPath = {'rbc/tracking/matlab_tracking_002/'};
@@ -33,7 +33,6 @@ for index = indices
     dataset.calculateCircumference();
     dataset.calculateBarioCenter();
 
-    % create version with center for each profile
     if( ~exist([savePath{index},'/',fourierSeriesFilenameEachCenter],'file'))
         dataset.setReferenceCenterMethod('forEachContour');
         dataset.calculatePolarCoordinates();
@@ -61,7 +60,7 @@ for index = indices
     save([savePath{index},'/circumferenceSeries','.mat'],'circumferenceSeries','-mat');
 end
 
-%% process GUV dataset
+%% Process RBC data from HiPFSTA
 clear all;
 
 fourierSeriesFilenameEachCenter = 'fourierSeriesCenterOfEachContourCorrected.mat';
@@ -71,9 +70,7 @@ basePath = {'../../';};
 
 basePaths = {basePath{1}};
         
-datasetPath = { ...
-               [basePath{1},'/','rbc/tracking/tracking_000/'], ...
-               };
+datasetPath = {[basePath{1},'/','rbc/tracking/tracking_000/']};
 
 % check that paths exist before starting
 for datasetIndex = 1:length(datasetPath)
