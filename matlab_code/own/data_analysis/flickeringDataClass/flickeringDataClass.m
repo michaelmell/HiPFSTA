@@ -1553,7 +1553,7 @@ end
 %             anglesTmp = angles;
             angles = repmat(anglesTmp,1,size(modeNrTmp,2));
             radii = repmat(radiiTmp,1,size(modeNrTmp,2));
-            modeNr = repmat(modeNrTmp,size(anglesTmp),1);
+            modeNr = repmat(modeNrTmp,size(anglesTmp));
 
             % calculate a_n
             tmp3 = sum( (radii(1:end-1,:) .* cos(modeNr(2:end,:).*angles(1:end-1,:)) + radii(2:end,:) .* cos(modeNr(2:end,:).*angles(2:end,:))) .* abs(angles(2:end,:) - angles(1:end-1,:)) / 2, 1 );
