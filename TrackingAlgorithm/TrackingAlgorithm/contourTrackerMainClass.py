@@ -17,6 +17,7 @@ from configReader import configReader
 
 class contourTrackerMain( object ):
 	def __init__(self, configurationFile,runInteractive=False):
+		print("Setting up program...")
 		self.runInteractive = runInteractive
 		self.setInteractive(runInteractive)
 		self.configReader = configReader(configurationFile,runInteractive)
@@ -29,7 +30,9 @@ class contourTrackerMain( object ):
 		self.setupClContext()
 		self.setupManagementQueue()
 		self.setupClVariables()
+		self.printAvailableOpenclDevices()
 		self.printTrackingSetupInformation()
+		self.configReader.runConfigChecks()
 		self.setupContourTracker()
 		
 		if self.configReader.nrOfFramesToSaveFitInclinesFor:
@@ -307,17 +310,29 @@ class contourTrackerMain( object ):
 		self.totalNrOfDarkfields = self.darkfieldList.__len__()
 		pass
 	
+	def printAvailableOpenclDevices(self):
+		self.clPlatformList = cl.get_platforms()
+		platformIndex = 0
+
+		print("")
+		print("\tAvailable OpenCL platforms/devices:")
+		for platform in self.clPlatformList:
+			print("\tPlatform "+str(platformIndex)+": "+platform.name)
+
+			platformIndex = platformIndex + 1
+			clDevicesList = self.clPlatformList[self.platformIndex].get_devices()
+			deviceIndex = 0
+			for device in clDevicesList:
+				print("\t\tDevice "+str(deviceIndex)+": "+device.name)
+				deviceIndex = deviceIndex + 1
+		
+		pass
+		
 	def printTrackingSetupInformation(self):
 		print("")
-		print("\tRunning Tracking with:")
-		print("\tOpenCL Platform: "+self.clPlatformList[self.platformIndex].name)
-		print("\tOpenCL Device: "+self.device.name)
-		print("")
-		print("\tDarkfield image directory:")
-		if self.configReader.darkfieldDirectoryPath is not None:
-			print("\t"+self.configReader.darkfieldDirectoryPath)
-		else:
-			print("\tNo directory provided.")
+		print("\tSelected OpenCL platform/device:")
+		print("\tPlatform "+str(self.platformIndex)+": "+self.clPlatformList[self.platformIndex].name)
+		print("\tDevice "+str(self.configReader.computeDeviceId)+": "+self.device.name)
 		print("")
 		print("\tImage directory: ")
 		print("\t"+self.configReader.imageDirectoryPath)
@@ -328,7 +343,13 @@ class contourTrackerMain( object ):
 		else:
 			print("\tNo directory provided.")
 		print("")
-		print("\tSaving results to:")
+		print("\tDarkfield image directory:")
+		if self.configReader.darkfieldDirectoryPath is not None:
+			print("\t"+self.configReader.darkfieldDirectoryPath)
+		else:
+			print("\tNo directory provided.")
+		print("")
+		print("\tResults output directory:")
 		print("\t"+self.configReader.dataAnalysisDirectoryPath)
 		print("")
 	

@@ -11,7 +11,6 @@ class configReader(object):
 		self.loadContourTrackerMainConfig()
 		self.loadImagePreprocessingConfig()
 		self.loadContourTrackerConfig()
-		self.runConfigChecks()
 
 	def loadContourTrackerConfig(self):
 		self.positioningMethod  = json.loads(self.config.get("TrackingParameters","positioningMethod"))
@@ -221,10 +220,8 @@ class configReader(object):
 		if os.listdir(self.dataAnalysisDirectoryPath) != [] and self.imageIndexToContinueFrom == 0:
 			if self.runInteractive: # if we are not running interactive, we know what we're doing (e.g. overwriting by default)
 				print("")
-				print("\tWARNING: Directory at 'dataAnalysisDirectoryPath' is not empty and 'imageIndexToContinueFrom' is 0. Continuing may result in data-loss.")
-				print("")
-				print("\t'dataAnalysisDirectoryPath':")
-				print("\t"+self.dataAnalysisDirectoryPath)
+				print("\tWARNING: Results output directory is not empty and 'imageIndexToContinueFrom' is 0.")
+				print("\t         Continuing may result in data-loss.")
 				print("")
 				answer = input("\tContinue? (y: yes, n: no) ")
 				if answer.lower().startswith("n"):
