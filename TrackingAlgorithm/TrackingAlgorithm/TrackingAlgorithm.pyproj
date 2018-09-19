@@ -12,6 +12,7 @@
     <OutputPath>.</OutputPath>
     <Name>TrackingAlgorithm</Name>
     <RootNamespace>TrackingAlgorithm</RootNamespace>
+    <InterpreterId>Global|ContinuumAnalytics|Anaconda36-64</InterpreterId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -53,6 +54,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="TrackingConfigs\" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="Global|ContinuumAnalytics|Anaconda36-64" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
