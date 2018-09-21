@@ -8,7 +8,7 @@ addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
 %% Process GUV data from Pecreaux' algorithm
 basePath = '../../';
 
-datasetPath = {'guv/tracking/matlab_tracking_002/'};
+datasetPath = {'guv/tracking/matlab_tracking/'};
 datasetLabelAlternative = {'guv_popc_2014-06-03_vesicle_4_movie_1_tracking_matlab_tracking_002'};
 
 indices = 1;
@@ -62,7 +62,7 @@ basePath = {'../../';};
 
 basePaths = {basePath{1}};
         
-datasetPath = {[basePath{1},'/','guv/tracking/tracking_000/']};
+datasetPath = {[basePath{1},'/','guv/tracking/python_tracking/']};
 
 % check that paths exist before starting
 for datasetIndex = 1:length(datasetPath)

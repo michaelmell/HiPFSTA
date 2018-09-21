@@ -75,14 +75,14 @@ In the following `$GITREPOPATH$` refers to the path were you cloned the Git repo
 * Run python contour tracking for GUV dataset. In the anaconda prompt enter:
     ```
 	> cd $GITREPOPATH$\examples\guv\tracking
-	> python run_tracking.py
+	> python run_python_tracking.py
     ```
 **Note**: When running the program in interactive mode (default setting used for the examples in this repository), the program will display a window showing the first image/video frame with its tracking result (black line along the contour of the cell). Please close this window to continue the processing of the dataset.
 	
 * Run python contour tracking for RBC dataset. In the anaconda prompt enter:
     ```
 	> cd $GITREPOPATH$\examples\rbc\tracking
-	> python run_tracking.py
+	> python run_python_tracking.py
     ```
 	
 * Run Matlab contour tracking for GUV dataset. In Matlab prompt enter:
