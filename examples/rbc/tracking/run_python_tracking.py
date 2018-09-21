@@ -2,5 +2,5 @@ import sys
 sys.path.append("../../../TrackingAlgorithm/TrackingAlgorithm/")
 from contourTrackerMainClass import contourTrackerMain
 
-prg = contourTrackerMain("tracking_config.conf",runInteractive=True)
+prg = contourTrackerMain("python_tracking.conf",runInteractive=True)
 prg.startTracking()

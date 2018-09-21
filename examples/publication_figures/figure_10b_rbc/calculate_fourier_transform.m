@@ -8,7 +8,7 @@ addpath([pathBase,'/own/data_analysis/flickeringDataClass']);
 %% Process RBC data from Pecreaux' algorithm
 basePath = '../../';
 
-datasetPath = {'rbc/tracking/matlab_tracking_002/'};
+datasetPath = {'rbc/tracking/matlab_tracking/'};
 datasetLabelAlternative = {'rbc_healthy_2014-05-05_rbc_4_movie_1_tracking_matlab_tracking_002'};
 
 indices = 1;
@@ -62,7 +62,7 @@ basePath = {'../../';};
 
 basePaths = {basePath{1}};
         
-datasetPath = {[basePath{1},'/','rbc/tracking/tracking_000/']};
+datasetPath = {[basePath{1},'/','rbc/tracking/python_tracking/']};
 
 % check that paths exist before starting
 for datasetIndex = 1:length(datasetPath)
