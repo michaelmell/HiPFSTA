@@ -1,3 +1,6 @@
+#################################################################### 
+### Runs HiPFSTA to track contours in the GUV dataset.
+#################################################################### 
 import sys
 sys.path.append("../../../TrackingAlgorithm/TrackingAlgorithm/")
 from contourTrackerMainClass import contourTrackerMain
