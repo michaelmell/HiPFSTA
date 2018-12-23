@@ -1,0 +1,6 @@
+The algorithm used in this code is scientific work and was published here:
+
+Mell M., Monroy F., 2018. A gradient-based, GPU-accelerated, high-precision contour-segmentation algorithm with application to cell membrane fluctuation spectroscopy.
+PLOSONE 13(12): e0207376. https://doi.org/10.1371/journal.pone.0207376
+
+We request that you cite the above paper, if you publish any results obtained with this code.

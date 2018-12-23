@@ -5,7 +5,8 @@ HiPFSTA is a **h**igh-**p**recision **f**licker **s**pectroscopy contour **t**ra
 
 # References
 * HiPFSTA was developed by Michael Mell as part of his research work during his PhD thesis, which was conducted at the University Complutense of Madrid under the supervision of Prof. Francisco Monroy.
-* If you use HiPFSTA in your research, please cite:  **[TODO: ADD REFERENCE, ONCE PUBLISHED]**
+* If you use HiPFSTA in your research, please cite:
+**Mell M., Monroy F., 2018. _A gradient-based, GPU-accelerated, high-precision contour-segmentation algorithm with application to cell membrane fluctuation spectroscopy._ PLOSONE 13(12): e0207376. https://doi.org/10.1371/journal.pone.0207376**
 
 # Getting the code and images
 This repository uses Git LFS to manage the image files that are necessary for running the examples and code-tests. To obtain these you need to use the Git client to checkout the respository by following these instructions: 
@@ -16,7 +17,6 @@ Instructions:
     ```
     > git clone https://gitlab.com/michaelmell/cellcontourtracker.git
     ```
-* Enter GitLab credentials  **[TODO: REMOVE THIS, WHEN RESPOSITORY IS PUBLIC]**
 * Git will download the code along with the image necessary for running the examples
 * If you have problems checking out this repository with Git LFS, please refer to the documentation of your Git client.
 

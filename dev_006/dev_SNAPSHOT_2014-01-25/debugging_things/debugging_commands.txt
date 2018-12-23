@@ -1,6 +1,0 @@
-np.any(np.isnan(self.host_membranePolarRadius)),np.any(np.isnan(self.host_membranePolarTheta)),np.any(np.isnan(self.host_interpolatedMembranePolarRadius)),np.any(np.isnan(self.host_interpolationAngles)),np.any(np.isnan(self.host_membraneCoordinatesX)),np.any(np.isnan(self.host_membraneCoordinatesY)),np.any(np.isnan(self.host_interpolatedMembraneCoordinatesX)),np.any(np.isnan(self.host_interpolatedMembraneCoordinatesY)),np.any(np.isnan(self.host_previousInterpolatedMembraneCoordinatesX)),np.any(np.isnan(self.host_previousInterpolatedMembraneCoordinatesY)),np.any(np.isnan(self.host_membraneNormalVectorsX)),np.any(np.isnan(self.host_membraneNormalVectorsY))
-
-np.any(np.isnan(self.host_membraneCoordinatesX)),np.any(np.isnan(self.host_membraneCoordinatesY)),np.any(np.isnan(self.host_membraneNormalVectorsX)),np.any(np.isnan(self.host_membraneNormalVectorsY))
-
-plt.plot(self.host_membraneCoordinatesX,self.host_membraneCoordinatesY),plt.show()
-plt.plot(self.host_ds),plt.show()
