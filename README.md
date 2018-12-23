@@ -3,10 +3,19 @@ HiPFSTA is a **h**igh-**p**recision **f**licker **s**pectroscopy contour **t**ra
 * It is capable of achieving nanometer localization accuracy in phase contrast light-microscopy images given correct image material (see publication).
 * It is written in Python and OpenCL and capable of levaraging the GPU for accelerated image processing (although it will run on CPU as well provided an OpenCL driver).
 
-# References
-* HiPFSTA was developed by Michael Mell as part of his research work during his PhD thesis, which was conducted at the University Complutense of Madrid under the supervision of Prof. Francisco Monroy.
-* If you use HiPFSTA in your research, please cite:
+# Citation
+HiPFSTA was developed by Michael Mell as part of his PhD thesis at the University Complutense of Madrid under supervision of Prof. Francisco Monroy. If you use HiPFSTA in your research, please cite:
+
 **Mell M., Monroy F., 2018. _A gradient-based, GPU-accelerated, high-precision contour-segmentation algorithm with application to cell membrane fluctuation spectroscopy._ PLOSONE 13(12): e0207376. https://doi.org/10.1371/journal.pone.0207376**
+
+# References
+HiPFSTA was successfully used in the following publications:
+* _Nonequilibrium fluctuations of lipid membranes by the rotating motor protein F1F0-ATP synthase._
+Almendro-Vedia V.G., Natale P., Mell M., Bonneau S., Monroy F., Joubert F. and López-Montero I.
+Proceedings of the National Academy of Sciences, 2017
+* _Permeability modes in fluctuating lipid membranes with DNA-translocating pores._
+Moleiro L.H., Mell M., Bocanegra R., López-Montero I., Fouquet P., Hellweg T., Carrascosa J.L. and Monroy F.
+Advances in colloid and interface science 247, 543-554, 2017
 
 # Getting the code and images
 This repository uses Git LFS to manage the image files that are necessary for running the examples and code-tests. To obtain these you need to use the Git client to checkout the respository by following these instructions: 
